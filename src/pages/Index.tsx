@@ -16,9 +16,6 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
-      <HowItWorksSection />
-      <FAQSection />
-      <ContactSection />
       
       {/* Only show auth sections if not authenticated */}
       {!isAuthenticated && (
@@ -28,6 +25,10 @@ const Index = () => {
         </>
       )}
       
+      <HowItWorksSection />
+      <ContactSection />
+      <FAQSection />
+
       <Footer />
     </div>
   );
