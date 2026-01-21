@@ -14,6 +14,8 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 const navItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard' },
@@ -121,7 +123,9 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
 
           <div className="flex-1 lg:flex-none" />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle />
+            <NotificationCenter />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground">{user?.businessName}</p>
               <p className="text-xs text-muted-foreground">{user?.ownerName}</p>
