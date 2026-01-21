@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Menu, X } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 export const Navbar = () => {
   const { isAuthenticated } = useAuth();
@@ -53,6 +55,8 @@ export const Navbar = () => {
           >
             Contact
           </button>
+          <ThemeToggle />
+          {isAuthenticated && <NotificationCenter />}
           {isAuthenticated ? (
             <Button onClick={() => navigate('/dashboard')} variant="hero">
               Dashboard
