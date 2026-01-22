@@ -8,7 +8,6 @@ import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { DashboardContactPage } from '@/components/dashboard/DashboardContactPage';
 
 const Dashboard = () => {
-  return <div className="min-h-screen bg-white text-black">Dashboard Loaded!</div>;
   return (
     <DashboardLayout>
       <Routes>
