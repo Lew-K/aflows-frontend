@@ -70,8 +70,8 @@ export const UploadsPage = () => {
     }
   };
 
-  const business = JSON.parse(localStorage.getItem('business') || '{}');
-
+const storedBusiness = localStorage.getItem("business");
+const business = storedBusiness ? JSON.parse(storedBusiness) : null;
   
 
   const handleUpload = async () => {
