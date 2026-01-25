@@ -70,6 +70,9 @@ export const UploadsPage = () => {
     }
   };
 
+  const business = JSON.parse(localStorage.getItem('business') || '{}');
+
+  
 
   const handleUpload = async () => {
   if (!selectedFile || !selectedCategory || !token) {
@@ -82,7 +85,7 @@ export const UploadsPage = () => {
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('fileType', selectedCategory);
-      formData.append('business_id', selectedBusiness.id); // from your state
+      formData.append('business_id', business.id); // from your state
       formData.append('user_id', loggedInUser.id);         // from your auth context
       formData.append('file_name', selectedFile.name);
   
