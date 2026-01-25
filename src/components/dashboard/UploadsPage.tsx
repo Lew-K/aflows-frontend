@@ -82,6 +82,7 @@ export const UploadsPage = () => {
         file: selectedFile,
         fileType: selectedCategory,
         token,
+        
         business_id: selectedBusiness.id, // get this from your selected business
         user_id: loggedInUser.id,         // get this from auth context
         file_name: selectedFile.name,
