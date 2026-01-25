@@ -45,7 +45,8 @@ export const LoginSection = () => {
           JSON.stringify({
             id: response.business_id,
             name: response.business_name,
-          })  
+          })
+        );  
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
