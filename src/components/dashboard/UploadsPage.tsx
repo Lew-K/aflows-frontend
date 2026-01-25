@@ -70,25 +70,33 @@ export const UploadsPage = () => {
     }
   };
 
+
   const handleUpload = async () => {
-    if (!selectedFile || !selectedCategory || !token) {
-      toast.error('Please select a file and category');
-      return;
-    }
+  if (!selectedFile || !selectedCategory || !token) {
+    toast.error('Please select a file and category');
+    return;
+  }
 
     setIsLoading(true);
     try {
-      const response = await uploadBusinessFile({
-        file: selectedFile,
-        fileType: selectedCategory,
-        token,
-        
-        business_id: selectedBusiness.id, // get this from your selected business
-        user_id: loggedInUser.id,         // get this from auth context
-        file_name: selectedFile.name,
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('fileType', selectedCategory);
+      formData.append('business_id', selectedBusiness.id); // from your state
+      formData.append('user_id', loggedInUser.id);         // from your auth context
+      formData.append('file_name', selectedFile.name);
+  
+      const response = await fetch('/upload-business-file', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       });
-
-      if (response.success) {
+  
+      const data = await response.json();
+  
+      if (data.success) {
         toast.success('File uploaded successfully!');
         setUploadSuccess(true);
         setSelectedFile(null);
@@ -97,18 +105,15 @@ export const UploadsPage = () => {
           fileInputRef.current.value = '';
         }
       } else {
-        toast.error(response.message || 'Upload failed');
+        toast.error(data.message || 'Upload failed');
       }
     } catch (error) {
-      // For demo, show success anyway
-      toast.success('File uploaded successfully!');
-      setUploadSuccess(true);
-      setSelectedFile(null);
-      setSelectedCategory('');
+      toast.error('Upload failed');
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const getCategoryIcon = (type: string) => {
     const category = fileCategories.find((c) => c.value === type);
