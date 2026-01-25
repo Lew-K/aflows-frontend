@@ -108,7 +108,8 @@ export const UploadsPage = () => {
         toast.error(data.message || 'Upload failed');
       }
     } catch (error) {
-      toast.error('Upload failed');
+      console.error(error);
+      toast.error('Upload failed: ' + error.message);
     } finally {
       setIsLoading(false);
     }
