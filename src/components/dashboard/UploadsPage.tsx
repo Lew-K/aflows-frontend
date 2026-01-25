@@ -86,7 +86,7 @@ export const UploadsPage = () => {
       formData.append('user_id', loggedInUser.id);         // from your auth context
       formData.append('file_name', selectedFile.name);
   
-      const response = await fetch('/upload-business-file', {
+      const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
