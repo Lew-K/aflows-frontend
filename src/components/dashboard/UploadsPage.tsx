@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { uploadBusinessFile } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
@@ -26,7 +25,6 @@ import {
   Image,
   File,
   Check,
-  X,
 } from 'lucide-react';
 
 const fileCategories = [
@@ -60,7 +58,7 @@ export const UploadsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,25 +68,47 @@ export const UploadsPage = () => {
     }
   };
 
-const storedBusiness = localStorage.getItem("business");
-const business = storedBusiness ? JSON.parse(storedBusiness) : null;
-  
+  // localStorage fallback for business if needed (older flows)
+  const storedBusiness = localStorage.getItem('business');
+  const businessFromStorage = storedBusiness ? JSON.parse(storedBusiness) : null;
 
   const handleUpload = async () => {
-  if (!selectedFile || !selectedCategory || !token) {
-    toast.error('Please select a file and category');
-    return;
-  }
+    if (!selectedFile || !selectedCategory) {
+      toast.error('Please select a file and category.');
+      return;
+    }
+
+    if (!token) {
+      toast.error('You are not authenticated. Please log in.');
+      return;
+    }
+
+    // Prefer businessId returned from the login webhook (user.businessId)
+    const businessId = user?.businessId ?? businessFromStorage?.id ?? businessFromStorage?.businessId;
+    if (!businessId) {
+      toast.error('No business found. Please make sure your business is loaded.');
+      return;
+    }
+
+    // Prefer numeric/UUID user.id when available, otherwise fall back to user.email
+    // This will send either an id or an email string as the "user_id" form field.
+    const userIdentifier = (user as any)?.id ?? user?.email;
+    if (!userIdentifier) {
+      toast.error('Logged-in user identifier not found. Please log in again.');
+      return;
+    }
 
     setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('fileType', selectedCategory);
-      formData.append('business_id', business.id); // from your state
-      formData.append('user_id', loggedInUser.id);         // from your auth context
+      // Keep using business_id since your n8n webhook previously expected that key
+      formData.append('business_id', String(businessId));
+      // send either id (preferred) or email (fallback)
+      formData.append('user_id', String(userIdentifier));
       formData.append('file_name', selectedFile.name);
-  
+
       const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
         method: 'POST',
         headers: {
@@ -96,10 +116,15 @@ const business = storedBusiness ? JSON.parse(storedBusiness) : null;
         },
         body: formData,
       });
-  
+
+      if (!response.ok) {
+        const txt = await response.text().catch(() => null);
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}${txt ? ' — ' + txt : ''}`);
+      }
+
       const data = await response.json();
-  
-      if (data.success) {
+
+      if (data?.success) {
         toast.success('File uploaded successfully!');
         setUploadSuccess(true);
         setSelectedFile(null);
@@ -108,16 +133,16 @@ const business = storedBusiness ? JSON.parse(storedBusiness) : null;
           fileInputRef.current.value = '';
         }
       } else {
-        toast.error(data.message || 'Upload failed');
+        toast.error(data?.message || 'Upload failed');
       }
     } catch (error) {
+      const msg = (error as Error)?.message || 'Unknown error';
       console.error(error);
-      toast.error('Upload failed: ' + error.message);
+      toast.error('Upload failed: ' + msg);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const getCategoryIcon = (type: string) => {
     const category = fileCategories.find((c) => c.value === type);
