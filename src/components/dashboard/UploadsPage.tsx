@@ -90,13 +90,15 @@ export const UploadsPage = () => {
       return;
     }
 
-    // Prefer numeric/UUID user.id when available, otherwise fall back to user.email
-    // This will send either an id or an email string as the "user_id" form field.
-    const userIdentifier = (user as any)?.id ?? user?.email;
-    if (!userIdentifier) {
-      toast.error('Logged-in user identifier not found. Please log in again.');
+    // require email (provided by your login webhook)
+    const userEmail = user?.email;
+    if (!userEmail) {
+      toast.error('Logged-in user email not found. Please log in again.');
       return;
     }
+
+    // optional numeric/UUID id if available
+    const userId = (user as any)?.id;
 
     setIsLoading(true);
     try {
@@ -105,8 +107,12 @@ export const UploadsPage = () => {
       formData.append('fileType', selectedCategory);
       // Keep using business_id since your n8n webhook previously expected that key
       formData.append('business_id', String(businessId));
-      // send either id (preferred) or email (fallback)
-      formData.append('user_id', String(userIdentifier));
+      // Always send the email (so your current workflow can look up by email)
+      formData.append('user_email', String(userEmail));
+      // If a user id exists, include it too (backwards-compatible)
+      if (userId) {
+        formData.append('user_id', String(userId));
+      }
       formData.append('file_name', selectedFile.name);
 
       const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
@@ -117,28 +123,58 @@ export const UploadsPage = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        const txt = await response.text().catch(() => null);
-        throw new Error(`Upload failed: ${response.status} ${response.statusText}${txt ? ' — ' + txt : ''}`);
-      }
+      // Attempt to parse response safely
+      let data: any = null;
+      const contentType = response.headers.get('content-type') || '';
 
-      const data = await response.json();
-
-      if (data?.success) {
-        toast.success('File uploaded successfully!');
-        setUploadSuccess(true);
-        setSelectedFile(null);
-        setSelectedCategory('');
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+      if (contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (err) {
+          console.warn('Failed to parse JSON response:', err);
+          data = null;
         }
       } else {
-        toast.error(data?.message || 'Upload failed');
+        try {
+          const text = await response.text();
+          if (text) {
+            try {
+              data = JSON.parse(text);
+            } catch {
+              data = { rawText: text };
+            }
+          } else {
+            data = null;
+          }
+        } catch (err) {
+          console.warn('Failed to read response text:', err);
+          data = null;
+        }
+      }
+
+      if (!response.ok) {
+        const messageFromBody = data?.message ?? data?.rawText ?? null;
+        throw new Error(
+          messageFromBody ? `Upload failed: ${messageFromBody}` : `Upload failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      if (data && typeof data === 'object' && data.success === false) {
+        throw new Error(data.message || 'Upload failed');
+      }
+
+      // success
+      toast.success('File uploaded successfully!');
+      setUploadSuccess(true);
+      setSelectedFile(null);
+      setSelectedCategory('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     } catch (error) {
       const msg = (error as Error)?.message || 'Unknown error';
-      console.error(error);
-      toast.error('Upload failed: ' + msg);
+      console.error('Upload error details:', error);
+      toast.error(msg.startsWith('Upload failed') ? msg : 'Upload failed: ' + msg);
     } finally {
       setIsLoading(false);
     }
