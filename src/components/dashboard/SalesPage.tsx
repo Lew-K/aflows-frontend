@@ -98,6 +98,8 @@ export const SalesPage = () => {
     }
   };
 
+  const paymentMethod = form.watch("paymentMethod");
+
   return (
     <div className="space-y-6">
       <div>
@@ -185,6 +187,7 @@ export const SalesPage = () => {
                   <Input
                     id="paymentReference"
                     placeholder="Paste M-Pesa or bank confirmation message here"
+                    disabled= {paymentMethod === "cash"}
                     className="mt-2"
                     {...register('paymentReference')}
                   />
