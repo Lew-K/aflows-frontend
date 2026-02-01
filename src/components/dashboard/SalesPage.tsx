@@ -50,11 +50,10 @@ export const SalesPage = () => {
     resolver: zodResolver(saleSchema),
   });
 
+  const paymentMethod = form.watch("paymentMethod");
+
+  
   const onSubmit = async (data: SaleFormData) => {
-    if (!data.itemSold || !data.paymentReference) {
-      toast.error('Item sold and payment reference are required');
-      return;
-    }
     
     
     setIsLoading(true);
@@ -99,7 +98,6 @@ export const SalesPage = () => {
     }
   };
 
-  const paymentMethod = form.watch("paymentMethod");
 
   return (
     <div className="space-y-6">
