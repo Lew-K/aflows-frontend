@@ -48,8 +48,11 @@ export const SalesPage = () => {
     formState: { errors },
   } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
+    defaultValues: {
+      paymentMethod: undefined,
+    },
   });
-
+  
   const paymentMethod = form.watch("paymentMethod");
 
   
@@ -122,6 +125,7 @@ export const SalesPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <input type="hidden" {...register("paymentMethod")} />
                 <div>
                   <Label htmlFor="customerName">Customer Name</Label>
                   <Input
