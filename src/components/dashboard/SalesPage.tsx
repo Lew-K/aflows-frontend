@@ -75,7 +75,7 @@ export const SalesPage = () => {
             payment_reference: data.paymentReference,
           }),
         }
-      )};
+      );
 
       const result = await response.json();
       
