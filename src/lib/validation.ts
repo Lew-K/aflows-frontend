@@ -29,13 +29,29 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-export const saleSchema = z.object({
-  customerName: z.string().min(2, 'Customer name is required'),
-  itemSold: z.string().min(2, 'Item description is required'),
-  amount: z.number().positive('Amount must be greater than 0'),
-  paymentMethod: z.string().min(1, 'Payment method is required'),
-  paymentReference: z.string().min(1, 'Payment reference is required'),
-});
+export const saleSchema = z
+  .object({
+    customerName: z.string().optional(),
+
+    // REQUIRED
+    itemSold: z.string().min(1, "Item sold is required"),
+    amount: z.coerce
+      .number()
+      .positive("Amount must be greater than zero"),
+
+    // OPTIONAL
+    paymentMethod: z.string().optional(),
+    paymentReference: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      data.paymentMethod === "cash" ||
+      (data.paymentReference && data.paymentReference.length > 0),
+    {
+      message: "Payment reference is required unless payment method is cash",
+      path: ["paymentReference"],
+    }
+  );
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
