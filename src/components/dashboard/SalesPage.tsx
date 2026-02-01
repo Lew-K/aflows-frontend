@@ -28,7 +28,7 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-// Mock recent sales for display
+// Mock recent sales for display 
 const recentSales = [
   { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
   { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
@@ -59,12 +59,7 @@ export const SalesPage = () => {
 
   
   const onSubmit = async (data: SaleFormData) => {
-    if (!businessId || !token) {
-      toast.error('You must be logged in to record a sale');
-      setIsLoading(false);
-      return;
-    }
-    
+      
     setIsLoading(true);
     try {
     
