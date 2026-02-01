@@ -53,7 +53,7 @@ export const SalesPage = () => {
     },
   });
   
-  const paymentMethod = form.watch("paymentMethod");
+  const paymentMethod = watch("paymentMethod");
 
   
   const onSubmit = async (data: SaleFormData) => {
