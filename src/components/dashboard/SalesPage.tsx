@@ -38,7 +38,7 @@ const recentSales = [
 export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const businessId = user?.businessId; 
 
   const {
