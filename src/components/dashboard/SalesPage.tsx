@@ -44,6 +44,7 @@ export const SalesPage = () => {
     handleSubmit,
     setValue,
     reset,
+    watch,
     formState: { errors },
   } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
