@@ -71,6 +71,7 @@ export const SalesPage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
+            business_id: currentBusinessId,
             customer_name: data.customerName || null,
             item_sold: data.itemSold,
             amount: data.amount || null,
