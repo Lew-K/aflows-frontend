@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShoppingCart, Download, Check } from 'lucide-react';
 
+
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
   { value: 'bank', label: 'Bank Transfer' },
@@ -38,6 +39,7 @@ export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { token } = useAuth();
+  const businessId = user?.businessId; 
 
   const {
     register,
@@ -71,7 +73,7 @@ export const SalesPage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            business_id: currentBusinessId,
+            business_id: businessId,
             customer_name: data.customerName || null,
             item_sold: data.itemSold,
             amount: data.amount || null,
