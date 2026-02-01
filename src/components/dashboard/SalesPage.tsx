@@ -50,26 +50,43 @@ export const SalesPage = () => {
   });
 
   const onSubmit = async (data: SaleFormData) => {
-    if (!token || !data.customerName || !data.itemSold || !data.amount || !data.paymentMethod || !data.paymentReference) return;
+    if (!data.itemSold || !data.paymentReference) {
+      toast.error('Item sold and payment reference are required');
+      return;
+    }
+    
     
     setIsLoading(true);
     try {
-      const response = await recordSale({
-        customerName: data.customerName,
-        itemSold: data.itemSold,
-        amount: data.amount,
-        paymentMethod: data.paymentMethod,
-        paymentReference: data.paymentReference,
-      }, token);
+    
+      const response = await fetch(
+        'https://n8n.aflows.uk/webhook/record-sales',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            customer_name: data.customerName || null,
+            item_sold: data.itemSold,
+            amount: data.amount || null,
+            payment_method: data.paymentMethod || null,
+            payment_reference: data.paymentReference,
+          }),
+        }
+      )};
+
+      const result = await response.json();
       
-      if (response.success) {
+      if (response.ok) {
         toast.success('Sale recorded successfully!');
         if (response.receiptUrl) {
           setReceiptUrl(response.receiptUrl);
         }
         reset();
       } else {
-        toast.error(response.message || 'Failed to record sale');
+        toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
       // For demo, show success anyway
@@ -167,7 +184,7 @@ export const SalesPage = () => {
                   <Label htmlFor="paymentReference">Payment Reference</Label>
                   <Input
                     id="paymentReference"
-                    placeholder="M-Pesa code or bank reference"
+                    placeholder="Paste M-Pesa or bank confirmation message here"
                     className="mt-2"
                     {...register('paymentReference')}
                   />
