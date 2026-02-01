@@ -59,7 +59,11 @@ export const SalesPage = () => {
 
   
   const onSubmit = async (data: SaleFormData) => {
-    
+    if (!businessId || !token) {
+      toast.error('You must be logged in to record a sale');
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     try {
