@@ -64,25 +64,25 @@ export const SalesPage = () => {
   }, [businessId]);
 
 
-export const SalesPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const { token, user } = useAuth();
-  const businessId = user?.businessId; 
+// export const SalesPage = () => {
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+//   const { token, user } = useAuth();
+//   const businessId = user?.businessId; 
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<SaleFormData>({
-    resolver: zodResolver(saleSchema),
-    defaultValues: {
-      paymentMethod: undefined,
-    },
-  });
+//   const {
+//     register,
+//     handleSubmit,
+//     setValue,
+//     reset,
+//     watch,
+//     formState: { errors },
+//   } = useForm<SaleFormData>({
+//     resolver: zodResolver(saleSchema),
+//     defaultValues: {
+//       paymentMethod: undefined,
+//     },
+//   });
   
   const paymentMethod = watch("paymentMethod");
 
