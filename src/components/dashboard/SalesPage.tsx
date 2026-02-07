@@ -340,36 +340,7 @@ export const SalesPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
-            </CardHeader>
-
-
-            <CardContent>
-              <div className="space-y-4">
-                {salesList.length === 0 && <p className="text-sm text-muted-foreground">No sales recorded yet.</p>}
-                {salesList.map((sale) => (
-                  <div key={sale.id} className="p-4 rounded-lg bg-secondary/50 border border-border">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-foreground">{sale.customer_name || 'Walk-in Customer'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {sale.item_sold} (x{sale.quantity})
-                        </p>
-                      </div>
-                      <span className="text-lg font-bold text-primary">
-                        KES {(sale.unit_price * sale.quantity).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span className="capitalize">{sale.payment_method}</span>
-                      <span>{new Date(sale.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-
-
-            
+            </CardHeader>            
             {/* <CardContent>
               <div className="space-y-4">
                 {recentSales.map((sale) => (
