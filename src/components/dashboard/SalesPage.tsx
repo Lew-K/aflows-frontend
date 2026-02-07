@@ -28,13 +28,12 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-Mock recent sales for display 
+// Mock recent sales for display 
 const recentSales = [
   { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
   { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
   { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
 ];
-
 
 export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -83,6 +82,8 @@ export const SalesPage = () => {
         }
       );
 
+      const result = await response.json();
+      
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         if (response.receiptUrl) {
@@ -103,11 +104,6 @@ export const SalesPage = () => {
   };
 
 
-
-
-  const result = await response.json();
-
-  
   return (
     <div className="space-y-6">
       <div>
@@ -144,8 +140,9 @@ export const SalesPage = () => {
                     <p className="text-destructive text-sm mt-1">{errors.customerName.message}</p>
                   )}
                 </div>
+
                 <div>
-                  <Label htmlFor="itemSold">Item/Service</Label>
+                  <Label htmlFor="itemSold">Item Sold</Label>
                   <Input
                     id="itemSold"
                     placeholder="Describe the item or service"
@@ -155,7 +152,8 @@ export const SalesPage = () => {
                   {errors.itemSold && (
                     <p className="text-destructive text-sm mt-1">{errors.itemSold.message}</p>
                   )}
-                </div>             
+                </div>
+
                 <div>
                   <Label htmlFor="amount">Amount (KES)</Label>
                   <Input
@@ -168,26 +166,6 @@ export const SalesPage = () => {
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
                   )}
-                </div> */}
-                <div>
-                  <Label htmlFor="quantity">Quantity</Label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    defaultValue="1"
-                    className="mt-2"
-                    {...register('quantity', { valueAsNumber: true })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="unitPrice">Unit Price (KES)</Label>
-                  <Input
-                    id="unitPrice"
-                    type="number"
-                    placeholder="0.00"
-                    className="mt-2"
-                    {...register('unitPrice', { valueAsNumber: true })}
-                  />
                 </div>
 
                 <div>
@@ -264,7 +242,7 @@ export const SalesPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
-            </CardHeader>            
+            </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recentSales.map((sale) => (
@@ -288,7 +266,7 @@ export const SalesPage = () => {
                   </div>
                 ))}
               </div>
-            </CardContent> */}
+            </CardContent>
           </Card>
         </motion.div>
       </div>
