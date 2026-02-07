@@ -28,112 +28,42 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-// Mock recent sales for display 
-// const recentSales = [
-//   { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
-//   { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
-//   { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
-// ];
+Mock recent sales for display 
+const recentSales = [
+  { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
+  { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
+  { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
+];
 
-
-// 1. Remove the static const recentSales = [...]
 
 export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const [salesList, setSalesList] = useState<any[]>([]); // Add this for dynamic data
   const { token, user } = useAuth();
-  const businessId = user?.businessId;
+  const businessId = user?.businessId; 
 
-  // 2. Add fetch function to get the last 5 sales
-  const fetchRecentSales = async () => {
-    try {
-      const response = await fetch(`https://n8n.aflows.uk/webhook/get-recent-sales?business_id=${businessId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await response.json();
-      setSalesList(data.slice(0, 5)); // Take only the last 5
-    } catch (error) {
-      console.error("Failed to fetch sales", error);
-    }
-  };
-
-  // 3. Load data on mount
-  useEffect(() => {
-    if (businessId) fetchRecentSales();
-  }, [businessId]);
-
-
-// export const SalesPage = () => {
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-//   const { token, user } = useAuth();
-//   const businessId = user?.businessId; 
-
-//   const {
-//     register,
-//     handleSubmit,
-//     setValue,
-//     reset,
-//     watch,
-//     formState: { errors },
-//   } = useForm<SaleFormData>({
-//     resolver: zodResolver(saleSchema),
-//     defaultValues: {
-//       paymentMethod: undefined,
-//     },
-//   });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<SaleFormData>({
+    resolver: zodResolver(saleSchema),
+    defaultValues: {
+      paymentMethod: undefined,
+    },
+  });
   
   const paymentMethod = watch("paymentMethod");
 
   
-  // const onSubmit = async (data: SaleFormData) => {
+  const onSubmit = async (data: SaleFormData) => {
       
-  //   setIsLoading(true);
-  //   try {
-    
-  //     const response = await fetch(
-  //       'https://n8n.aflows.uk/webhook/record-sales',
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         body: JSON.stringify({
-  //           business_id: businessId,
-  //           customer_name: data.customerName || null,
-  //           item_sold: data.itemSold,
-  //           amount: data.amount || null,
-  //           payment_method: data.paymentMethod || null,
-  //           payment_reference: data.paymentReference,
-  //         }),
-  //       }
-  //     );
-
-  //     if (response.ok) {
-  //       toast.success('Sale recorded successfully!');
-  //       if (response.receiptUrl) {
-  //         setReceiptUrl(response.receiptUrl);
-  //       }
-  //       reset();
-  //     } else {
-  //       toast.error(result.message || 'Failed to record sale');
-  //     }
-  //   } catch (error) {
-  //     // For demo, show success anyway
-  //     toast.success('Sale recorded successfully!');
-  //     setReceiptUrl('#demo-receipt');
-  //     reset();
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-
-  const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
+    
       const response = await fetch(
         'https://n8n.aflows.uk/webhook/record-sales',
         {
@@ -144,28 +74,36 @@ export const SalesPage = () => {
           },
           body: JSON.stringify({
             business_id: businessId,
-            customer_name: data.customerName,
+            customer_name: data.customerName || null,
             item_sold: data.itemSold,
-            quantity: data.quantity,      // Added
-            unit_price: data.unitPrice,   // Changed from amount
-            total_amount: data.quantity * data.unitPrice, // Calculated
-            payment_method: data.paymentMethod,
+            amount: data.amount || null,
+            payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference,
           }),
         }
       );
-  
+
       if (response.ok) {
         toast.success('Sale recorded successfully!');
-        fetchRecentSales(); // Refresh the list immediately
+        if (response.receiptUrl) {
+          setReceiptUrl(response.receiptUrl);
+        }
         reset();
+      } else {
+        toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
-      toast.error('Failed to record sale');
+      // For demo, show success anyway
+      toast.success('Sale recorded successfully!');
+      setReceiptUrl('#demo-receipt');
+      reset();
     } finally {
       setIsLoading(false);
     }
   };
+
+
+
 
   const result = await response.json();
 
@@ -206,20 +144,6 @@ export const SalesPage = () => {
                     <p className="text-destructive text-sm mt-1">{errors.customerName.message}</p>
                   )}
                 </div>
-
-                {/* <div>
-                  <Label htmlFor="itemSold">Item Sold</Label>
-                  <Input
-                    id="itemSold"
-                    placeholder="Describe the item or service"
-                    className="mt-2"
-                    {...register('itemSold')}
-                  />
-                  {errors.itemSold && (
-                    <p className="text-destructive text-sm mt-1">{errors.itemSold.message}</p>
-                //   )}
-                // </div> */}
-
                 <div>
                   <Label htmlFor="itemSold">Item/Service</Label>
                   <Input
@@ -228,9 +152,11 @@ export const SalesPage = () => {
                     className="mt-2"
                     {...register('itemSold')}
                   />
-                </div>
-
-                {/* <div>
+                  {errors.itemSold && (
+                    <p className="text-destructive text-sm mt-1">{errors.itemSold.message}</p>
+                  )}
+                </div>             
+                <div>
                   <Label htmlFor="amount">Amount (KES)</Label>
                   <Input
                     id="amount"
@@ -253,8 +179,6 @@ export const SalesPage = () => {
                     {...register('quantity', { valueAsNumber: true })}
                   />
                 </div>
-
-
                 <div>
                   <Label htmlFor="unitPrice">Unit Price (KES)</Label>
                   <Input
@@ -341,7 +265,7 @@ export const SalesPage = () => {
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
             </CardHeader>            
-            {/* <CardContent>
+            <CardContent>
               <div className="space-y-4">
                 {recentSales.map((sale) => (
                   <div
