@@ -38,21 +38,6 @@ const paymentMethods = [
 //   { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
 // ];
 
-const [recentSales, setRecentSales] = useState([]);
-
-useEffect(() => {
-  if (!user?.businessId) return; // Ensure we have the logged-in business
-
-  fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-    .then((res) => res.json())
-    .then((data) => {
-      console.log('Fetched recent sales:', data); // Test output
-      setRecentSales(data); // Store in state
-    })
-    .catch((err) => console.error('Failed to fetch sales:', err));
-}, [user?.businessId]);
-
-
 
 export const SalesPage = () => {
 
