@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import React, { useState, useEffect } from 'react';
+
+
 import {
   Select,
   SelectContent,
@@ -28,12 +31,28 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-// Mock recent sales for display 
-const recentSales = [
-  { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
-  { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
-  { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
-];
+// // Mock recent sales for display 
+// const recentSales = [
+//   { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
+//   { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
+//   { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
+// ];
+
+const [recentSales, setRecentSales] = useState([]);
+
+useEffect(() => {
+  if (!user?.businessId) return; // Ensure we have the logged-in business
+
+  fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log('Fetched recent sales:', data); // Test output
+      setRecentSales(data); // Store in state
+    })
+    .catch((err) => console.error('Failed to fetch sales:', err));
+}, [user?.businessId]);
+
+
 
 export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
