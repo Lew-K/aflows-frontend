@@ -75,7 +75,10 @@ export const SalesPage = () => {
       .then((data) => {
         console.log('Fetched recent sales:', data);
       
-        const sales = data.sales;
+        const sales = Array.isArray(data)
+          ? data[0]?.sales
+          : data?.sales;
+
       
         // Force object → array if backend sends a single sale
         if (Array.isArray(sales)) {
