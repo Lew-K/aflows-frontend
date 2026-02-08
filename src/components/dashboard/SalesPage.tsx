@@ -104,7 +104,7 @@ export const SalesPage = () => {
     };
   
     fetchSales(); // initial load
-    const interval = setInterval(fetchSales, 10000);
+    const interval = setInterval(fetchSales, 60000);
   
     return () => clearInterval(interval);
   }, [user?.businessId]);
