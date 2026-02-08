@@ -67,35 +67,86 @@ export const SalesPage = () => {
   // }, [user?.businessId]);
 
 
+  
   useEffect(() => {
     if (!user?.businessId) return;
   
-    const fetchSales = () => {
-      fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const sales = Array.isArray(data)
-            ? data[0]?.sales
-            : data?.sales;
+    const fetchSales = async () => {
+      try {
+        const res = await fetch(
+          `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
+        );
   
-          if (Array.isArray(sales)) {
-            setRecentSales(
-              sales
-                .sort(
-                  (a, b) =>
-                    new Date(b.created_at) - new Date(a.created_at)
-                )
-                .slice(0, 5)
-            );
-          }
-        });
+        const data = await res.json();
+  
+        console.log("RAW webhook response:", data);
+  
+        // Your webhook returns: [ { sales: [...] } ]
+        const sales =
+          Array.isArray(data) &&
+          data.length > 0 &&
+          Array.isArray(data[0].sales)
+            ? data[0].sales
+            : [];
+  
+        console.log("Extracted sales array:", sales);
+  
+        const lastFive = sales
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+          .slice(0, 5);
+  
+        console.log("Last 5 sales:", lastFive);
+  
+        setRecentSales(lastFive);
+      } catch (err) {
+        console.error("Failed to fetch sales:", err);
+        setRecentSales([]);
+      }
     };
   
     fetchSales(); // initial load
-    const interval = setInterval(fetchSales, 10000); // every 10s
+    const interval = setInterval(fetchSales, 10000);
   
     return () => clearInterval(interval);
   }, [user?.businessId]);
+
+  
+  
+  
+  
+  // useEffect(() => {
+  //   if (!user?.businessId) return;
+  
+  //   const fetchSales = () => {
+  //     fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         const sales = Array.isArray(data)
+  //           ? data[0]?.sales
+  //           : data?.sales;
+  
+  //         if (Array.isArray(sales)) {
+  //           setRecentSales(
+  //             sales
+  //               .sort(
+  //                 (a, b) =>
+  //                   new Date(b.created_at) - new Date(a.created_at)
+  //               )
+  //               .slice(0, 5)
+  //           );
+  //         }
+  //       });
+  //   };
+  
+  //   fetchSales(); // initial load
+  //   const interval = setInterval(fetchSales, 10000); // every 10s
+  
+  //   return () => clearInterval(interval);
+  // }, [user?.businessId]);
   
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
