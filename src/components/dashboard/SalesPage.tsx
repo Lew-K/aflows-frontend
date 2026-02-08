@@ -248,7 +248,7 @@ export const SalesPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="itemSold">Item Sold</Label>
+                  <Label htmlFor="itemSold">Item Sold / Service Rendered</Label>
                   <Input
                     id="itemSold"
                     placeholder="Describe the item or service"
@@ -260,14 +260,52 @@ export const SalesPage = () => {
                   )}
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="quantity">Units / Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      className="mt-2"
+                      {...register('quantity', { valueAsNumber: true })}
+                    />
+                    {errors.quantity && (
+                      <p className="text-destructive text-sm mt-1">{errors.quantity.message}</p>
+                    )}
+                  </div>
+
+
+                   <div>
+                    <Label htmlFor="unitCost">Price per Unit / Rate</Label>
+                    <Input
+                      id="unitCost"
+                      type="number"
+                      min={0}
+                      placeholder="0.00"
+                      className="mt-2"
+                      {...register('unitCost', { valueAsNumber: true })}
+                    />
+                    {errors.unitCost && (
+                      <p className="text-destructive text-sm mt-1">{errors.unitCost.message}</p>
+                    )}
+                  </div>
+                </div>
+                        
+
                 <div>
                   <Label htmlFor="amount">Amount (KES)</Label>
                   <Input
                     id="amount"
                     type="number"
-                    placeholder="0.00"
+                    placeholder="Calculated automatically"
                     className="mt-2"
                     {...register('amount', { valueAsNumber: true })}
+                    value={watch('quantity') && watch('unitCost')
+                      ? (watch('quantity') * watch('unitCost')).toFixed(2)
+                      : ''}
+                    readOnly
                   />
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
