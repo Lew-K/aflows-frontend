@@ -86,7 +86,11 @@ export const SalesPage = () => {
           setRecentSales([]);
         }
       })
-
+      .catch((err) => {
+        console.error('Failed to fetch sales:', err);
+        setRecentSales([]);
+      });
+  }, [user?.businessId]);
 
 
 
