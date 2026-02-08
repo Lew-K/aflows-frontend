@@ -55,6 +55,21 @@ useEffect(() => {
 
 
 export const SalesPage = () => {
+
+  const [recentSales, setRecentSales] = useState([]);
+
+  useEffect(() => {
+    if (!user?.businessId) return; // Ensure we have the logged-in business
+  
+    fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Fetched recent sales:', data); // Test output
+        setRecentSales(data); // Store in state
+      })
+      .catch((err) => console.error('Failed to fetch sales:', err));
+  }, [user?.businessId]);
+    
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { token, user } = useAuth();
