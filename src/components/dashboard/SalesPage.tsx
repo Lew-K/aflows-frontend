@@ -82,9 +82,9 @@ export const SalesPage = () => {
         console.log("RAW webhook response:", data);
   
         // Your webhook returns: [ { sales: [...] } ]
-        const sales = response?.[0]?.sales || [];
+        const sales = Array.isArray(data?.sales) ? data.sales : [];
   
-        console.log("Extracted sales array:", sales);
+        console.log("Extracted sales array:", sales, "count:", sales.length);
   
         const lastFive = sales
           .sort(
