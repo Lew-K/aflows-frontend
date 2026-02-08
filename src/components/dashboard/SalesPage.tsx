@@ -190,7 +190,7 @@ export const SalesPage = () => {
             item_sold: data.itemSold,
             quantity: data.quantity || 1,   // default 1
             unit_cost: data.unitCost || 0,  // default 0
-            amount,
+            amount: amount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
           }),
@@ -209,10 +209,9 @@ export const SalesPage = () => {
         toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
-      // For demo, show success anyway
-      toast.success('Sale recorded successfully!');
-      setReceiptUrl('#demo-receipt');
-      reset();
+      console.error(error);
+      toast.error('Something went wrong!');
+
     } finally {
       setIsLoading(false);
     }
@@ -309,12 +308,15 @@ export const SalesPage = () => {
                     id="amount"
                     type="number"
                     placeholder="Calculated automatically"
-                    className="mt-2"
+                    className="mt-2 bg-muted/10 cursor-not-allowed"
+                    
+                    {/* className="mt-2"
                     {...register('amount', { valueAsNumber: true })}
                     value={watch('quantity') && watch('unitCost')
                       ? (watch('quantity') * watch('unitCost')).toFixed(2)
                       : ''}
-                    readOnly
+                    readOnly */}
+                  
                   />
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
