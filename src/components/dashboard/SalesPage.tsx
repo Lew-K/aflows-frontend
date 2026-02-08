@@ -178,12 +178,14 @@ export const SalesPage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            business_id: businessId,
-            customer_name: data.customerName || null,
-            item_sold: data.itemSold,
-            amount: data.amount || null,
-            payment_method: data.paymentMethod || null,
-            payment_reference: data.paymentReference,
+           business_id: businessId,
+           customer_name: data.customerName || null,
+           item_sold: data.itemSold,
+           quantity: data.quantity || 1,   // default 1
+           unit_cost: data.unitCost || 0,  // default 0
+           amount: calculatedAmount,
+           payment_method: data.paymentMethod || null,
+           payment_reference: data.paymentReference || null,
           }),
         }
       );
