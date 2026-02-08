@@ -73,11 +73,30 @@ export const SalesPage = () => {
     fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log('Fetched recent sales:', data); 
-        setRecentSales(data.sales || data || []); // <-- important
+        console.log('Fetched recent sales:', data);
+      
+        const sales = data.sales;
+      
+        // Force object → array if backend sends a single sale
+        if (Array.isArray(sales)) {
+          setRecentSales(sales.slice(0, 5));
+        } else if (sales && typeof sales === 'object') {
+          setRecentSales([sales]); // wrap single sale
+        } else {
+          setRecentSales([]);
+        }
       })
-      .catch((err) => console.error('Failed to fetch sales:', err));
-  }, [user?.businessId]);
+
+
+
+
+      
+  //     .then((data) => {
+  //       console.log('Fetched recent sales:', data); 
+  //       setRecentSales(data.sales || data || []); // <-- important
+  //     })
+  //     .catch((err) => console.error('Failed to fetch sales:', err));
+  // }, [user?.businessId]);
 
   
 
@@ -307,7 +326,7 @@ export const SalesPage = () => {
 
                       </div>
                       <span className="text-lg font-bold text-primary">
-                        KES {sale.amount.toLocaleString()}
+                        KES {Number(sale.amount).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
