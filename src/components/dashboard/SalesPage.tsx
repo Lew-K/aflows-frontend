@@ -169,9 +169,12 @@ export const SalesPage = () => {
     setIsLoading(true);
     try {
 
-      const quantity = Number(data.quantity) || 0;
+      const quantity = Number(data.quantity) || 1;
       const unitCost = Number(data.unitCost) || 0;
       const amount = quantity * unitCost;
+
+      console.log("quantity:", quantity, "unitCost:", unitCost, "amount:", amount);
+
     
       const response = await fetch(
         'https://n8n.aflows.uk/webhook/record-sales',
