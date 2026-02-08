@@ -187,7 +187,7 @@ export const SalesPage = () => {
             item_sold: data.itemSold,
             quantity: data.quantity || 1,   // default 1
             unit_cost: data.unitCost || 0,  // default 0
-            amount: calculatedAmount,
+            amount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
           }),
