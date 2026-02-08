@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import React, { useState, useEffect } from 'react';
 
 
 import {
@@ -43,18 +42,30 @@ export const SalesPage = () => {
 
   const [recentSales, setRecentSales] = useState([]);
 
-  useEffect(() => {
-    if (!user?.businessId) return; // Ensure we have the logged-in business
   
+
+  // useEffect(() => {
+  //   if (!user?.businessId) return; // Ensure we have the logged-in business
+  
+  //   fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log('Fetched recent sales:', data); // Test output
+  //       setRecentSales(data); // Store in state
+  //     })
+  //     .catch((err) => console.error('Failed to fetch sales:', err));
+  // }, [user?.businessId]);
+
+  const { token, user } = useAuth(); // move this above useEffect
+
+  useEffect(() => {
+    if (!user?.businessId) return;
     fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
       .then((res) => res.json())
-      .then((data) => {
-        console.log('Fetched recent sales:', data); // Test output
-        setRecentSales(data); // Store in state
-      })
+      .then((data) => setRecentSales(data))
       .catch((err) => console.error('Failed to fetch sales:', err));
   }, [user?.businessId]);
-    
+  
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { token, user } = useAuth();
@@ -271,16 +282,21 @@ export const SalesPage = () => {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-medium text-foreground">{sale.customer}</p>
+                        <p className="font-medium text-foreground">{sale.customer_name}</p>
                         <p className="text-sm text-muted-foreground">{sale.item}</p>
+                        <span>{Number(sale.amount).toLocaleString()}</span>
+
                       </div>
                       <span className="text-lg font-bold text-primary">
                         KES {sale.amount.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{sale.method}</span>
-                      <span>{sale.date}</span>
+                      {/* <span>{sale.method}</span>
+                      <span>{sale.date}</span> */}
+
+                      <span>{sale.payment_method}</span>
+                      <span>{new Date(sale.created_at).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
