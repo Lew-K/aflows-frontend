@@ -58,13 +58,30 @@ export const SalesPage = () => {
 
   const { token, user } = useAuth(); // move this above useEffect
 
+  // useEffect(() => {
+  //   if (!user?.businessId) return;
+  //   fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => setRecentSales(data.sales))
+  //     .catch((err) => console.error('Failed to fetch sales:', err));
+  // }, [user?.businessId]);
+
+
   useEffect(() => {
     if (!user?.businessId) return;
+  
     fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
       .then((res) => res.json())
-      .then((data) => setRecentSales(data))
+      .then((data) => {
+        console.log('Fetched recent sales:', data); 
+        setRecentSales(data.sales || data || []); // <-- important
+      })
       .catch((err) => console.error('Failed to fetch sales:', err));
   }, [user?.businessId]);
+
+  
+
+  
   
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
@@ -272,7 +289,41 @@ export const SalesPage = () => {
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
             </CardHeader>
+
+
+
             <CardContent>
+              <div className="space-y-4">
+                {Array.isArray(recentSales) && recentSales.length > 0 ? (
+                  recentSales.map((sale, index) => (
+                    <div
+                      key={sale.id || index}
+                      className="p-4 rounded-lg bg-secondary/50 border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-medium text-foreground">{sale.customer_name}</p>
+                          <p className="text-sm text-muted-foreground">{sale.item}</p>
+                          <span>{Number(sale.amount).toLocaleString()}</span>
+                        </div>
+                        <span className="text-lg font-bold text-primary">
+                          KES {Number(sale.amount).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{sale.payment_method}</span>
+                        <span>{new Date(sale.created_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No recent sales yet</p>
+                )}
+              </div>
+            </CardContent>
+
+            
+            {/* <CardContent>
               <div className="space-y-4">
                 {recentSales.map((sale) => (
                   <div
@@ -293,14 +344,14 @@ export const SalesPage = () => {
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                       {/* <span>{sale.method}</span>
                       <span>{sale.date}</span> */}
-
+{/* 
                       <span>{sale.payment_method}</span>
                       <span>{new Date(sale.created_at).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
+            </CardContent> */} */}
           </Card>
         </motion.div>
       </div>
