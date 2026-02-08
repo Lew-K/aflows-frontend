@@ -82,7 +82,7 @@ export const SalesPage = () => {
         console.log("RAW webhook response:", data);
   
         // Your webhook returns: [ { sales: [...] } ]
-        const sales = Array.isArray(data?.sales) ? data.sales : [];
+        const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
   
         console.log("Extracted sales array:", sales, "count:", sales.length);
   
