@@ -70,44 +70,32 @@ export const SalesPage = () => {
   useEffect(() => {
     if (!user?.businessId) return;
   
-    fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('Fetched recent sales:', data);
-      
-        const sales = Array.isArray(data)
-          ? data[0]?.sales
-          : data?.sales;
-
-      
-        // Force object → array if backend sends a single sale
-        if (Array.isArray(sales)) {
-          setRecentSales(sales.slice(0, 5));
-        } else if (sales && typeof sales === 'object') {
-          setRecentSales([sales]); // wrap single sale
-        } else {
-          setRecentSales([]);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to fetch sales:', err);
-        setRecentSales([]);
-      });
+    const fetchSales = () => {
+      fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const sales = Array.isArray(data)
+            ? data[0]?.sales
+            : data?.sales;
+  
+          if (Array.isArray(sales)) {
+            setRecentSales(
+              sales
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_at) - new Date(a.created_at)
+                )
+                .slice(0, 5)
+            );
+          }
+        });
+    };
+  
+    fetchSales(); // initial load
+    const interval = setInterval(fetchSales, 10000); // every 10s
+  
+    return () => clearInterval(interval);
   }, [user?.businessId]);
-
-
-
-      
-  //     .then((data) => {
-  //       console.log('Fetched recent sales:', data); 
-  //       setRecentSales(data.sales || data || []); // <-- important
-  //     })
-  //     .catch((err) => console.error('Failed to fetch sales:', err));
-  // }, [user?.businessId]);
-
-  
-
-  
   
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
