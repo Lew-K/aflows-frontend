@@ -120,12 +120,13 @@ export const SalesPage = () => {
   
   const calculatedAmount =
     (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
-    useEffect(() => {
-      setValue('amount', calculatedAmount, {
-        shouldValidate: true,
-        shouldDirty: true,
+  
+  useEffect(() => {
+    setValue('amount', calculatedAmount, {        
+      shouldValidate: true,
+      shouldDirty: true,
       });
-    }, [calculatedAmount, setValue]);
+  }, [calculatedAmount, setValue]);
   
   const onSubmit = async (data: SaleFormData) => {
       
