@@ -175,7 +175,15 @@ export const SalesPage = () => {
         }
       );
 
-      const result = await response.json();
+      // const result = await response.json();
+
+      let result = null;
+
+      const text = await response.text();
+      if (text) {
+        result = JSON.parse(text);
+      }
+
       
       if (response.ok) {
         toast.success('Sale recorded successfully!');
@@ -186,9 +194,9 @@ export const SalesPage = () => {
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
-    } catch (error) {
-      console.error(error);
-      toast.error('Something went wrong!');
+    // } catch (error) {
+    //   console.error(error);
+    //   toast.error('Something went wrong!');
 
     } finally {
       setIsLoading(false);
