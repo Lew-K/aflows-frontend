@@ -45,7 +45,10 @@ export const SalesPage = () => {
   const [weeklySummary, setWeeklySummary] = useState<{
     totalSales: number;
     totalValue: number;
-  } | null>(null);
+  }>({
+    totalSales: 0,
+    totalValue: 0,
+  });
 
   const { token, user } = useAuth(); // move this above useEffect
 
@@ -255,33 +258,35 @@ export const SalesPage = () => {
         <p className="text-muted-foreground">Record new sales and generate receipts</p>
       </div>
 
-      {weeklySummary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Sales</p>
-              <p className="text-2xl font-bold">
-                {weeklySummary.totalSales}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                This Week
-              </p>
-            </CardContent>
-          </Card>
+    
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+         <Card>
+           <CardContent className="p-4">
+             <p className="text-sm text-muted-foreground">Total Sales</p>
+             <p className="text-2xl font-bold">
+               {weeklySummary.totalSales === 0 ? "—" : weeklySummary.totalSales}
+             </p>
+             <p className="text-xs text-muted-foreground mt-1">
+               This Week
+             </p>
+           </CardContent>
+         </Card>
       
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold text-primary">
-                KES {weeklySummary.totalValue.toLocaleString()}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                This Week
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+         <Card>
+           <CardContent className="p-4">
+             <p className="text-sm text-muted-foreground">Total Value</p>
+             <p className="text-2xl font-bold text-primary">
+               {weeklySummary.totalValue === 0
+                  ? "KES —"
+                  : `KES ${weeklySummary.totalValue.toLocaleString()}`}               
+             </p>
+             <p className="text-xs text-muted-foreground mt-1">
+               This Week
+             </p>
+           </CardContent>
+         </Card>
+       </div>
+      }
 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
