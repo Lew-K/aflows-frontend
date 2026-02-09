@@ -40,6 +40,9 @@ const paymentMethods = [
 
 export const SalesPage = () => {
 
+  const [allSales, setAllSales] = useState<any[]>([]);
+
+
   const [recentSales, setRecentSales] = useState([]);
 
   const [weeklySummary, setWeeklySummary] = useState<{
@@ -140,22 +143,45 @@ export const SalesPage = () => {
       const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
   
       console.log("Extracted sales array:", sales, "count:", sales.length);
+
+      setAllSales(sales); // ✅ ONLY responsibility
+    // } catch (err) {
+    //   console.error("Failed to fetch sales:", err);
+    //   setAllSales([]);
+    // }
+  };
   
-      const lastFive = sales
-        .sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime()
-        )
-        .slice(0, 5);
   
-        console.log("Last 5 sales:", lastFive);
+      
   
-        setRecentSales(lastFive);
+      // const lastFive = sales
+      //   .sort(
+      //     (a, b) =>
+      //       new Date(b.created_at).getTime() -
+      //       new Date(a.created_at).getTime()
+      //   )
+      //   .slice(0, 5);
+  
+      //   console.log("Last 5 sales:", lastFive);
+  
+      //   setRecentSales(lastFive);
 
         // ================================
         // Weekly summary (This Week)
         // ================================
+        
+      //   const lastFive = [...allSales]
+      //     .sort(
+      //       (a, b) =>
+      //         new Date(b.created_at).getTime() -
+      //         new Date(a.created_at).getTime()
+      //     )
+      //     .slice(0, 5);
+      
+      //   setRecentSales(lastFive);
+      // }, [allSales]);
+          
+        
         const now = new Date();
         
         // Start of week (Monday)
@@ -190,9 +216,52 @@ export const SalesPage = () => {
   
   
   
+  useEffect(() => {
+    if (!Array.isArray(allSales)) return;
   
- 
+    // ================================
+    // Recent Sales (last 5)
+    // ================================
+    const lastFive = [...allSales]
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      )
+      .slice(0, 5);
   
+    setRecentSales(lastFive);
+  
+    // ================================
+    // Weekly Summary (This Week)
+    // ================================
+    const now = new Date();
+  
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+  
+    const weeklySales = allSales.filter((sale) => {
+      const saleDate = new Date(sale.created_at);
+      return saleDate >= startOfWeek;
+    });
+  
+    const totalSales = weeklySales.length;
+    const totalValue = weeklySales.reduce(
+      (sum, sale) => sum + Number(sale.amount || 0),
+      0
+    );
+  
+    setWeeklySummary({
+      totalSales,
+      totalValue,
+    });
+  }, [allSales]);
+  
+   
+    
+
+
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const businessId = user?.businessId; 
@@ -233,16 +302,6 @@ export const SalesPage = () => {
       
     setIsLoading(true);
     try {
-
-      // const quantity = Number(data.quantity) || 1;
-      // const unitCost = Number(data.unitCost) || 0;
-      // const amount = quantity * unitCost;
-
-
-      // const quantity = Number(data.quantity ?? 1);
-      // const unitCost = Number(data.unitCost ?? 0);
-      // const amount = quantity * unitCost;
-
       const amount = data.amount;
       
       console.log("FINAL SEND:", {
@@ -252,7 +311,6 @@ export const SalesPage = () => {
       });
 
 
-      // console.log("quantity:", quantity, "unitCost:", unitCost, "amount:", amount);
 
     
       const response = await fetch(
