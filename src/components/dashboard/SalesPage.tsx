@@ -81,28 +81,29 @@ export const SalesPage = () => {
     
     return () => clearInterval(interval);
   }, [user?.businessId]);
+  
+    useEffect(() => {   
+      if (!Array.isArray(allSales)) return;
+  
+      const lastFive = [...allSales]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5);
+      setRecentSales(lastFive);
     
-    if (!Array.isArray(allSales)) return;
-
-    const lastFive = [...allSales]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 5);
-    setRecentSales(lastFive);
-  
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-  
-    const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
-    const totalSales = weeklySales.length;
-    const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
-  
-    setWeeklySummary({
-      totalSales: weeklySales.length,
-      totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0), 
-    });
-  }, [allSales]);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      startOfWeek.setHours(0, 0, 0, 0);
+    
+      const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
+      const totalSales = weeklySales.length;
+      const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+    
+      setWeeklySummary({
+        totalSales: weeklySales.length,
+        totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0), 
+      });
+    }, [allSales]);
     
 
     
@@ -471,7 +472,7 @@ export const SalesPage = () => {
               <div className="space-y-4">
                 {Array.isArray(recentSales) && recentSales.map((sale) => (
                   <div
-                    key={sale.created_at + sale.customer_name}
+                    key={`${sale.id ?? sale.created_at}-${sale.customer_name ?? 'unknown'}`}
                     className="p-4 rounded-lg bg-secondary/50 border border-border"
                   >
                     <div className="flex items-start justify-between mb-2">
