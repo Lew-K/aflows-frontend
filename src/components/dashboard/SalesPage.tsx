@@ -177,13 +177,23 @@ export const SalesPage = () => {
 
       // const result = await response.json();
 
-      let result = null;
+      // let result = null;
 
-      const text = await response.text();
+      // const text = await response.text();
+      // if (text) {
+      //   result = JSON.parse(text);
+      // }
+
+      let result: any = {};
+      const text = await response.text(); // read raw text
       if (text) {
-        result = JSON.parse(text);
+        try {
+          result = JSON.parse(text);
+        } catch {
+          console.warn("Response is not valid JSON, skipping parse", text);
+        }
       }
-
+      
       
       if (response.ok) {
         toast.success('Sale recorded successfully!');
@@ -194,9 +204,9 @@ export const SalesPage = () => {
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
-    // } catch (error) {
-    //   console.error(error);
-    //   toast.error('Something went wrong!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong!');
 
     } finally {
       setIsLoading(false);
