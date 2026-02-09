@@ -58,6 +58,24 @@ export const SalesPage = () => {
   
   useEffect(() => {
     if (!user?.businessId) return;
+
+    const lastFive = [...allSales]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5);
+    setRecentSales(lastFive);
+  
+    // Weekly Summary (This Week)
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+  
+    const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
+    const totalSales = weeklySales.length;
+    const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+  
+    setWeeklySummary({ totalSales, totalValue });
+  }, [allSales]);
   
     // const fetchSales = async () => {
     //   try {
@@ -145,10 +163,10 @@ export const SalesPage = () => {
       console.log("Extracted sales array:", sales, "count:", sales.length);
 
       setAllSales(sales); // ✅ ONLY responsibility
-    // } catch (err) {
-    //   console.error("Failed to fetch sales:", err);
-    //   setAllSales([]);
-    // }
+    } catch (err) {
+      console.error("Failed to fetch sales:", err);
+      setAllSales([]);
+    }
   };
   
   
