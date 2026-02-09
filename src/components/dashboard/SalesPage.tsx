@@ -56,28 +56,98 @@ export const SalesPage = () => {
   useEffect(() => {
     if (!user?.businessId) return;
   
-    const fetchSales = async () => {
-      try {
-        const res = await fetch(
-          `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
-        );
+    // const fetchSales = async () => {
+    //   try {
+    //     const res = await fetch(
+    //       `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
+    //     );
   
-        const data = await res.json();
+    //     const data = await res.json();
   
-        console.log("RAW webhook response:", data);
+    //     console.log("RAW webhook response:", data);
+  
+    //     // Your webhook returns: [ { sales: [...] } ]
+    //     const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
+  
+    //     console.log("Extracted sales array:", sales, "count:", sales.length);
+  
+    //     const lastFive = sales
+    //       .sort(
+    //         (a, b) =>
+    //           new Date(b.created_at).getTime() -
+    //           new Date(a.created_at).getTime()
+    //       )
+    //       .slice(0, 5);
+  
+    //     console.log("Last 5 sales:", lastFive);
+  
+    //     setRecentSales(lastFive);
+
+    //     // ================================
+    //     // Weekly summary (This Week)
+    //     // ================================
+    //     const now = new Date();
+        
+    //     // Start of week (Monday)
+    //     const startOfWeek = new Date(now);
+    //     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    //     startOfWeek.setHours(0, 0, 0, 0);
+        
+    //     const weeklySales = sales.filter((sale) => {
+    //       const saleDate = new Date(sale.created_at);
+    //       return saleDate >= startOfWeek;
+    //     });
+        
+    //     const totalSales = weeklySales.length;
+    //     const totalValue = weeklySales.reduce(
+    //       (sum, sale) => sum + Number(sale.amount || 0),
+    //       0
+    //     );
+        
+    //     setWeeklySummary({
+    //       totalSales,
+    //       totalValue,
+    //     });
+
+
+        
+    //   } catch (err) {
+    //     console.error("Failed to fetch sales:", err);
+    //     setRecentSales([]);
+    //   }
+    // };
+  
+    fetchSales(); // initial load
+    const interval = setInterval(fetchSales, 60000);
+  
+    return () => clearInterval(interval);
+  }, [user?.businessId]);
+
+
+  const fetchSales = async () => {
+    if (!user?.businessId) return;
+
+    try {
+      const res = await fetch(
+      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
+      );
+  
+      const data = await res.json();
+  
+      console.log("RAW webhook response:", data);
   
         // Your webhook returns: [ { sales: [...] } ]
-        const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
+      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
   
-        console.log("Extracted sales array:", sales, "count:", sales.length);
+      console.log("Extracted sales array:", sales, "count:", sales.length);
   
-        const lastFive = sales
-          .sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          )
-          .slice(0, 5);
+      const lastFive = sales
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+        )
+        .slice(0, 5);
   
         console.log("Last 5 sales:", lastFive);
   
@@ -116,12 +186,6 @@ export const SalesPage = () => {
         setRecentSales([]);
       }
     };
-  
-    fetchSales(); // initial load
-    const interval = setInterval(fetchSales, 60000);
-  
-    return () => clearInterval(interval);
-  }, [user?.businessId]);
 
   
   
@@ -234,6 +298,8 @@ export const SalesPage = () => {
       
       if (response.ok) {
         toast.success('Sale recorded successfully!');
+        await fetchSales(); // 👈 THIS is what makes it dynamic
+
         if (response.receiptUrl) {
           setReceiptUrl(response.receiptUrl);
         }
