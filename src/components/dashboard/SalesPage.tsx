@@ -68,47 +68,19 @@ export const SalesPage = () => {
       setAllSales([]);
     }
   };
-  
-  
-  // useEffect(() => {
-  //   if (!user?.businessId) return;
-
-     // fetchSales(); // initial load
-     //  const interval = setInterval(fetchSales, 60000);
-    
-     //  return () => clearInterval(interval);
-     //    [user?.businessId]);
-
-  //   const lastFive = [...allSales]
-  //     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  //     .slice(0, 5);
-  //   setRecentSales(lastFive);
-  
-  //   // Weekly Summary (This Week)
-  //   const now = new Date();
-  //   const startOfWeek = new Date(now);
-  //   startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  //   startOfWeek.setHours(0, 0, 0, 0);
-  
-  //   const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
-  //   const totalSales = weeklySales.length;
-  //   const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
-  
-  //   setWeeklySummary({ totalSales, totalValue });
-  // }, [allSales]); 
-  
-        
+     
 
   
   
   
   useEffect(() => {
 
+    if (!user?.businessId) return;
     fetchSales(); // initial load
-      const interval = setInterval(fetchSales, 60000);
+    const interval = setInterval(fetchSales, 60000);
     
-      return () => clearInterval(interval);
-        [user?.businessId]);
+    return () => clearInterval(interval);
+  }, [user?.businessId]);
     
     if (!Array.isArray(allSales)) return;
 
@@ -126,7 +98,10 @@ export const SalesPage = () => {
     const totalSales = weeklySales.length;
     const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
   
-    setWeeklySummary({ totalSales, totalValue });
+    setWeeklySummary({
+      totalSales: weeklySales.length,
+      totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0), 
+    });
   }, [allSales]);
     
 
@@ -438,7 +413,7 @@ export const SalesPage = () => {
                   <Input
                     id="paymentReference"
                     placeholder="Paste M-Pesa or bank confirmation message here"
-                    disabled= {paymentMethod === "cash"}
+                    disabled={paymentMethod === "cash"}
                     className="mt-2"
                     {...register('paymentReference')}
                   />
