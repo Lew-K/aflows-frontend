@@ -42,30 +42,7 @@ export const SalesPage = () => {
 
   const [recentSales, setRecentSales] = useState([]);
 
-  
-
-  // useEffect(() => {
-  //   if (!user?.businessId) return; // Ensure we have the logged-in business
-  
-  //   fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log('Fetched recent sales:', data); // Test output
-  //       setRecentSales(data); // Store in state
-  //     })
-  //     .catch((err) => console.error('Failed to fetch sales:', err));
-  // }, [user?.businessId]);
-
   const { token, user } = useAuth(); // move this above useEffect
-
-  // useEffect(() => {
-  //   if (!user?.businessId) return;
-  //   fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-  //     .then((res) => res.json())
-  //     .then((data) => setRecentSales(data.sales))
-  //     .catch((err) => console.error('Failed to fetch sales:', err));
-  // }, [user?.businessId]);
-
 
   
   useEffect(() => {
@@ -113,35 +90,7 @@ export const SalesPage = () => {
   
   
   
-  // useEffect(() => {
-  //   if (!user?.businessId) return;
-  
-  //   const fetchSales = () => {
-  //     fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`)
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         const sales = Array.isArray(data)
-  //           ? data[0]?.sales
-  //           : data?.sales;
-  
-  //         if (Array.isArray(sales)) {
-  //           setRecentSales(
-  //             sales
-  //               .sort(
-  //                 (a, b) =>
-  //                   new Date(b.created_at) - new Date(a.created_at)
-  //               )
-  //               .slice(0, 5)
-  //           );
-  //         }
-  //       });
-  //   };
-  
-  //   fetchSales(); // initial load
-  //   const interval = setInterval(fetchSales, 10000); // every 10s
-  
-  //   return () => clearInterval(interval);
-  // }, [user?.businessId]);
+ 
   
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
@@ -163,17 +112,32 @@ export const SalesPage = () => {
   
   const paymentMethod = watch("paymentMethod");
 
+  const quantityWatch = watch("quantity");
+  const unitCostWatch = watch("unitCost");
+  
+  const calculatedAmount =
+    (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
+  
+
   
   const onSubmit = async (data: SaleFormData) => {
       
     setIsLoading(true);
     try {
 
-      const quantity = Number(data.quantity) || 1;
-      const unitCost = Number(data.unitCost) || 0;
-      const amount = quantity * unitCost;
+      // const quantity = Number(data.quantity) || 1;
+      // const unitCost = Number(data.unitCost) || 0;
+      // const amount = quantity * unitCost;
 
-      console.log("quantity:", quantity, "unitCost:", unitCost, "amount:", amount);
+
+      const quantity = Number(data.quantity ?? 1);
+      const unitCost = Number(data.unitCost ?? 0);
+      const amount = quantity * unitCost;
+      
+      console.log("FINAL SEND:", { quantity, unitCost, amount });
+      
+
+      // console.log("quantity:", quantity, "unitCost:", unitCost, "amount:", amount);
 
     
       const response = await fetch(
@@ -307,7 +271,7 @@ export const SalesPage = () => {
                   <Input
                     id="amount"
                     type="number"
-                    placeholder="Calculated automatically"
+                    placeholder={calculatedAmount}
                     className="mt-2 bg-muted/10 cursor-not-allowed"
                     
                     {/* className="mt-2"
