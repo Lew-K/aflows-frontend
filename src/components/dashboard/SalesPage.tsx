@@ -56,6 +56,31 @@ export const SalesPage = () => {
   const { token, user } = useAuth(); // move this above useEffect
 
   
+   const fetchSales = async () => {
+    if (!user?.businessId) return;
+
+    try {
+      const res = await fetch(
+      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
+      );
+  
+      const data = await res.json();
+  
+      console.log("RAW webhook response:", data);
+  
+        // Your webhook returns: [ { sales: [...] } ]
+      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
+  
+      console.log("Extracted sales array:", sales, "count:", sales.length);
+
+      setAllSales(sales); // ✅ ONLY responsibility
+    } catch (err) {
+      console.error("Failed to fetch sales:", err);
+      setAllSales([]);
+    }
+  };
+  
+  
   useEffect(() => {
     if (!user?.businessId) return;
 
@@ -145,29 +170,7 @@ export const SalesPage = () => {
   }, [user?.businessId]);
 
 
-  const fetchSales = async () => {
-    if (!user?.businessId) return;
-
-    try {
-      const res = await fetch(
-      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
-      );
-  
-      const data = await res.json();
-  
-      console.log("RAW webhook response:", data);
-  
-        // Your webhook returns: [ { sales: [...] } ]
-      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
-  
-      console.log("Extracted sales array:", sales, "count:", sales.length);
-
-      setAllSales(sales); // ✅ ONLY responsibility
-    } catch (err) {
-      console.error("Failed to fetch sales:", err);
-      setAllSales([]);
-    }
-  };
+ 
   
   
       
@@ -200,28 +203,28 @@ export const SalesPage = () => {
       // }, [allSales]);
           
         
-        const now = new Date();
+        // const now = new Date();
         
-        // Start of week (Monday)
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-        startOfWeek.setHours(0, 0, 0, 0);
+        // // Start of week (Monday)
+        // const startOfWeek = new Date(now);
+        // startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+        // startOfWeek.setHours(0, 0, 0, 0);
         
-        const weeklySales = sales.filter((sale) => {
-          const saleDate = new Date(sale.created_at);
-          return saleDate >= startOfWeek;
-        });
+        // const weeklySales = sales.filter((sale) => {
+        //   const saleDate = new Date(sale.created_at);
+        //   return saleDate >= startOfWeek;
+        // });
         
-        const totalSales = weeklySales.length;
-        const totalValue = weeklySales.reduce(
-          (sum, sale) => sum + Number(sale.amount || 0),
-          0
-        );
+        // const totalSales = weeklySales.length;
+        // const totalValue = weeklySales.reduce(
+        //   (sum, sale) => sum + Number(sale.amount || 0),
+        //   0
+        // );
         
-        setWeeklySummary({
-          totalSales,
-          totalValue,
-        });
+        // setWeeklySummary({
+        //   totalSales,
+        //   totalValue,
+        // });
 
 
         
