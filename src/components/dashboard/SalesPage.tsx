@@ -290,6 +290,7 @@ export const SalesPage = () => {
                     readOnly
                     value={calculatedAmount}
                   />
+                  <input type="hidden" {...register("amount", { valueAsNumber: true })} />
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
                   )}
