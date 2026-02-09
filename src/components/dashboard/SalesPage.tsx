@@ -106,6 +106,9 @@ export const SalesPage = () => {
   } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
+      quantity: 1,
+      unitCost: 0,
+      amount: 0,
       paymentMethod: undefined,
     },
   });
@@ -130,9 +133,12 @@ export const SalesPage = () => {
       // const amount = quantity * unitCost;
 
 
-      const quantity = Number(data.quantity ?? 1);
-      const unitCost = Number(data.unitCost ?? 0);
-      const amount = quantity * unitCost;
+      // const quantity = Number(data.quantity ?? 1);
+      // const unitCost = Number(data.unitCost ?? 0);
+      // const amount = quantity * unitCost;
+
+      const amount = data.amount;
+
       
       console.log("FINAL SEND:", { quantity, unitCost, amount });
       
@@ -154,7 +160,7 @@ export const SalesPage = () => {
             item_sold: data.itemSold,
             quantity: data.quantity || 1,   // default 1
             unit_cost: data.unitCost || 0,  // default 0
-            amount: amount,
+            amount: data.amount,,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
           }),
@@ -271,8 +277,11 @@ export const SalesPage = () => {
                   <Input
                     id="amount"
                     type="number"
-                    placeholder={calculatedAmount}
+                    placeholder="Calculated automatically"
                     className="mt-2 bg-muted/10 cursor-not-allowed"
+                    readOnly
+                    {...register('amount', { valueAsNumber: true })}
+                    value={calculatedAmount}
                     
                     {/* className="mt-2"
                     {...register('amount', { valueAsNumber: true })}
