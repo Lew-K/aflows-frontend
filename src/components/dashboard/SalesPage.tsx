@@ -254,8 +254,9 @@ export const SalesPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Sales Recording</h1>
-        <p className="text-muted-foreground">Record new sales and generate receipts</p>
+        <h1 className="text-2xl font-bold text-foreground">Sales </h1>
+        <p className="text-muted-foreground">Record sales, track revenue, and download receipts
+        </p>
       </div>
 
     
@@ -286,7 +287,7 @@ export const SalesPage = () => {
            </CardContent>
          </Card>
        </div>
-      }
+    
 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
