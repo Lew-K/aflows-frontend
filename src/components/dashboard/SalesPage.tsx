@@ -30,21 +30,11 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-// // Mock recent sales for display 
-// const recentSales = [
-//   { id: 1, customer: 'John Kamau', item: 'Laptop', amount: 75000, method: 'M-Pesa', date: '2024-01-20' },
-//   { id: 2, customer: 'Mary Wanjiku', item: 'Phone Case', amount: 2500, method: 'Cash', date: '2024-01-20' },
-//   { id: 3, customer: 'Peter Ochieng', item: 'Headphones', amount: 8500, method: 'Card', date: '2024-01-19' },
-// ];
-
 
 export const SalesPage = () => {
 
   const [allSales, setAllSales] = useState<any[]>([]);
-
-
   const [recentSales, setRecentSales] = useState([]);
-
   const [weeklySummary, setWeeklySummary] = useState<{
     totalSales: number;
     totalValue: number;
@@ -54,9 +44,8 @@ export const SalesPage = () => {
   });
 
   const { token, user } = useAuth(); // move this above useEffect
-
   
-   const fetchSales = async () => {
+  const fetchSales = async () => {
     if (!user?.businessId) return;
 
     try {
@@ -81,15 +70,53 @@ export const SalesPage = () => {
   };
   
   
+  // useEffect(() => {
+  //   if (!user?.businessId) return;
+
+     // fetchSales(); // initial load
+     //  const interval = setInterval(fetchSales, 60000);
+    
+     //  return () => clearInterval(interval);
+     //    [user?.businessId]);
+
+  //   const lastFive = [...allSales]
+  //     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  //     .slice(0, 5);
+  //   setRecentSales(lastFive);
+  
+  //   // Weekly Summary (This Week)
+  //   const now = new Date();
+  //   const startOfWeek = new Date(now);
+  //   startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  //   startOfWeek.setHours(0, 0, 0, 0);
+  
+  //   const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
+  //   const totalSales = weeklySales.length;
+  //   const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+  
+  //   setWeeklySummary({ totalSales, totalValue });
+  // }, [allSales]); 
+  
+        
+
+  
+  
+  
   useEffect(() => {
-    if (!user?.businessId) return;
+
+    fetchSales(); // initial load
+      const interval = setInterval(fetchSales, 60000);
+    
+      return () => clearInterval(interval);
+        [user?.businessId]);
+    
+    if (!Array.isArray(allSales)) return;
 
     const lastFive = [...allSales]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5);
     setRecentSales(lastFive);
   
-    // Weekly Summary (This Week)
     const now = new Date();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -101,183 +128,42 @@ export const SalesPage = () => {
   
     setWeeklySummary({ totalSales, totalValue });
   }, [allSales]);
-  
-    // const fetchSales = async () => {
-    //   try {
-    //     const res = await fetch(
-    //       `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
-    //     );
-  
-    //     const data = await res.json();
-  
-    //     console.log("RAW webhook response:", data);
-  
-    //     // Your webhook returns: [ { sales: [...] } ]
-    //     const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
-  
-    //     console.log("Extracted sales array:", sales, "count:", sales.length);
-  
-    //     const lastFive = sales
-    //       .sort(
-    //         (a, b) =>
-    //           new Date(b.created_at).getTime() -
-    //           new Date(a.created_at).getTime()
-    //       )
-    //       .slice(0, 5);
-  
-    //     console.log("Last 5 sales:", lastFive);
-  
-    //     setRecentSales(lastFive);
+    
 
-    //     // ================================
-    //     // Weekly summary (This Week)
-    //     // ================================
-    //     const now = new Date();
-        
-    //     // Start of week (Monday)
-    //     const startOfWeek = new Date(now);
-    //     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    //     startOfWeek.setHours(0, 0, 0, 0);
-        
-    //     const weeklySales = sales.filter((sale) => {
-    //       const saleDate = new Date(sale.created_at);
-    //       return saleDate >= startOfWeek;
-    //     });
-        
-    //     const totalSales = weeklySales.length;
-    //     const totalValue = weeklySales.reduce(
-    //       (sum, sale) => sum + Number(sale.amount || 0),
-    //       0
-    //     );
-        
-    //     setWeeklySummary({
-    //       totalSales,
-    //       totalValue,
-    //     });
-
-
-        
-    //   } catch (err) {
-    //     console.error("Failed to fetch sales:", err);
-    //     setRecentSales([]);
-    //   }
-    // };
+    
+  //   if (!Array.isArray(allSales)) return;
   
-    fetchSales(); // initial load
-    const interval = setInterval(fetchSales, 60000);
+  //   const lastFive = [...allSales]
+  //     .sort(
+  //       (a, b) =>
+  //         new Date(b.created_at).getTime() -
+  //         new Date(a.created_at).getTime()
+  //     )
+  //     .slice(0, 5);
   
-    return () => clearInterval(interval);
-  }, [user?.businessId]);
-
-
- 
+  //   setRecentSales(lastFive);
+  //   const now = new Date();
   
+  //   const startOfWeek = new Date(now);
+  //   startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  //   startOfWeek.setHours(0, 0, 0, 0);
   
-      
+  //   const weeklySales = allSales.filter((sale) => {
+  //     const saleDate = new Date(sale.created_at);
+  //     return saleDate >= startOfWeek;
+  //   });
   
-      // const lastFive = sales
-      //   .sort(
-      //     (a, b) =>
-      //       new Date(b.created_at).getTime() -
-      //       new Date(a.created_at).getTime()
-      //   )
-      //   .slice(0, 5);
+  //   const totalSales = weeklySales.length;
+  //   const totalValue = weeklySales.reduce(
+  //     (sum, sale) => sum + Number(sale.amount || 0),
+  //     0
+  //   );
   
-      //   console.log("Last 5 sales:", lastFive);
-  
-      //   setRecentSales(lastFive);
-
-        // ================================
-        // Weekly summary (This Week)
-        // ================================
-        
-      //   const lastFive = [...allSales]
-      //     .sort(
-      //       (a, b) =>
-      //         new Date(b.created_at).getTime() -
-      //         new Date(a.created_at).getTime()
-      //     )
-      //     .slice(0, 5);
-      
-      //   setRecentSales(lastFive);
-      // }, [allSales]);
-          
-        
-        // const now = new Date();
-        
-        // // Start of week (Monday)
-        // const startOfWeek = new Date(now);
-        // startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-        // startOfWeek.setHours(0, 0, 0, 0);
-        
-        // const weeklySales = sales.filter((sale) => {
-        //   const saleDate = new Date(sale.created_at);
-        //   return saleDate >= startOfWeek;
-        // });
-        
-        // const totalSales = weeklySales.length;
-        // const totalValue = weeklySales.reduce(
-        //   (sum, sale) => sum + Number(sale.amount || 0),
-        //   0
-        // );
-        
-        // setWeeklySummary({
-        //   totalSales,
-        //   totalValue,
-        // });
-
-
-        
-      } catch (err) {
-        console.error("Failed to fetch sales:", err);
-        setRecentSales([]);
-      }
-    };
-
-  
-  
-  
-  useEffect(() => {
-    if (!Array.isArray(allSales)) return;
-  
-    // ================================
-    // Recent Sales (last 5)
-    // ================================
-    const lastFive = [...allSales]
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() -
-          new Date(a.created_at).getTime()
-      )
-      .slice(0, 5);
-  
-    setRecentSales(lastFive);
-  
-    // ================================
-    // Weekly Summary (This Week)
-    // ================================
-    const now = new Date();
-  
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-  
-    const weeklySales = allSales.filter((sale) => {
-      const saleDate = new Date(sale.created_at);
-      return saleDate >= startOfWeek;
-    });
-  
-    const totalSales = weeklySales.length;
-    const totalValue = weeklySales.reduce(
-      (sum, sale) => sum + Number(sale.amount || 0),
-      0
-    );
-  
-    setWeeklySummary({
-      totalSales,
-      totalValue,
-    });
-  }, [allSales]);
+  //   setWeeklySummary({
+  //     totalSales,
+  //     totalValue,
+  //   });
+  // }, [allSales]);
   
    
     
