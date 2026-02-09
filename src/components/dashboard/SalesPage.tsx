@@ -320,8 +320,8 @@ export const SalesPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Sales </h1>
-        <p className="text-muted-foreground">Record sales, track revenue, and download receipts
+        <h1 className="text-2xl font-bold text-foreground">Sales Dashboard</h1>
+        <p className="text-muted-foreground">  Track, record, and review your business sales in real time
         </p>
       </div>
 
