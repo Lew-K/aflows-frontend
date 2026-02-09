@@ -120,8 +120,12 @@ export const SalesPage = () => {
   
   const calculatedAmount =
     (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
-  
-
+    useEffect(() => {
+      setValue('amount', calculatedAmount, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }, [calculatedAmount, setValue]);
   
   const onSubmit = async (data: SaleFormData) => {
       
@@ -138,10 +142,13 @@ export const SalesPage = () => {
       // const amount = quantity * unitCost;
 
       const amount = data.amount;
+      
+      console.log("FINAL SEND:", {
+        quantity: data.quantity,
+        unitCost: data.unitCost,
+        amount: data.amount,
+      });
 
-      
-      console.log("FINAL SEND:", { quantity, unitCost, amount });
-      
 
       // console.log("quantity:", quantity, "unitCost:", unitCost, "amount:", amount);
 
@@ -160,7 +167,7 @@ export const SalesPage = () => {
             item_sold: data.itemSold,
             quantity: data.quantity || 1,   // default 1
             unit_cost: data.unitCost || 0,  // default 0
-            amount: data.amount,,
+            amount: data.amount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
           }),
