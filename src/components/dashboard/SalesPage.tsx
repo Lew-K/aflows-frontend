@@ -288,16 +288,7 @@ export const SalesPage = () => {
                     placeholder="Calculated automatically"
                     className="mt-2 bg-muted/10 cursor-not-allowed"
                     readOnly
-                    {...register('amount', { valueAsNumber: true })}
                     value={calculatedAmount}
-                    
-                    {/* className="mt-2"
-                    {...register('amount', { valueAsNumber: true })}
-                    value={watch('quantity') && watch('unitCost')
-                      ? (watch('quantity') * watch('unitCost')).toFixed(2)
-                      : ''}
-                    readOnly */}
-                  
                   />
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
