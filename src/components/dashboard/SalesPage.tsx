@@ -42,6 +42,11 @@ export const SalesPage = () => {
 
   const [recentSales, setRecentSales] = useState([]);
 
+  const [weeklySummary, setWeeklySummary] = useState<{
+    totalSales: number;
+    totalValue: number;
+  } | null>(null);
+
   const { token, user } = useAuth(); // move this above useEffect
 
   
@@ -74,6 +79,35 @@ export const SalesPage = () => {
         console.log("Last 5 sales:", lastFive);
   
         setRecentSales(lastFive);
+
+        // ================================
+        // Weekly summary (This Week)
+        // ================================
+        const now = new Date();
+        
+        // Start of week (Monday)
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const weeklySales = sales.filter((sale) => {
+          const saleDate = new Date(sale.created_at);
+          return saleDate >= startOfWeek;
+        });
+        
+        const totalSales = weeklySales.length;
+        const totalValue = weeklySales.reduce(
+          (sum, sale) => sum + Number(sale.amount || 0),
+          0
+        );
+        
+        setWeeklySummary({
+          totalSales,
+          totalValue,
+        });
+
+
+        
       } catch (err) {
         console.error("Failed to fetch sales:", err);
         setRecentSales([]);
@@ -220,6 +254,35 @@ export const SalesPage = () => {
         <h1 className="text-2xl font-bold text-foreground">Sales Recording</h1>
         <p className="text-muted-foreground">Record new sales and generate receipts</p>
       </div>
+
+      {weeklySummary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Sales</p>
+              <p className="text-2xl font-bold">
+                {weeklySummary.totalSales}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                This Week
+              </p>
+            </CardContent>
+          </Card>
+      
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Value</p>
+              <p className="text-2xl font-bold text-primary">
+                KES {weeklySummary.totalValue.toLocaleString()}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                This Week
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Form */}
