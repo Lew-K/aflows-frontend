@@ -135,13 +135,17 @@ const recentActivity: any[] = [];
 
 export const AnalyticsPage = () => {
 
+  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'last_month'>('month');
+
+
 
   const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
   const [sales, setSales] = useState<any[]>([]);
   
   useEffect(() => {
     const fetchSales = async () => {
-      const res = await fetch(`/api/sales?period=${timeFilter}`);
+      const res = await fetch(`/api/sales?period=${period}`);
+      // const res = await fetch(`/api/sales?period=${timeFilter}`);
       const data = await res.json();
       setSales(data);
     };
@@ -149,7 +153,7 @@ export const AnalyticsPage = () => {
     fetchSales();
   }, [timeFilter]);
   
-  const totalSales = sales.length;
+  const totalSales = sales?.length ?? 0;
   
   const { percentageChange, trend } = useMemo(() => {
     const now = Date.now();
@@ -168,14 +172,32 @@ export const AnalyticsPage = () => {
     });
   
     const diff = thisWeek.length - lastWeek.length;
-    const percent =
-      lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
-  
+
+    let percent: number | null = null;
+
+    if (lastWeek.length > 0) {
+      percent = (diff / lastWeek.length) * 100;
+    }
     return {
-      percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
-      trend: percent >= 0 ? 'up' : 'down',
-    };
-  }, [sales]);
+    percentageChange:
+      percent === null
+        ? 'New activity'
+        : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+    trend:
+      percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
+  };
+
+
+
+    
+  //   const percent =
+  //     lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
+  
+  //   return {
+  //     percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+  //     trend: percent >= 0 ? 'up' : 'down',
+  //   };
+  // }, [sales]);
   //   const now = new Date();
   
   //   const thisWeek = sales.filter(sale => {
@@ -204,10 +226,33 @@ export const AnalyticsPage = () => {
   
   return (
     <div className="space-y-6">
-      <div>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
+          <p className="text-muted-foreground">
+            Overview of your business performance (Current Month)
+          </p>
+        </div>
+      
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as any)}
+          className="border rounded-md px-3 py-2 text-sm bg-background"
+        >
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="last_month">Last Month</option>
+        </select>
+      </div>
+
+
+      
+      {/* <div>
         <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
         <p className="text-muted-foreground">Overview of your business performance</p>
-      </div>
+      </div> */}
 
       {/* Stats Grid */}
       
@@ -250,11 +295,16 @@ export const AnalyticsPage = () => {
                   }`}
                 >
                   {percentageChange}
-                  {trend === 'up' ? (
+
+                  {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
+                  {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
+
+                  
+                  /* {trend === 'up' ? (
                     <ArrowUpRight className="w-4 h-4" />
                   ) : (
                     <ArrowDownRight className="w-4 h-4" />
-                  )}
+                  )} */
                 </div>
               </div>
       
