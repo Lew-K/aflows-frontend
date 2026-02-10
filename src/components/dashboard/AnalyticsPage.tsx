@@ -101,6 +101,12 @@ import {
 //   },
 // ];
 
+const revenueData: any[] = [];
+const salesByCategory: any[] = [];
+const recentActivity: any[] = [];
+
+
+
 // const revenueData = [
 //   { month: 'Jan', revenue: 85000 },
 //   { month: 'Feb', revenue: 92000 },
@@ -146,18 +152,18 @@ export const AnalyticsPage = () => {
   const totalSales = sales.length;
   
   const { percentageChange, trend } = useMemo(() => {
-    const now = new Date();
-  
+    const now = Date.now();
+
     const thisWeek = sales.filter(sale => {
-      const d = new Date(sale.createdAt);
-      return d >= new Date(now.setDate(now.getDate() - 7));
+      const d = new Date(sale.createdAt).getTime();
+      return d >= now - 7 * 24 * 60 * 60 * 1000;
     });
   
     const lastWeek = sales.filter(sale => {
-      const d = new Date(sale.createdAt);
+      const d = new Date(sale.createdAt).getTime();
       return (
-        d >= new Date(now.setDate(now.getDate() - 14)) &&
-        d < new Date(now.setDate(now.getDate() - 7))
+        d >= now - 14 * 24 * 60 * 60 * 1000 &&
+        d < now - 7 * 24 * 60 * 60 * 1000
       );
     });
   
@@ -170,6 +176,30 @@ export const AnalyticsPage = () => {
       trend: percent >= 0 ? 'up' : 'down',
     };
   }, [sales]);
+  //   const now = new Date();
+  
+  //   const thisWeek = sales.filter(sale => {
+  //     const d = new Date(sale.createdAt);
+  //     return d >= new Date(now.setDate(now.getDate() - 7));
+  //   });
+  
+  //   const lastWeek = sales.filter(sale => {
+  //     const d = new Date(sale.createdAt);
+  //     return (
+  //       d >= new Date(now.setDate(now.getDate() - 14)) &&
+  //       d < new Date(now.setDate(now.getDate() - 7))
+  //     );
+  //   });
+  
+  //   const diff = thisWeek.length - lastWeek.length;
+  //   const percent =
+  //     lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
+  
+  //   return {
+  //     percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+  //     trend: percent >= 0 ? 'up' : 'down',
+  //   };
+  // }, [sales]);
   
   
   return (
@@ -295,7 +325,7 @@ export const AnalyticsPage = () => {
             <CardContent>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueData}>
+                  <AreaChart data={revenueData ?? []}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
