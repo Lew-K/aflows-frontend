@@ -27,46 +27,46 @@ import {
 // Mock data - structured for backend integration
 
 
-const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
-const [sales, setSales] = useState<any[]>([]);
+// const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
+// const [sales, setSales] = useState<any[]>([]);
 
-useEffect(() => {
-  const fetchSales = async () => {
-    const res = await fetch(`/api/sales?period=${timeFilter}`);
-    const data = await res.json();
-    setSales(data);
-  };
+// useEffect(() => {
+//   const fetchSales = async () => {
+//     const res = await fetch(`/api/sales?period=${timeFilter}`);
+//     const data = await res.json();
+//     setSales(data);
+//   };
 
-  fetchSales();
-}, [timeFilter]);
+//   fetchSales();
+// }, [timeFilter]);
 
-const totalSales = sales.length;
+// const totalSales = sales.length;
 
-const { percentageChange, trend } = useMemo(() => {
-  const now = new Date();
+// const { percentageChange, trend } = useMemo(() => {
+//   const now = new Date();
 
-  const thisWeek = sales.filter(sale => {
-    const d = new Date(sale.createdAt);
-    return d >= new Date(now.setDate(now.getDate() - 7));
-  });
+//   const thisWeek = sales.filter(sale => {
+//     const d = new Date(sale.createdAt);
+//     return d >= new Date(now.setDate(now.getDate() - 7));
+//   });
 
-  const lastWeek = sales.filter(sale => {
-    const d = new Date(sale.createdAt);
-    return (
-      d >= new Date(now.setDate(now.getDate() - 14)) &&
-      d < new Date(now.setDate(now.getDate() - 7))
-    );
-  });
+//   const lastWeek = sales.filter(sale => {
+//     const d = new Date(sale.createdAt);
+//     return (
+//       d >= new Date(now.setDate(now.getDate() - 14)) &&
+//       d < new Date(now.setDate(now.getDate() - 7))
+//     );
+//   });
 
-  const diff = thisWeek.length - lastWeek.length;
-  const percent =
-    lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
+//   const diff = thisWeek.length - lastWeek.length;
+//   const percent =
+//     lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
 
-  return {
-    percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
-    trend: percent >= 0 ? 'up' : 'down',
-  };
-}, [sales]);
+//   return {
+//     percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+//     trend: percent >= 0 ? 'up' : 'down',
+//   };
+// }, [sales]);
 
 
 
@@ -128,6 +128,50 @@ const { percentageChange, trend } = useMemo(() => {
 // ];
 
 export const AnalyticsPage = () => {
+
+
+  const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
+  const [sales, setSales] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const fetchSales = async () => {
+      const res = await fetch(`/api/sales?period=${timeFilter}`);
+      const data = await res.json();
+      setSales(data);
+    };
+  
+    fetchSales();
+  }, [timeFilter]);
+  
+  const totalSales = sales.length;
+  
+  const { percentageChange, trend } = useMemo(() => {
+    const now = new Date();
+  
+    const thisWeek = sales.filter(sale => {
+      const d = new Date(sale.createdAt);
+      return d >= new Date(now.setDate(now.getDate() - 7));
+    });
+  
+    const lastWeek = sales.filter(sale => {
+      const d = new Date(sale.createdAt);
+      return (
+        d >= new Date(now.setDate(now.getDate() - 14)) &&
+        d < new Date(now.setDate(now.getDate() - 7))
+      );
+    });
+  
+    const diff = thisWeek.length - lastWeek.length;
+    const percent =
+      lastWeek.length === 0 ? 100 : (diff / lastWeek.length) * 100;
+  
+    return {
+      percentageChange: `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+      trend: percent >= 0 ? 'up' : 'down',
+    };
+  }, [sales]);
+  
+  
   return (
     <div className="space-y-6">
       <div>
