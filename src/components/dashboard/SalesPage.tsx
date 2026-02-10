@@ -183,6 +183,20 @@ export const SalesPage = () => {
   }, [calculatedAmount, setValue]);
   
   const onSubmit = async (data: SaleFormData) => {
+
+
+    setAllSales((prev) => [
+      {
+        customer_name: data.customerName || 'Walk-in customer',
+        item_sold: data.itemSold,
+        amount: data.amount,
+        payment_method: data.paymentMethod,
+        created_at: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+
+    
       
     setIsLoading(true);
     try {
