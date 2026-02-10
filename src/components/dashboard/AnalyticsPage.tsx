@@ -258,10 +258,7 @@ export const AnalyticsPage = () => {
 
 
       
-      {/* <div>
-        <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your business performance</p>
-      </div> */}
+  
 
       {/* Stats Grid */}
       
@@ -296,25 +293,23 @@ export const AnalyticsPage = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                   <ShoppingCart className="w-6 h-6 text-primary" />
-                </div>
-      
+
                 <div
                   className={`flex items-center gap-1 text-sm font-medium ${
-                    trend === 'up'
+                     trend === 'up'
                       ? 'text-success'
                       : trend === 'down'
-                      ? 'text-destructive'
-                      : 'text-muted-foreground'
-                  }`}
-                >   
-               
-                  {percentageChange}
-
-                  {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
-                  {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
-
-                
+                       ? 'text-destructive'
+                       : 'text-muted-foreground'
+                   }`}
+                  
+                {percentageChange}
+                  
+                 {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
+                {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
+                  
                 </div>
+
               </div>
       
               <p className="text-2xl font-bold text-foreground">{totalSales}</p>
