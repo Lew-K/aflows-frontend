@@ -101,37 +101,37 @@ import {
 //   },
 // ];
 
-const revenueData: any[] = [];
-const salesByCategory: any[] = [];
-const recentActivity: any[] = [];
+// const revenueData: any[] = [];
+// const salesByCategory: any[] = [];
+// const recentActivity: any[] = [];
 
 
 
-// const revenueData = [
-//   { month: 'Jan', revenue: 85000 },
-//   { month: 'Feb', revenue: 92000 },
-//   { month: 'Mar', revenue: 108000 },
-//   { month: 'Apr', revenue: 95000 },
-//   { month: 'May', revenue: 125000 },
-//   { month: 'Jun', revenue: 145000 },
-//   { month: 'Jul', revenue: 168000 },
-// ];
+const revenueData = [
+  { month: 'Jan', revenue: 85000 },
+  { month: 'Feb', revenue: 92000 },
+  { month: 'Mar', revenue: 108000 },
+  { month: 'Apr', revenue: 95000 },
+  { month: 'May', revenue: 125000 },
+  { month: 'Jun', revenue: 145000 },
+  { month: 'Jul', revenue: 168000 },
+];
 
-// const salesByCategory = [
-//   { category: 'Electronics', sales: 45 },
-//   { category: 'Clothing', sales: 32 },
-//   { category: 'Food', sales: 28 },
-//   { category: 'Services', sales: 52 },
-//   { category: 'Other', sales: 18 },
-// ];
+const salesByCategory = [
+  { category: 'Electronics', sales: 45 },
+  { category: 'Clothing', sales: 32 },
+  { category: 'Food', sales: 28 },
+  { category: 'Services', sales: 52 },
+  { category: 'Other', sales: 18 },
+];
 
-// const recentActivity = [
-//   { id: 1, action: 'New sale recorded', amount: 'KES 12,500', time: '2 min ago' },
-//   { id: 2, action: 'Receipt generated', amount: '#RC-2024-0842', time: '5 min ago' },
-//   { id: 3, action: 'File uploaded', amount: 'Invoice_March.pdf', time: '12 min ago' },
-//   { id: 4, action: 'New sale recorded', amount: 'KES 8,750', time: '25 min ago' },
-//   { id: 5, action: 'M-Pesa statement uploaded', amount: 'Statement_Q1.pdf', time: '1 hour ago' },
-// ];
+const recentActivity = [
+  { id: 1, action: 'New sale recorded', amount: 'KES 12,500', time: '2 min ago' },
+  { id: 2, action: 'Receipt generated', amount: '#RC-2024-0842', time: '5 min ago' },
+  { id: 3, action: 'File uploaded', amount: 'Invoice_March.pdf', time: '12 min ago' },
+  { id: 4, action: 'New sale recorded', amount: 'KES 8,750', time: '25 min ago' },
+  { id: 5, action: 'M-Pesa statement uploaded', amount: 'Statement_Q1.pdf', time: '1 hour ago' },
+];
 
 export const AnalyticsPage = () => {
 
@@ -139,7 +139,7 @@ export const AnalyticsPage = () => {
 
 
 
-  const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
+  // const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
   const [sales, setSales] = useState<any[]>([]);
   
   useEffect(() => {
@@ -151,7 +151,7 @@ export const AnalyticsPage = () => {
     };
   
     fetchSales();
-  }, [timeFilter]);
+  }, [period]);
   
   const totalSales = sales?.length ?? 0;
   
@@ -231,7 +231,16 @@ export const AnalyticsPage = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of your business performance (Current Month)
+             Overview of your business performance (
+             {period === 'today'
+               ? 'Today'
+               : period === 'week'
+               ? 'This Week'
+              : period === 'last_month'
+               ? 'Last Month'
+               : 'This Month'}
+            )
+
           </p>
         </div>
       
@@ -291,20 +300,22 @@ export const AnalyticsPage = () => {
       
                 <div
                   className={`flex items-center gap-1 text-sm font-medium ${
-                    trend === 'up' ? 'text-success' : 'text-destructive'
+                    trend === 'up'
+                      ? 'text-success'
+                      : trend === 'down'
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
                   }`}
-                >
+
+      
+
+               
                   {percentageChange}
 
                   {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
                   {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
 
-                  
-                  /* {trend === 'up' ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )} */
+                
                 </div>
               </div>
       
