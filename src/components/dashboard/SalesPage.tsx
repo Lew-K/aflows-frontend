@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShoppingCart } from "lucide-react"
 
 
 
@@ -19,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
-import { recordSale } from '@/lib/api';
+// import { recordSale } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShoppingCart, Download, Check } from 'lucide-react';
@@ -36,7 +35,7 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const [allSales, setAllSales] = useState<any[]>([]);
-  const [recentSales, setRecentSales] = useState([]);
+  const [recentSales, setRecentSales] = useState<any[]>([]);
   const [weeklySummary, setWeeklySummary] = useState<{
     totalSales: number;
     totalValue: number;
@@ -492,7 +491,7 @@ export const SalesPage = () => {
                             {sale.customer_name || 'Walk-in customer'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {sale.item}
+                            {sale.item_sold}
                           </p>
                         </div>
                         <span className="font-bold text-primary">
