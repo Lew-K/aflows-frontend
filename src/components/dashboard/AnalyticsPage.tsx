@@ -306,9 +306,7 @@ export const AnalyticsPage = () => {
                       ? 'text-destructive'
                       : 'text-muted-foreground'
                   }`}
-
-      
-
+                >   
                
                   {percentageChange}
 
