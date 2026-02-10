@@ -44,7 +44,7 @@ export const SalesPage = () => {
     totalValue: 0,
   });
 
-  const { token, user } = useAuth(); // move this above useEffect
+  const { user } = useAuth(); // move this above useEffect
   
   const fetchSales = async () => {
     if (!user?.businessId) return;
@@ -521,5 +521,11 @@ export const SalesPage = () => {
                 </div>
               )}
             </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
 
              
