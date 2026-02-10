@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ShoppingCart } from "lucide-react"
+
 
 
 import {
@@ -466,37 +468,45 @@ export const SalesPage = () => {
               <CardTitle>Recent Sales</CardTitle>
             </CardHeader>
 
-
-            
             <CardContent>
-              <div className="space-y-4">
-                {Array.isArray(recentSales) && recentSales.map((sale) => (
-                  <div
-                    key={`${sale.id ?? sale.created_at}-${sale.customer_name ?? 'unknown'}`}
-                    className="p-4 rounded-lg bg-secondary/50 border border-border"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-foreground">{sale.customer_name}</p>
-                        <p className="text-sm text-muted-foreground">{sale.item}</p>
-                        <span>{Number(sale.amount).toLocaleString()}</span>
-
+              {allSales.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ShoppingCart className="w-10 h-10 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold">
+                    No sales yet
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-sm">
+                    Record your first sale to start tracking your business performance.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentSales.map((sale) => (
+                    <div
+                      key={`${sale.id ?? sale.created_at}`}
+                      className="p-4 rounded-lg bg-secondary/50 border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-medium">
+                            {sale.customer_name || 'Walk-in customer'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {sale.item}
+                          </p>
+                        </div>
+                        <span className="font-bold text-primary">
+                          KES {Number(sale.amount).toLocaleString()}
+                        </span>
                       </div>
-                      <span className="text-lg font-bold text-primary">
-                        KES {Number(sale.amount).toLocaleString()}
-                      </span>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>{sale.payment_method}</span>
+                        <span>{new Date(sale.created_at).toLocaleString()}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{sale.payment_method}</span>
-                      <span>{new Date(sale.created_at).toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
+
+             
