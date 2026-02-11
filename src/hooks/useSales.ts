@@ -6,12 +6,7 @@ import { useEffect, useState } from 'react';
     created_at: string;
   };
 
- export const useSales = (
-   businessId: string,
-   period: string,
-   start?: string,
-   end?: string
- ) => {
+ export const useSales = (businessId: string, period: string) => {
   
    const [sales, setSales] = useState<Sale[]>([]);
       
@@ -24,35 +19,37 @@ import { useEffect, useState } from 'react';
         try {
           setLoading(true);
       
-          const url = new URL(
-            'https://n8n.aflows.uk/webhook/get-sales'
+          const res = await fetch(
+            'https://n8n.aflows.uk/webhook/get-sales?business_id=${businessId}&period=${period}'
           );
   
-          url.searchParams.append('business_id', businessId);
-          url.searchParams.append('period', period);
+          // url.searchParams.append('business_id', businessId);
+          // url.searchParams.append('period', period);
   
-          if (start) url.searchParams.append('start', start);
-          if (end) url.searchParams.append('end', end);
+          // if (start) url.searchParams.append('start', start);
+          // if (end) url.searchParams.append('end', end);
   
-          const res = await fetch(url.toString());
+          // const res = await fetch(url.toString());
   
-          if (!res.ok) {
-            throw new Error(`HTTP error ${res.status}`);
-          }
+          // if (!res.ok) {
+          //   throw new Error(`HTTP error ${res.status}`);
+          // }
   
           const data = await res.json();
+
+          setSales(data?.sales?.sales || []);
   
-          setSales(Array.isArray(data) ? data : []);
-        } catch (err) {
-          console.error('Sales fetch error:', err);
-          setSales([]);
-        } finally {
+        //   setSales(Array.isArray(data) ? data : []);
+        // } catch (err) {
+        //   console.error('Sales fetch error:', err);
+        //   setSales([]);
+        // } finally {
           setLoading(false);
         }
       };
   
       fetchSales();
-    }, [businessId, period, start, end]);
+    }, [businessId, period]);
   
     return { sales, loading };
   };
