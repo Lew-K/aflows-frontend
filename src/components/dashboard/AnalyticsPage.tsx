@@ -143,7 +143,7 @@ export const AnalyticsPage = () => {
 
   const { user } = useAuth(); 
   const [period, setPeriod] = useState<
-    'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'last_quarter' | 'custom'
+    'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
   >('month');
 
   const { sales, loading } = useSales(
@@ -276,11 +276,13 @@ export const AnalyticsPage = () => {
                ? 'This Month'
                : period === 'last_month'
                ? 'Last Month'
-              : period === 'last_quarter'
-              ? 'Last Quarter'
-              : period === 'custom'
-              ? 'Custom Range'
-              : 'This Month'}
+               : period === 'this_quarter'
+               ? 'This Quarter'
+               : period === 'last_quarter'
+               ? 'Last Quarter'
+               : period === 'custom'
+               ? 'Custom Range'
+               : 'This Month'}
             )
 
           </p>
@@ -292,11 +294,12 @@ export const AnalyticsPage = () => {
           className="border rounded-md px-3 py-2 text-sm bg-background"
         >
           <option value="today">Today</option>
-
           <option value="yesterday">Yesterday</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
+          <option value="this_week">This Week</option>
+          <option value="last_week">Last Week</option>
+          <option value="this_month">This Month</option>
           <option value="last_month">Last Month</option>
+          <option value="this_quarter">This Quarter</option>
           <option value="last_quarter">Last Quarter</option>
           <option value="custom">Custom Range</option>
         </select>
