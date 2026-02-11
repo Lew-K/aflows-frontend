@@ -146,8 +146,13 @@ export const AnalyticsPage = () => {
     'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'last_quarter' | 'custom'
   >('month');
 
-  const { sales, loading } = useSales(user.businessId ?? '', period);
-
+  const { sales, loading } = useSales(
+    user.businessId ?? '',
+    period,
+    customStart,
+    customEnd
+  );
+    
   
   // useEffect(() => {
 
@@ -255,6 +260,8 @@ export const AnalyticsPage = () => {
              Overview of your business performance (
              {period === 'today'
                ? 'Today'
+               : period === 'yesterday'
+               ? 'Yesterday'
                : period === 'week'
                ? 'This Week'
               : period === 'last_month'
@@ -361,9 +368,11 @@ export const AnalyticsPage = () => {
                      : 'text-muted-foreground'
                 }`}
               >                  
-                {percentageChange}
+                {percentageChange} === 'New activity'
+                  ? 'No previous data'
+                  : `${percentageChange} vs previous period`}
                   
-                 {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
+                {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
                 {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
               </div>
 
