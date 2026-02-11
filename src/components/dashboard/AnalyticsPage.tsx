@@ -143,7 +143,7 @@ export const AnalyticsPage = () => {
 
   const { user } = useAuth(); 
   const [period, setPeriod] = useState<
-    'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'last_quarter' | 'custom'
+    'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'last_quarter' | 'custom'
   >('month');
 
   const { sales, loading } = useSales(
@@ -268,15 +268,19 @@ export const AnalyticsPage = () => {
                ? 'Today'
                : period === 'yesterday'
                ? 'Yesterday'
-               : period === 'week'
+               : period === 'this_week'
                ? 'This Week'
-              : period === 'last_month'
+               : period === 'last_week'
+               ? 'Last Week'
+               : period === 'this_month'
+               ? 'This Month'
+               : period === 'last_month'
                ? 'Last Month'
-                : period === 'last_quarter'
-                ? 'Last Quarter'
-                : period === 'custom'
-                ? 'Custom Range'
-                : 'This Month'}
+              : period === 'last_quarter'
+              ? 'Last Quarter'
+              : period === 'custom'
+              ? 'Custom Range'
+              : 'This Month'}
             )
 
           </p>
