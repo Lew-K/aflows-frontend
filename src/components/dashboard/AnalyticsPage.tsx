@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSales } from '@/hooks/useSales';
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,7 +141,9 @@ export const AnalyticsPage = () => {
 
 
   // const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
-  const [sales, setSales] = useState<any[]>([]);
+  // const [sales, setSales] = useState<any[]>([]);
+  const { sales, loading } = useSales(user.businessId, period);
+
   
   useEffect(() => {
     const fetchSales = async () => {
@@ -183,9 +186,10 @@ export const AnalyticsPage = () => {
       percent === null
         ? 'New activity'
         : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
-    trend:
-      percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
+    trend: percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
   };
+}, [sales]);
+
 
 
 
@@ -293,24 +297,24 @@ export const AnalyticsPage = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                   <ShoppingCart className="w-6 h-6 text-primary" />
+                </div>
 
                 <div
                   className={`flex items-center gap-1 text-sm font-medium ${
-                     trend === 'up'
-                      ? 'text-success'
-                      : trend === 'down'
-                       ? 'text-destructive'
-                       : 'text-muted-foreground'
-                   }`}
-                  
+                    trend === 'up'
+                     ? 'text-success'
+                     : trend === 'down'
+                     ? 'text-destructive'
+                     : 'text-muted-foreground'
+                }`}
+              >                  
                 {percentageChange}
                   
                  {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
                 {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
-                  
-                </div>
-
               </div>
+
+            </div>
       
               <p className="text-2xl font-bold text-foreground">{totalSales}</p>
               <p className="text-sm text-muted-foreground">Total Sales</p>
