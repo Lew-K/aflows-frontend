@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { uploadBusinessFile } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
@@ -26,7 +25,6 @@ import {
   Image,
   File,
   Check,
-  X,
 } from 'lucide-react';
 
 const fileCategories = [
@@ -60,7 +58,7 @@ export const UploadsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,37 +68,113 @@ export const UploadsPage = () => {
     }
   };
 
+  // localStorage fallback for business if needed (older flows)
+  const storedBusiness = localStorage.getItem('business');
+  const businessFromStorage = storedBusiness ? JSON.parse(storedBusiness) : null;
+
   const handleUpload = async () => {
-    if (!selectedFile || !selectedCategory || !token) {
-      toast.error('Please select a file and category');
+    if (!selectedFile || !selectedCategory) {
+      toast.error('Please select a file and category.');
       return;
     }
 
+    if (!token) {
+      toast.error('You are not authenticated. Please log in.');
+      return;
+    }
+
+    // Prefer businessId returned from the login webhook (user.businessId)
+    const businessId = user?.businessId ?? businessFromStorage?.id ?? businessFromStorage?.businessId;
+    if (!businessId) {
+      toast.error('No business found. Please make sure your business is loaded.');
+      return;
+    }
+
+    // require email (provided by your login webhook)
+    const userEmail = user?.email;
+    if (!userEmail) {
+      toast.error('Logged-in user email not found. Please log in again.');
+      return;
+    }
+
+    // optional numeric/UUID id if available
+    const userId = (user as any)?.id;
+
     setIsLoading(true);
     try {
-      const response = await uploadBusinessFile({
-        file: selectedFile,
-        fileType: selectedCategory,
-        token,
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('fileType', selectedCategory);
+      // Keep using business_id since your n8n webhook previously expected that key
+      formData.append('business_id', String(businessId));
+      // Always send the email (so your current workflow can look up by email)
+      formData.append('user_email', String(userEmail));
+      // If a user id exists, include it too (backwards-compatible)
+      if (userId) {
+        formData.append('user_id', String(userId));
+      }
+      formData.append('file_name', selectedFile.name);
+
+      const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       });
 
-      if (response.success) {
-        toast.success('File uploaded successfully!');
-        setUploadSuccess(true);
-        setSelectedFile(null);
-        setSelectedCategory('');
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+      // Attempt to parse response safely
+      let data: any = null;
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (err) {
+          console.warn('Failed to parse JSON response:', err);
+          data = null;
         }
       } else {
-        toast.error(response.message || 'Upload failed');
+        try {
+          const text = await response.text();
+          if (text) {
+            try {
+              data = JSON.parse(text);
+            } catch {
+              data = { rawText: text };
+            }
+          } else {
+            data = null;
+          }
+        } catch (err) {
+          console.warn('Failed to read response text:', err);
+          data = null;
+        }
       }
-    } catch (error) {
-      // For demo, show success anyway
+
+      if (!response.ok) {
+        const messageFromBody = data?.message ?? data?.rawText ?? null;
+        throw new Error(
+          messageFromBody ? `Upload failed: ${messageFromBody}` : `Upload failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      if (data && typeof data === 'object' && data.success === false) {
+        throw new Error(data.message || 'Upload failed');
+      }
+
+      // success
       toast.success('File uploaded successfully!');
       setUploadSuccess(true);
       setSelectedFile(null);
       setSelectedCategory('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      const msg = (error as Error)?.message || 'Unknown error';
+      console.error('Upload error details:', error);
+      toast.error(msg.startsWith('Upload failed') ? msg : 'Upload failed: ' + msg);
     } finally {
       setIsLoading(false);
     }

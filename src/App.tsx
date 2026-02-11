@@ -23,17 +23,16 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<ProtectedRoute />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />          
+                
+                <Route path="/" element={<Index />} />
+
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard/*" element={<Dashboard />} />
+                </Route>
+            
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
