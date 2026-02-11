@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
+type Sale = {
+  id: string;
+  amount: number;
+  created_at: string;
+};
+
 
 export const useSales = (
   businessId: string,
   period: string,
   start?: string,
-  end?: string
+  end?: string,  
+  fetchKey?: number
 ) => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +36,11 @@ export const useSales = (
         }
 
         const res = await fetch(url.toString());
-        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
+        
         const data = await res.json();
 
         setSales(data?.sales?.sales || []);
