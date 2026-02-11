@@ -150,8 +150,10 @@ export const AnalyticsPage = () => {
     'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
   >('this_month');
 
+  const businessId = user?.businessId ?? '';
+  
   const { sales, loading } = useSales(
-    user.businessId ?? '',
+    businessId,
     period,
     customStart,
     customEnd,
@@ -185,12 +187,12 @@ export const AnalyticsPage = () => {
     const now = Date.now();
 
     const thisWeek = (sales ?? []).filter((sale: any) => {
-      const d = new Date(sale.createdAt).getTime();
+      const d = new Date(sale.created_at).getTime();
       return d >= now - 7 * 24 * 60 * 60 * 1000;
     });
   
     const lastWeek = (sales ?? []).filter((sale: any) => {
-      const d = new Date(sale.createdAt).getTime();
+      const d = new Date(sale.created_at).getTime();
       return (
         d >= now - 14 * 24 * 60 * 60 * 1000 &&
         d < now - 7 * 24 * 60 * 60 * 1000
@@ -215,10 +217,7 @@ export const AnalyticsPage = () => {
     };
   }, [sales]);
 
-  useEffect(() => {
-    console.log('Business ID:', user?.businessId);
-    console.log('Sales from hook:', sales);
-  }, [sales, user]);
+
 
 
   // useEffect(() => {
@@ -317,10 +316,29 @@ export const AnalyticsPage = () => {
             <option value="last_quarter">Last Quarter</option>
             <option value="custom">Custom Range</option>
           </select>
-        
+          
           {period === 'custom' && (
-            <>
-              {/* DatePickers here */}
+            <div className="flex items-center gap-3">
+              <DatePicker
+                selected={customStart ? new Date(customStart) : null}
+                onChange={(date: Date) =>
+                  setCustomStart(date.toISOString().split('T')[0])
+                }
+                placeholderText="From"
+                popperClassName="z-50"
+                className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+          
+              <DatePicker
+                selected={customEnd ? new Date(customEnd) : null}
+                onChange={(date: Date) =>
+                  setCustomEnd(date.toISOString().split('T')[0])
+                }
+                placeholderText="To"
+                popperClassName="z-50"
+                className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+          
               <button
                 onClick={() => {
                   if (customStart && customEnd) {
@@ -328,135 +346,15 @@ export const AnalyticsPage = () => {
                   }
                 }}
                 disabled={!customStart || !customEnd}
-                className="
-                  h-10
-                  rounded-xl
-                  bg-primary
-                  px-4
-                  text-sm
-                  font-medium
-                  text-white
-                  shadow-sm
-                  transition
-                  hover:bg-primary/90
-                  disabled:opacity-50
-                  disabled:cursor-not-allowed
-                "
+                className="h-10 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Apply
               </button>
-            </>
+            </div>
           )}
-        </div>
-
 
         
-       {/* <div className="flex flex-wrap items-center gap-3">
-        <select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as any)}
-          className="border rounded-md px-3 py-2 text-sm bg-background"
-        >
-          <option value="today">Today</option>
-          <option value="yesterday">Yesterday</option>
-          <option value="this_week">This Week</option>
-          <option value="last_week">Last Week</option>
-          <option value="this_month">This Month</option>
-          <option value="last_month">Last Month</option>
-          <option value="this_quarter">This Quarter</option>
-          <option value="last_quarter">Last Quarter</option>
-          <option value="custom">Custom Range</option>
-        </select>
-        {period === 'custom' && (
-          <div className="flex gap-2 mt-2 items-center">
-            <DatePicker
-              selected={customStart ? new Date(customStart) : null}
-              onChange={(date: Date) =>
-                setCustomStart(date.toISOString().split('T')[0])
-              }
-              placeholderText="From"
-              popperClassName="z-50"
-              className="
-                h-10
-                w-36
-                rounded-xl
-                border
-                border-border
-                bg-card
-                px-3
-                text-sm
-                text-foreground
-                shadow-sm
-                focus:outline-none
-                focus:ring-2
-                focus:ring-primary/50
-              "
-              
-              {/* className="border rounded px-2 py-1 bg-background text-foreground"
-              calendarClassName="dark:bg-gray-800 dark:text-white"
-              dayClassName={(date) =>
-                `hover:bg-primary/30 dark:hover:bg-primary/50 ${
-                  customStart === date.toISOString().split('T')[0]
-                    ? 'bg-primary/50 dark:bg-primary/70'
-                    : ''
-                }`
-      //         } */}
-      //       />
-      //       <DatePicker
-      //         selected={customEnd ? new Date(customEnd) : null}
-      //         onChange={(date: Date) =>
-      //           setCustomEnd(date.toISOString().split('T')[0])
-      //         }
-      //         placeholderText="To"
-      //         popperClassName="z-50"
-      //         className="
-      //           h-10
-      //           w-36
-      //           rounded-xl
-      //           border
-      //           border-border
-      //           bg-card
-      //           px-3
-      //           text-sm
-      //           text-foreground
-      //           shadow-sm
-      //           focus:outline-none
-      //           focus:ring-2
-      //           focus:ring-primary/50
-      //         "
-
-
-              
-      //         {/* className="border rounded px-2 py-1 bg-background text-foreground"
-      //         calendarClassName="dark:bg-gray-800 dark:text-white"
-      //         dayClassName={(date) =>
-      //           `hover:bg-primary/30 dark:hover:bg-primary/50 ${
-      //             customEnd === date.toISOString().split('T')[0]
-      //               ? 'bg-primary/50 dark:bg-primary/70'
-      //               : ''
-      //           }`
-      //         } */}
-      //       />
-      //       <button
-      //         onClick={() => {
-      //           if (customStart && customEnd) {
-      //             setFetchKey((prev) => prev + 1);
-      //           }
-      //         }}
-      //         className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 transition-colors" */}
-      //       >
-      //         Apply
-      //       </button>
-      //     </div>
-      //   )}
-
-      // </div>
-
-
-      
-  
-
-      {/* Stats Grid */}
+         
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Revenue */}
