@@ -42,7 +42,7 @@ export const useSales = (
     };
 
     fetchSales();
-  }, [businessId, period, start, end]);
+  }, [businessId, period, start, end, fetchKey]); // added fetchKey
 
   return { sales, loading };
 };
