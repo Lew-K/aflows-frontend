@@ -140,16 +140,16 @@ const recentActivity = [
 
 export const AnalyticsPage = () => {
 
-  const [fetchKey, setFetchKey] = useState(0);
-
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
-
   const { user } = useAuth(); 
+  
   const [period, setPeriod] = useState<
     'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
   >('this_month');
 
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [fetchKey, setFetchKey] = useState(0);
+  
   const businessId = user?.businessId ?? '';
   
   const { sales, loading } = useSales(
