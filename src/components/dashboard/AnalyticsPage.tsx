@@ -368,9 +368,11 @@ export const AnalyticsPage = () => {
                      : 'text-muted-foreground'
                 }`}
               >                  
-                {percentageChange} === 'New activity'
-                  ? 'No previous data'
-                  : `${percentageChange} vs previous period`}
+                {
+                  percentageChange === 'New activity'
+                    ? 'No previous data'
+                    : `${percentageChange} vs previous period`
+                }
                   
                 {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
                 {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
