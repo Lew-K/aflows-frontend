@@ -144,34 +144,34 @@ export const AnalyticsPage = () => {
   const { user } = useAuth(); 
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'last_month'>('month');
 
-  const { sales, loading } = useSales(user.businessId, period);
+  const { sales, loading } = useSales(user.businessId ?? '', period);
 
   
   useEffect(() => {
 
-    const fetchSales = async (start?: string, end?: string) => {
-      const url = new URL('/api/sales', window.location.origin);
-      url.searchParams.append('period', period);
-      if (start) url.searchParams.append('start', start);
-      if (end) url.searchParams.append('end', end);
+  //   const fetchSales = async (start?: string, end?: string) => {
+  //     const url = new URL('/api/sales', window.location.origin);
+  //     url.searchParams.append('period', period);
+  //     if (start) url.searchParams.append('start', start);
+  //     if (end) url.searchParams.append('end', end);
     
     
-    // const fetchSales = async () => {
-    //   const res = await fetch(`/api/sales?period=${period}`);
-    //   // const res = await fetch(`/api/sales?period=${timeFilter}`);
-    //   const data = await res.json();
-    //   setSales(data);
-    };
+  //   // const fetchSales = async () => {
+  //   //   const res = await fetch(`/api/sales?period=${period}`);
+  //   //   // const res = await fetch(`/api/sales?period=${timeFilter}`);
+  //   //   const data = await res.json();
+  //   //   setSales(data);
+  //   };
   
-    fetchSales();
-  }, [period]);
+  //   fetchSales();
+  // }, [period]);
   
   const totalSales = sales?.length ?? 0;
   
   const { percentageChange, trend } = useMemo(() => {
     const now = Date.now();
 
-    const thisWeek = sales.filter(sale => {
+    const thisWeek = sales ?? []).filter(sale => {
       const d = new Date(sale.createdAt).getTime();
       return d >= now - 7 * 24 * 60 * 60 * 1000;
     });
@@ -287,10 +287,13 @@ export const AnalyticsPage = () => {
               className="border rounded px-2 py-1"
             />
             <button
-              onClick={() => fetchSales(customStart, customEnd)}
+
+              onClick={() => {
+                console.log('Custom filter:', customStart, customEnd);
+              }}
               className="px-3 py-1 bg-primary text-white rounded"
             >
-              Filter
+              Apply
             </button>
           </div>
         )}
