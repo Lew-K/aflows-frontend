@@ -140,6 +140,8 @@ const recentActivity = [
 
 export const AnalyticsPage = () => {
 
+  const [fetchKey, setFetchKey] = useState(0);
+
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
@@ -152,7 +154,8 @@ export const AnalyticsPage = () => {
     user.businessId ?? '',
     period,
     customStart,
-    customEnd
+    customEnd,
+    fetchKey
   );
     
   
@@ -218,11 +221,11 @@ export const AnalyticsPage = () => {
   }, [sales, user]);
 
 
-  useEffect(() => {
-    if (period === 'custom' && (!customStart || !customEnd)) {
-      return; // Don't fetch until both dates are set
-    }
-  }, [period, customStart, customEnd]);
+  // useEffect(() => {
+  //   if (period === 'custom' && (!customStart || !customEnd)) {
+  //     return; // Don't fetch until both dates are set
+  //   }
+  // }, [period, customStart, customEnd]);
 
 
 
@@ -269,7 +272,7 @@ export const AnalyticsPage = () => {
   return (
     <div className="space-y-6">
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
           <p className="text-muted-foreground">
@@ -297,7 +300,58 @@ export const AnalyticsPage = () => {
 
           </p>
         </div>
-      
+
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as any)}
+            className="h-10 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="this_quarter">This Quarter</option>
+            <option value="last_quarter">Last Quarter</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        
+          {period === 'custom' && (
+            <>
+              {/* DatePickers here */}
+              <button
+                onClick={() => {
+                  if (customStart && customEnd) {
+                    setFetchKey((prev) => prev + 1);
+                  }
+                }}
+                disabled={!customStart || !customEnd}
+                className="
+                  h-10
+                  rounded-xl
+                  bg-primary
+                  px-4
+                  text-sm
+                  font-medium
+                  text-white
+                  shadow-sm
+                  transition
+                  hover:bg-primary/90
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
+                "
+              >
+                Apply
+              </button>
+            </>
+          )}
+        </div>
+
+
+        
+       {/* <div className="flex flex-wrap items-center gap-3">
         <select
           value={period}
           onChange={(e) => setPeriod(e.target.value as any)}
@@ -317,33 +371,86 @@ export const AnalyticsPage = () => {
           <div className="flex gap-2 mt-2 items-center">
             <DatePicker
               selected={customStart ? new Date(customStart) : null}
-              onChange={(date: Date) => setCustomStart(date.toISOString().split('T')[0])}
+              onChange={(date: Date) =>
+                setCustomStart(date.toISOString().split('T')[0])
+              }
               placeholderText="From"
-              className="border rounded px-2 py-1 bg-background text-foreground"
-            />
-            <DatePicker
-              selected={customEnd ? new Date(customEnd) : null}
-              onChange={(date: Date) => setCustomEnd(date.toISOString().split('T')[0])}
-              placeholderText="To"
-              className="border rounded px-2 py-1 bg-background text-foreground"
-            />
-            <button
-              onClick={() => {
-                if (customStart && customEnd) {
-                  setFetchKey(prev => prev + 1); // trigger fetch with new dates
-                }
-              }}
-              className="px-3 py-1 bg-primary text-white rounded"
-            >
-              Apply
-            </button>
-          </div>
-        )}
-         
+              popperClassName="z-50"
+              className="
+                h-10
+                w-36
+                rounded-xl
+                border
+                border-border
+                bg-card
+                px-3
+                text-sm
+                text-foreground
+                shadow-sm
+                focus:outline-none
+                focus:ring-2
+                focus:ring-primary/50
+              "
+              
+              {/* className="border rounded px-2 py-1 bg-background text-foreground"
+              calendarClassName="dark:bg-gray-800 dark:text-white"
+              dayClassName={(date) =>
+                `hover:bg-primary/30 dark:hover:bg-primary/50 ${
+                  customStart === date.toISOString().split('T')[0]
+                    ? 'bg-primary/50 dark:bg-primary/70'
+                    : ''
+                }`
+      //         } */}
+      //       />
+      //       <DatePicker
+      //         selected={customEnd ? new Date(customEnd) : null}
+      //         onChange={(date: Date) =>
+      //           setCustomEnd(date.toISOString().split('T')[0])
+      //         }
+      //         placeholderText="To"
+      //         popperClassName="z-50"
+      //         className="
+      //           h-10
+      //           w-36
+      //           rounded-xl
+      //           border
+      //           border-border
+      //           bg-card
+      //           px-3
+      //           text-sm
+      //           text-foreground
+      //           shadow-sm
+      //           focus:outline-none
+      //           focus:ring-2
+      //           focus:ring-primary/50
+      //         "
 
-        
 
-      </div>
+              
+      //         {/* className="border rounded px-2 py-1 bg-background text-foreground"
+      //         calendarClassName="dark:bg-gray-800 dark:text-white"
+      //         dayClassName={(date) =>
+      //           `hover:bg-primary/30 dark:hover:bg-primary/50 ${
+      //             customEnd === date.toISOString().split('T')[0]
+      //               ? 'bg-primary/50 dark:bg-primary/70'
+      //               : ''
+      //           }`
+      //         } */}
+      //       />
+      //       <button
+      //         onClick={() => {
+      //           if (customStart && customEnd) {
+      //             setFetchKey((prev) => prev + 1);
+      //           }
+      //         }}
+      //         className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 transition-colors" */}
+      //       >
+      //         Apply
+      //       </button>
+      //     </div>
+      //   )}
+
+      // </div>
 
 
       
@@ -406,7 +513,11 @@ export const AnalyticsPage = () => {
             </div>
       
               <p className="text-2xl font-bold text-foreground">
-                {totalSales > 0 ? totalSales : '-'}
+               {loading
+                 ? '...'
+                 : totalSales > 0
+                 ? totalSales
+                 : '—'}
               </p>
               <p className="text-sm text-muted-foreground">Total Sales</p>
             </CardContent>
