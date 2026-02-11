@@ -176,7 +176,7 @@ export const AnalyticsPage = () => {
       return d >= now - 7 * 24 * 60 * 60 * 1000;
     });
   
-    const lastWeek = sales.filter(sale => {
+    const lastWeek = sales ?? []).filter(sale => {
       const d = new Date(sale.createdAt).getTime();
       return (
         d >= now - 14 * 24 * 60 * 60 * 1000 &&
