@@ -6,42 +6,76 @@ import { useEffect, useState } from 'react';
     created_at: string;
   };
 
-  export const useSales = (businessId: string, period: string = 'week') => {
+ export const useSales = (businessId: string, period: string = 'week') => {
 
-    const [sales, setSales] = useState<Sale[]>([]);
+   const [sales, setSales] = useState<Sale[]>([]);
       
-    const [loading, setLoading] = useState(true);
+   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!businessId) return;
+   useEffect(() => {
+     if (!businessId) return;
 
-    const fetchSales = async () => {
-      try {
+      const fetchSales = async () => {
+
         setLoading(true);
-    
-        const res = await fetch(
-          `https://n8n.aflows.uk/webhook/get-sales?business_id=${businessId}&period=${period}`
-        );
-    
-        if (!res.ok) {
-          throw new Error('Failed to fetch sales');
+        try {
+          const url = new URL('https://n8n.aflows.uk/webhook/get-sales');
+          url.searchParams.append('business_id', businessId);
+          url.searchParams.append('period', period);
+          if (start) url.searchParams.append('start', start);
+          if (end) url.searchParams.append('end', end);
+  
+          const res = await fetch(url.toString());
+          const text = await res.text();
+          let data = [];
+          try {
+            data = JSON.parse(text);
+          } catch {
+            console.error('Invalid JSON response:', text);
+          }
+  
+          setSales(data.sales ?? data ?? []);
+        } catch (err) {
+          console.error('Failed to fetch sales:', err);
+          setSales([]);
+        } finally {
+          setLoading(false);
         }
-    
-        const data = await res.json();
-        setSales(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Error fetching sales:', error);
-        setSales([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+      };
+  
       fetchSales();
-    }, [businessId, period]);
+    }, [businessId, period, start, end]);
   
     return { sales, loading };
   };
+
+        
+  //       try {
+  //         setLoading(true);
+      
+  //         const res = await fetch(
+  //           `https://n8n.aflows.uk/webhook/get-sales?business_id=${businessId}&period=${period}`
+  //         );
+      
+  //         if (!res.ok) {
+  //           throw new Error('Failed to fetch sales');
+  //         }
+      
+  //         const data = await res.json();
+  //         setSales(Array.isArray(data) ? data : []);
+  //       } catch (error) {
+  //         console.error('Error fetching sales:', error);
+  //         setSales([]);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
+
+  //     fetchSales();
+  //   }, [businessId, period]);
+  
+  //   return { sales, loading };
+  // };
 
 
 //     const fetchSales = async () => {
