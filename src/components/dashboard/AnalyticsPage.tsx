@@ -142,7 +142,9 @@ export const AnalyticsPage = () => {
   const [customEnd, setCustomEnd] = useState('');
 
   const { user } = useAuth(); 
-  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'last_month'>('month');
+  const [period, setPeriod] = useState<
+    'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'last_quarter' | 'custom'
+  >('month');
 
   const { sales, loading } = useSales(user.businessId ?? '', period);
 
@@ -169,14 +171,15 @@ export const AnalyticsPage = () => {
   const totalSales = sales?.length ?? 0;
   
   const { percentageChange, trend } = useMemo(() => {
+
     const now = Date.now();
 
-    const thisWeek = sales ?? []).filter(sale => {
+    const thisWeek = (sales ?? []).filter((sale: any) => {
       const d = new Date(sale.createdAt).getTime();
       return d >= now - 7 * 24 * 60 * 60 * 1000;
     });
   
-    const lastWeek = sales ?? []).filter(sale => {
+    const lastWeek = (sales ?? []).filter((sale: any) => {
       const d = new Date(sale.createdAt).getTime();
       return (
         d >= now - 14 * 24 * 60 * 60 * 1000 &&
@@ -185,20 +188,24 @@ export const AnalyticsPage = () => {
     });
   
     const diff = thisWeek.length - lastWeek.length;
-
+  
     let percent: number | null = null;
-
+  
     if (lastWeek.length > 0) {
       percent = (diff / lastWeek.length) * 100;
     }
+  
     return {
-    percentageChange:
-      percent === null
-        ? 'New activity'
-        : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
-    trend: percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
-  };
-}, [sales]);
+      percentageChange:
+        percent === null
+          ? 'New activity'
+          : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+      trend:
+        percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
+    };
+  }, [sales]);
+
+
 
 
 
@@ -289,7 +296,9 @@ export const AnalyticsPage = () => {
             <button
 
               onClick={() => {
-                console.log('Custom filter:', customStart, customEnd);
+                 if (customStart && customEnd) {
+                   setPeriod('custom');
+                 }
               }}
               className="px-3 py-1 bg-primary text-white rounded"
             >
