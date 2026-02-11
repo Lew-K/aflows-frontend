@@ -216,6 +216,14 @@ export const AnalyticsPage = () => {
   }, [sales, user]);
 
 
+  useEffect(() => {
+    if (period === 'custom' && (!customStart || !customEnd)) {
+      return; // Don't fetch until both dates are set
+    }
+  }, [period, customStart, customEnd]);
+
+
+
 
 
 
@@ -304,25 +312,32 @@ export const AnalyticsPage = () => {
           <option value="custom">Custom Range</option>
         </select>
         {period === 'custom' && (
-          <div className="flex gap-2 mt-2">
-            <input
-              type="date"
-              value={customStart}
-              onChange={(e) => setCustomStart(e.target.value)}
-              className="border rounded px-2 py-1"
-            />
-            <input
-              type="date"
-              value={customEnd}
-              onChange={(e) => setCustomEnd(e.target.value)}
-              className="border rounded px-2 py-1"
-            />
+          <div className="flex gap-2 mt-2 items-center">
+            <label className="flex flex-col text-sm">
+              From
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className="border rounded px-2 py-1 bg-background text-foreground"
+              />
+            </label>
+        
+            <label className="flex flex-col text-sm">
+              To
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className="border rounded px-2 py-1 bg-background text-foreground"
+              />
+            </label>
+        
             <button
-
               onClick={() => {
-                 if (customStart && customEnd) {
-                   setPeriod('custom');
-                 }
+                if (customStart && customEnd) {
+                  setPeriod('custom'); // trigger fetch
+                }
               }}
               className="px-3 py-1 bg-primary text-white rounded"
             >
@@ -330,6 +345,8 @@ export const AnalyticsPage = () => {
             </button>
           </div>
         )}
+
+        
 
       </div>
 
@@ -393,7 +410,9 @@ export const AnalyticsPage = () => {
 
             </div>
       
-              <p className="text-2xl font-bold text-foreground">{totalSales}</p>
+              <p className="text-2xl font-bold text-foreground">
+                {totalSales > 0 ? totalSales : '-'}
+              </p>
               <p className="text-sm text-muted-foreground">Total Sales</p>
             </CardContent>
           </Card>
