@@ -144,7 +144,7 @@ export const AnalyticsPage = () => {
   const { user } = useAuth(); 
   const [period, setPeriod] = useState<
     'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
-  >('month');
+  >('this_month');
 
   const { sales, loading } = useSales(
     user.businessId ?? '',
