@@ -58,3 +58,4 @@ export const useSales = (
 
   return { sales, loading };
 };
+
