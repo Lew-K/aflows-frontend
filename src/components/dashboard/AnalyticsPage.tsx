@@ -1,4 +1,6 @@
 import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+
 import { useSales } from '@/hooks/useSales';
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -135,13 +137,9 @@ const recentActivity = [
 ];
 
 export const AnalyticsPage = () => {
-
+  const { user } = useAuth(); 
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'last_month'>('month');
 
-
-
-  // const [timeFilter, setTimeFilter] = useState<'month' | 'week'>('month');
-  // const [sales, setSales] = useState<any[]>([]);
   const { sales, loading } = useSales(user.businessId, period);
 
   
