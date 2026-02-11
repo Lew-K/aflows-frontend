@@ -137,6 +137,10 @@ const recentActivity = [
 ];
 
 export const AnalyticsPage = () => {
+
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+
   const { user } = useAuth(); 
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'last_month'>('month');
 
@@ -144,11 +148,19 @@ export const AnalyticsPage = () => {
 
   
   useEffect(() => {
-    const fetchSales = async () => {
-      const res = await fetch(`/api/sales?period=${period}`);
-      // const res = await fetch(`/api/sales?period=${timeFilter}`);
-      const data = await res.json();
-      setSales(data);
+
+    const fetchSales = async (start?: string, end?: string) => {
+      const url = new URL('/api/sales', window.location.origin);
+      url.searchParams.append('period', period);
+      if (start) url.searchParams.append('start', start);
+      if (end) url.searchParams.append('end', end);
+    
+    
+    // const fetchSales = async () => {
+    //   const res = await fetch(`/api/sales?period=${period}`);
+    //   // const res = await fetch(`/api/sales?period=${timeFilter}`);
+    //   const data = await res.json();
+    //   setSales(data);
     };
   
     fetchSales();
@@ -252,10 +264,37 @@ export const AnalyticsPage = () => {
           className="border rounded-md px-3 py-2 text-sm bg-background"
         >
           <option value="today">Today</option>
+
+          <option value="yesterday">Yesterday</option>
           <option value="week">This Week</option>
           <option value="month">This Month</option>
           <option value="last_month">Last Month</option>
+          <option value="last_quarter">Last Quarter</option>
+          <option value="custom">Custom Range</option>
         </select>
+        {period === 'custom' && (
+          <div className="flex gap-2 mt-2">
+            <input
+              type="date"
+              value={customStart}
+              onChange={(e) => setCustomStart(e.target.value)}
+              className="border rounded px-2 py-1"
+            />
+            <input
+              type="date"
+              value={customEnd}
+              onChange={(e) => setCustomEnd(e.target.value)}
+              className="border rounded px-2 py-1"
+            />
+            <button
+              onClick={() => fetchSales(customStart, customEnd)}
+              className="px-3 py-1 bg-primary text-white rounded"
+            >
+              Filter
+            </button>
+          </div>
+        )}
+
       </div>
 
 
