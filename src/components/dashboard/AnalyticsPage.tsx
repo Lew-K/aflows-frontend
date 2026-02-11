@@ -1,7 +1,5 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 import { useSales } from '@/hooks/useSales';
 import { useEffect, useMemo, useState } from 'react';
@@ -319,35 +317,31 @@ export const AnalyticsPage = () => {
           
           {period === 'custom' && (
             <div className="flex items-center gap-3">
-              <DatePicker
-                selected={customStart ? new Date(customStart) : null}
-                onChange={(date: Date) =>
-                  setCustomStart(date.toISOString().split('T')[0])
-                }
-                placeholderText="From"
-                popperClassName="z-50"
-                className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-          
-              <DatePicker
-                selected={customEnd ? new Date(customEnd) : null}
-                onChange={(date: Date) =>
-                  setCustomEnd(date.toISOString().split('T')[0])
-                }
-                placeholderText="To"
-                popperClassName="z-50"
-                className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-          
-              <button
-                onClick={() => {
-                  if (customStart && customEnd) {
-                    setFetchKey((prev) => prev + 1);
-                  }
-                }}
-                disabled={!customStart || !customEnd}
-                className="h-10 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+               <input
+                 type="date"
+                 value={customStart || ""}
+                 onChange={(e) => setCustomStart(e.target.value)}
+                 placeholder="From"
+                 className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+               />
+            
+               <input
+                 type="date"
+                 value={customEnd || ""}
+                 onChange={(e) => setCustomEnd(e.target.value)}
+                 placeholder="To"
+                 className="h-10 w-36 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+               />
+            
+               <button
+                 onClick={() => {
+                   if (customStart && customEnd) {
+                     setFetchKey((prev) => prev + 1);
+                   }
+                 }}
+                 disabled={!customStart || !customEnd}
+                 className="h-10 rounded-xl bg-primary px-4 text-sm font-medium text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
                 Apply
               </button>
             </div>
