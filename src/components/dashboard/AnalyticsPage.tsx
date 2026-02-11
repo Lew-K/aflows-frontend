@@ -149,7 +149,7 @@ export const AnalyticsPage = () => {
   const { sales, loading } = useSales(user.businessId ?? '', period);
 
   
-  useEffect(() => {
+  // useEffect(() => {
 
   //   const fetchSales = async (start?: string, end?: string) => {
   //     const url = new URL('/api/sales', window.location.origin);
@@ -259,7 +259,11 @@ export const AnalyticsPage = () => {
                ? 'This Week'
               : period === 'last_month'
                ? 'Last Month'
-               : 'This Month'}
+                : period === 'last_quarter'
+                ? 'Last Quarter'
+                : period === 'custom'
+                ? 'Custom Range'
+                : 'This Month'}
             )
 
           </p>
