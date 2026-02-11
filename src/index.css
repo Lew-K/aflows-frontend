@@ -171,29 +171,3 @@
     to { opacity: 1; transform: scale(1); }
   }
 }
-
-.react-datepicker {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
-}
-
-.react-datepicker__header {
-  background-color: hsl(var(--background));
-  border-bottom: 1px solid hsl(var(--border));
-}
-
-.react-datepicker__day {
-  color: hsl(var(--foreground));
-}
-
-.react-datepicker__day--selected {
-  background-color: hsl(var(--primary));
-  color: white;
-  border-radius: 0.5rem;
-}
-
-.react-datepicker__day:hover {
-  background-color: hsl(var(--primary) / 0.2);
-  border-radius: 0.5rem;
-}
