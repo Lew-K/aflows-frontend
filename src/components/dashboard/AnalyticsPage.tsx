@@ -1,5 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import { useSales } from '@/hooks/useSales';
 import { useEffect, useMemo, useState } from 'react';
@@ -313,30 +315,22 @@ export const AnalyticsPage = () => {
         </select>
         {period === 'custom' && (
           <div className="flex gap-2 mt-2 items-center">
-            <label className="flex flex-col text-sm">
-              From
-              <input
-                type="date"
-                value={customStart}
-                onChange={(e) => setCustomStart(e.target.value)}
-                className="border rounded px-2 py-1 bg-background text-foreground"
-              />
-            </label>
-        
-            <label className="flex flex-col text-sm">
-              To
-              <input
-                type="date"
-                value={customEnd}
-                onChange={(e) => setCustomEnd(e.target.value)}
-                className="border rounded px-2 py-1 bg-background text-foreground"
-              />
-            </label>
-        
+            <DatePicker
+              selected={customStart ? new Date(customStart) : null}
+              onChange={(date: Date) => setCustomStart(date.toISOString().split('T')[0])}
+              placeholderText="From"
+              className="border rounded px-2 py-1 bg-background text-foreground"
+            />
+            <DatePicker
+              selected={customEnd ? new Date(customEnd) : null}
+              onChange={(date: Date) => setCustomEnd(date.toISOString().split('T')[0])}
+              placeholderText="To"
+              className="border rounded px-2 py-1 bg-background text-foreground"
+            />
             <button
               onClick={() => {
                 if (customStart && customEnd) {
-                  setPeriod('custom'); // trigger fetch
+                  setFetchKey(prev => prev + 1); // trigger fetch with new dates
                 }
               }}
               className="px-3 py-1 bg-primary text-white rounded"
@@ -345,6 +339,7 @@ export const AnalyticsPage = () => {
             </button>
           </div>
         )}
+         
 
         
 
