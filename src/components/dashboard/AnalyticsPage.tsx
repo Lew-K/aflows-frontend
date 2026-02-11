@@ -210,6 +210,12 @@ export const AnalyticsPage = () => {
     };
   }, [sales]);
 
+  useEffect(() => {
+    console.log('Business ID:', user?.businessId);
+    console.log('Sales from hook:', sales);
+  }, [sales, user]);
+
+
 
 
 
