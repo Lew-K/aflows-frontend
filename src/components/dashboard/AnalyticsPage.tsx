@@ -2,6 +2,8 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { useSales } from '@/hooks/useSales';
+import { useRevenueAnalytics } from "@/hooks/useRevenueAnalytics";
+
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,6 +153,20 @@ export const AnalyticsPage = () => {
   const businessId = user?.businessId ?? '';
   
   const { sales, loading } = useSales(
+    businessId,
+    period,
+    customStart,
+    customEnd,
+    fetchKey
+  );
+
+  const {
+    revenueSummary,
+    dailyRevenue,
+    topSellingItems,
+    paymentMethods,
+    loading,
+  } = useRevenueAnalytics(
     businessId,
     period,
     customStart,
@@ -363,7 +379,30 @@ export const AnalyticsPage = () => {
                   <DollarSign className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">KES 1,245,000</p>
+              <p className="text-2xl font-bold text-foreground">
+                {loading
+                  ? "..."
+                  : revenueSummary?.totalRevenue != null
+                  ? `KES ${revenueSummary.totalRevenue.toLocaleString()}`
+                  : "—"}
+              </p>
+              <div
+                className={`flex items-center gap-1 text-sm font-medium ${
+                  revenueSummary?.trend === "up"
+                    ? "text-success"
+                    : revenueSummary?.trend === "down"
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {revenueSummary?.percentageChange != null
+                  ? `${revenueSummary.percentageChange}%`
+                  : ""}
+              
+                {revenueSummary?.trend === "up" && <ArrowUpRight className="w-4 h-4" />}
+                {revenueSummary?.trend === "down" && <ArrowDownRight className="w-4 h-4" />}
+              </div>
+              
               <p className="text-sm text-muted-foreground">Total Revenue</p>
             </CardContent>
           </Card>
