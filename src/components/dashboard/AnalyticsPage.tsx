@@ -165,7 +165,7 @@ export const AnalyticsPage = () => {
     dailyRevenue,
     topSellingItems,
     paymentMethods,
-    revenueLoading,
+    loading: revenueLoading,
   } = useRevenueAnalytics(
     businessId,
     period,
