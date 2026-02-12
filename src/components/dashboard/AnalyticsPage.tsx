@@ -165,7 +165,7 @@ export const AnalyticsPage = () => {
     dailyRevenue,
     topSellingItems,
     paymentMethods,
-    loading,
+    revenueLoading,
   } = useRevenueAnalytics(
     businessId,
     period,
@@ -380,7 +380,7 @@ export const AnalyticsPage = () => {
                 </div>
               </div>
               <p className="text-2xl font-bold text-foreground">
-                {loading
+                {revenueLoading
                   ? "..."
                   : revenueSummary?.totalRevenue != null
                   ? `KES ${revenueSummary.totalRevenue.toLocaleString()}`
