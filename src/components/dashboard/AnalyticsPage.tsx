@@ -196,46 +196,50 @@ export const AnalyticsPage = () => {
   
   const totalSales = sales?.length ?? 0;
 
-  const { percentageChange, trend } = useMemo(() => {
-    if (!sales || sales.length === 0) {
-      return {
-        percentageChange: '0%',
-        trend: 'neutral'
-      };
-    }
+  const percentageChange = analytics?.salesSummary?.percentageChange ?? '0%';
+  const trend = analytics?.salesSummary?.trend ?? 'neutral';
+
+
+  // const { percentageChange, trend } = useMemo(() => {
+  //   if (!sales || sales.length === 0) {
+  //     return {
+  //       percentageChange: '0%',
+  //       trend: 'neutral'
+  //     };
+  //   }
   
-    const now = Date.now();
+  //   const now = Date.now();
   
-    const thisWeek = sales.filter((sale: any) => {
-      const d = new Date(sale.created_at).getTime();
-      return d >= now - 7 * 24 * 60 * 60 * 1000;
-    });
+  //   const thisWeek = sales.filter((sale: any) => {
+  //     const d = new Date(sale.created_at).getTime();
+  //     return d >= now - 7 * 24 * 60 * 60 * 1000;
+  //   });
   
-    const lastWeek = sales.filter((sale: any) => {
-      const d = new Date(sale.created_at).getTime();
-      return (
-        d >= now - 14 * 24 * 60 * 60 * 1000 &&
-        d < now - 7 * 24 * 60 * 60 * 1000
-      );
-    });
+  //   const lastWeek = sales.filter((sale: any) => {
+  //     const d = new Date(sale.created_at).getTime();
+  //     return (
+  //       d >= now - 14 * 24 * 60 * 60 * 1000 &&
+  //       d < now - 7 * 24 * 60 * 60 * 1000
+  //     );
+  //   });
   
-    const diff = thisWeek.length - lastWeek.length;
+  //   const diff = thisWeek.length - lastWeek.length;
   
-    let percent: number | null = null;
+  //   let percent: number | null = null;
   
-    if (lastWeek.length > 0) {
-      percent = (diff / lastWeek.length) * 100;
-    }
+  //   if (lastWeek.length > 0) {
+  //     percent = (diff / lastWeek.length) * 100;
+  //   }
   
-    return {
-      percentageChange:
-        percent === null
-          ? 'New activity'
-          : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
-      trend:
-        percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down'
-    };
-  }, [sales]);
+  //   return {
+  //     percentageChange:
+  //       percent === null
+  //         ? 'New activity'
+  //         : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
+  //     trend:
+  //       percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down'
+  //   };
+  // }, [sales]);
 
   
   // const { percentageChange, trend } = useMemo(() => {
