@@ -50,42 +50,39 @@ export const useRevenueAnalytics = (
     if (!businessId) return;
     if (period === "custom" && (!customStart || !customEnd)) return;
   
-    const fetchAll = async () => {
+    const fetchRevenue = async () => {
       setLoading(true);
   
       try {
-        const baseUrl = "https://n8n.aflows.uk/webhook";
+        const url = new URL(
+          "https://n8n.aflows.uk/webhook/revenue"
+        );
   
-        const endpoints = [
-          "revenueAnalytics",
-          "dailyRevenue",
-          "topSellingItems",
-          "paymentMethods"
-        ];
+        url.searchParams.append("businessId", businessId);
   
-        const queries: Record<string, string>[] = endpoints.map(ep => {
-          const params: Record<string, string> = { businessId };
-          if (period === "custom") {
-            params.start = customStart!;
-            params.end = customEnd!;
-          } else {
-            params.period = period;
-          }
-          return params;
-        });
+        if (period === "custom") {
+          url.searchParams.append("start", customStart!);
+          url.searchParams.append("end", customEnd!);
+        } else {
+          url.searchParams.append("period", period);
+        }
   
-        const urls = endpoints.map((ep, i) => {
-          const url = new URL(`${baseUrl}/${ep}`);
-          Object.entries(queries[i]).forEach(([k, v]) => url.searchParams.append(k, v));
-          return url.toString();
-        });
+        const res = await fetch(url.toString());
   
-        const responses = await Promise.all(urls.map(u => fetch(u).then(r => r.json())));
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
   
-        setRevenueSummary(responses[0]?.[0]?.revenueSummary ?? null);
-        setDailyRevenue(responses[1]?.[0]?.dailyRevenue ?? []);
-        setTopSellingItems(responses[2]?.[0]?.topSellingItems ?? []);
-        setPaymentMethods(responses[3]?.[0]?.paymentMethods ?? []);
+        const json = await res.json();
+  
+        // If n8n returns an array with one item
+        const data = Array.isArray(json) ? json[0] : json;
+  
+        setRevenueSummary(data?.revenueSummary ?? null);
+        setDailyRevenue(data?.dailyRevenue ?? []);
+        setTopSellingItems(data?.topSellingItems ?? []);
+        setPaymentMethods(data?.paymentMethods ?? []);
+  
       } catch (err) {
         console.error("Revenue fetch error:", err);
       } finally {
@@ -93,9 +90,11 @@ export const useRevenueAnalytics = (
       }
     };
   
-    fetchAll();
+    fetchRevenue();
   }, [businessId, period, customStart, customEnd, fetchKey]);
 
+
+  
 
   // useEffect(() => {
   //   if (!businessId) return;
