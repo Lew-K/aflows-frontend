@@ -48,47 +48,98 @@ export const useRevenueAnalytics = (
 
   useEffect(() => {
     if (!businessId) return;
-
-    // prevent firing incomplete custom
-    if (period === "custom" && (!customStart || !customEnd)) {
-      return;
-    }
-
-    const fetchRevenue = async () => {
+    if (period === "custom" && (!customStart || !customEnd)) return;
+  
+    const fetchAll = async () => {
       setLoading(true);
-
+  
       try {
-        const url = new URL(
-          "https://n8n.aflows.uk/webhook/revenue"
-        );
-
-        url.searchParams.append("businessId", businessId);
-
-        if (period === "custom") {
-          url.searchParams.append("start", customStart!);
-          url.searchParams.append("end", customEnd!);
-        } else {
-          url.searchParams.append("period", period);
-        }
-
-        const res = await fetch(url.toString());
-        const json = await res.json();
-
-        const data = json?.[0];
-
-        setRevenueSummary(data?.revenueSummary ?? null);
-        setDailyRevenue(data?.dailyRevenue ?? []);
-        setTopSellingItems(data?.topSellingItems ?? []);
-        setPaymentMethods(data?.paymentMethods ?? []);
+        const baseUrl = "https://n8n.aflows.uk/webhook";
+  
+        const endpoints = [
+          "revenueAnalytics",
+          "dailyRevenue",
+          "topSellingItems",
+          "paymentMethods"
+        ];
+  
+        const queries: Record<string, string>[] = endpoints.map(ep => {
+          const params: Record<string, string> = { businessId };
+          if (period === "custom") {
+            params.start = customStart!;
+            params.end = customEnd!;
+          } else {
+            params.period = period;
+          }
+          return params;
+        });
+  
+        const urls = endpoints.map((ep, i) => {
+          const url = new URL(`${baseUrl}/${ep}`);
+          Object.entries(queries[i]).forEach(([k, v]) => url.searchParams.append(k, v));
+          return url.toString();
+        });
+  
+        const responses = await Promise.all(urls.map(u => fetch(u).then(r => r.json())));
+  
+        setRevenueSummary(responses[0]?.[0]?.revenueSummary ?? null);
+        setDailyRevenue(responses[1]?.[0]?.dailyRevenue ?? []);
+        setTopSellingItems(responses[2]?.[0]?.topSellingItems ?? []);
+        setPaymentMethods(responses[3]?.[0]?.paymentMethods ?? []);
       } catch (err) {
         console.error("Revenue fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchRevenue();
+  
+    fetchAll();
   }, [businessId, period, customStart, customEnd, fetchKey]);
+
+
+  // useEffect(() => {
+  //   if (!businessId) return;
+
+  //   // prevent firing incomplete custom
+  //   if (period === "custom" && (!customStart || !customEnd)) {
+  //     return;
+  //   }
+
+  //   const fetchRevenue = async () => {
+  //     setLoading(true);
+
+  //     try {
+  //       const url = new URL(
+  //         "https://n8n.aflows.uk/webhook/revenue"
+  //       );
+
+  //       url.searchParams.append("businessId", businessId);
+
+  //       if (period === "custom") {
+  //         url.searchParams.append("start", customStart!);
+  //         url.searchParams.append("end", customEnd!);
+  //       } else {
+  //         url.searchParams.append("period", period);
+  //       }
+
+  //       const res = await fetch(url.toString());
+  //       const json = await res.json();
+
+  //       const data = json?.[0];
+
+  //       setRevenueSummary(data?.revenueSummary ?? null);
+  //       setDailyRevenue(data?.dailyRevenue ?? []);
+  //       setTopSellingItems(data?.topSellingItems ?? []);
+  //       setPaymentMethods(data?.paymentMethods ?? []);
+  //     } catch (err) {
+  //       console.error("Revenue fetch error:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchRevenue();
+  // }, [businessId, period, customStart, customEnd, fetchKey]);
 
   return {
     revenueSummary,
