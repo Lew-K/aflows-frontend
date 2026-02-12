@@ -196,22 +196,22 @@ export const AnalyticsPage = () => {
   
   const totalSales = sales?.length ?? 0;
   
-  const { percentageChange, trend } = useMemo(() => {
+  // const { percentageChange, trend } = useMemo(() => {
 
-    const now = Date.now();
+  //   const now = Date.now();
 
-    const thisWeek = (sales ?? []).filter((sale: any) => {
-      const d = new Date(sale.created_at).getTime();
-      return d >= now - 7 * 24 * 60 * 60 * 1000;
-    });
+  //   const thisWeek = (sales ?? []).filter((sale: any) => {
+  //     const d = new Date(sale.created_at).getTime();
+  //     return d >= now - 7 * 24 * 60 * 60 * 1000;
+  //   });
   
-    const lastWeek = (sales ?? []).filter((sale: any) => {
-      const d = new Date(sale.created_at).getTime();
-      return (
-        d >= now - 14 * 24 * 60 * 60 * 1000 &&
-        d < now - 7 * 24 * 60 * 60 * 1000
-      );
-    });
+  //   const lastWeek = (sales ?? []).filter((sale: any) => {
+  //     const d = new Date(sale.created_at).getTime();
+  //     return (
+  //       d >= now - 14 * 24 * 60 * 60 * 1000 &&
+  //       d < now - 7 * 24 * 60 * 60 * 1000
+  //     );
+  //   });
   
     const diff = thisWeek.length - lastWeek.length;
   
