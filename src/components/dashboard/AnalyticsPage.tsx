@@ -196,8 +196,13 @@ export const AnalyticsPage = () => {
   
   const totalSales = sales?.length ?? 0;
 
-  const percentageChange = analytics?.salesSummary?.percentageChange ?? '0%';
-  const trend = analytics?.salesSummary?.trend ?? 'neutral';
+  const percentageChange =
+    revenueSummary?.percentageChange != null
+      ? `${revenueSummary.percentageChange}%`
+      : '0%';
+  
+  const trend = revenueSummary?.trend ?? 'neutral';
+
 
 
   // const { percentageChange, trend } = useMemo(() => {
