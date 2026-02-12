@@ -227,7 +227,7 @@ export const AnalyticsPage = () => {
           ? 'New activity'
           : `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`,
       trend:
-        percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down',
+        percent === null ? 'neutral' : percent >= 0 ? 'up' : 'down'
     };
   }, [sales]);
 
