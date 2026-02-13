@@ -649,7 +649,7 @@ export const AnalyticsPage = () => {
             <CardContent>
             {loading ? (
               <p className="text-center text-muted-foreground">Loading...</p>
-            ) : chartData.length === 0 ? (
+            ) : chartTopItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <p>No sales data for this period</p>
                 <p className="text-sm">Try changing the date range or period above</p>
@@ -672,8 +672,8 @@ export const AnalyticsPage = () => {
                   <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-
-              </div>
+            </div>
+          )}
             </CardContent>
           </Card>
         </motion.div>
