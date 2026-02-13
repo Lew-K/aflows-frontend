@@ -203,6 +203,14 @@ export const AnalyticsPage = () => {
   
   const trend = revenueSummary?.trend ?? 'neutral';
 
+  // Normalize topSellingItems for the chart
+  const chartTopItems = (topSellingItems ?? [])
+    .map((item) => ({
+      name: item.item,       // use 'item' as name
+      total: item.quantity,  // use 'quantity' as value
+    }));
+
+
 
 
   // const { percentageChange, trend } = useMemo(() => {
@@ -612,41 +620,22 @@ export const AnalyticsPage = () => {
             </CardHeader>
             <CardContent>
               <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      (topSellingItems ?? [])
-                        .sort((a: any, b: any) => (b.total ?? 0) - (a.total ?? 0))
-                        .slice(0, 4)
-                    }
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar
-                      dataKey="total"
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+               <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartTopItems}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+
               </div>
             </CardContent>
           </Card>
