@@ -204,11 +204,20 @@ export const AnalyticsPage = () => {
   const trend = revenueSummary?.trend ?? 'neutral';
 
   // Normalize topSellingItems for the chart
-  const chartTopItems = (topSellingItems ?? [])
-    .map((item) => ({
-      name: item.item,       // use 'item' as name
-      total: item.quantity,  // use 'quantity' as value
-    }));
+  // const chartTopItems = (topSellingItems ?? [])
+  //   .map((item) => ({
+  //     name: item.item,       // use 'item' as name
+  //     total: item.quantity,  // use 'quantity' as value
+  //   }));
+
+  const chartTopItems = topSellingItems?.map(item => ({
+    name: item.item,
+    total: chartMetric === 'quantity' ? item.quantity : item.revenue
+  })) ?? [];
+
+  
+  const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
+
 
 
 
@@ -618,7 +627,35 @@ export const AnalyticsPage = () => {
                 Top Selling Items
               </CardTitle>
             </CardHeader>
+              <div className="flex gap-2 mb-3">
+                <button
+                  className={`px-3 py-1 rounded-xl text-sm font-medium ${
+                    chartMetric === 'quantity' ? 'bg-primary text-white' : 'bg-card text-foreground'
+                  }`}
+                  onClick={() => setChartMetric('quantity')}
+                >
+                  Items Sold
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-xl text-sm font-medium ${
+                    chartMetric === 'revenue' ? 'bg-primary text-white' : 'bg-card text-foreground'
+                  }`}
+                  onClick={() => setChartMetric('revenue')}
+                >
+                  Revenue
+                </button>
+              </div>
+
             <CardContent>
+            {loading ? (
+              <p className="text-center text-muted-foreground">Loading...</p>
+            ) : chartData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <p>No sales data for this period</p>
+                <p className="text-sm">Try changing the date range or period above</p>
+              </div>
+            ) : (
+              
               <div className="h-72">
                <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartTopItems}>
