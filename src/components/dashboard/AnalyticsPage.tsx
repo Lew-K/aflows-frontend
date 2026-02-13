@@ -212,11 +212,20 @@ export const AnalyticsPage = () => {
 
   const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
 
+  const chartTopItems = useMemo(() => {
+    if (!topSellingItems) return [];
+    return topSellingItems.map(item => ({
+      name: item.item,
+      total: chartMetric === 'quantity' ? item.quantity : item.revenue
+    }));
+  }, [topSellingItems, chartMetric]);
+
+
   
-  const chartTopItems = topSellingItems?.map(item => ({
-    name: item.item,
-    total: chartMetric === 'quantity' ? item.quantity : item.revenue
-  })) ?? [];
+  // const chartTopItems = topSellingItems?.map(item => ({
+  //   name: item.item,
+  //   total: chartMetric === 'quantity' ? item.quantity : item.revenue
+  // })) ?? [];
 
   
 
