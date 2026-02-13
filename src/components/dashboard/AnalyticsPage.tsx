@@ -210,13 +210,15 @@ export const AnalyticsPage = () => {
   //     total: item.quantity,  // use 'quantity' as value
   //   }));
 
+  const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
+
+  
   const chartTopItems = topSellingItems?.map(item => ({
     name: item.item,
     total: chartMetric === 'quantity' ? item.quantity : item.revenue
   })) ?? [];
 
   
-  const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
 
 
 
