@@ -85,11 +85,11 @@ export const AnalyticsPage = () => {
   const totalSales = sales?.length ?? 0;
 
   const percentageChange =
-    revenueSummary?.percentageChange != null
-      ? `${revenueSummary.percentageChange}%`
-      : "0%";
+    revenueSummary?.percentageChange ?? "0%";
+  
+  const trend =
+    revenueSummary?.trend ?? "neutral";
 
-  const trend = revenueSummary?.trend ?? "neutral";
 
   /* ================= REVENUE TREND DATA ================= */
   const revenueTrendData = useMemo(() => {
