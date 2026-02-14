@@ -641,6 +641,7 @@ const paymentChartData = useMemo(() => {
               <p className="text-sm text-muted-foreground">No payments recorded this month</p>
             ) : (
               <div className="h-20">
+
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
@@ -677,6 +678,9 @@ const paymentChartData = useMemo(() => {
                     />
                   </BarChart>
                 </ResponsiveContainer>
+
+
+                
               </div>
             )}
       
