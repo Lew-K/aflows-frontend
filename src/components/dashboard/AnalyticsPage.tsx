@@ -29,6 +29,15 @@ import {
   Bar,
 } from 'recharts';
 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
+
+
 // Mock data - structured for backend integration
 
 
@@ -173,6 +182,18 @@ export const AnalyticsPage = () => {
     customEnd,
     fetchKey
   );
+
+  const {
+    paymentMethods: currentMonthPayments,
+    revenueSummary: currentMonthSummary,
+  } = useRevenueAnalytics(
+    businessId,
+    'this_month',
+    '',
+    '',
+    fetchKey
+  );
+
     
   
   // useEffect(() => {
@@ -222,21 +243,29 @@ export const AnalyticsPage = () => {
 
   // Normalize payment methods for chart (always current month)
 const paymentChartData = useMemo(() => {
-  if (!paymentMethods || paymentMethods.length === 0) return [];
+  if (!currentMonthPayments || currentMonthPayments.length === 0) return [];
 
-  const total = paymentMethods.reduce(
+  const total = currentMonthPayments.reduce(
     (sum, method) => sum + method.total,
     0
   );
 
   if (total === 0) return [];
 
-  return paymentMethods.map(method => ({
+  return currentMonthPayments.map(method => ({
     name: method.method,
     value: method.total,
     percentage: ((method.total / total) * 100).toFixed(0)
   }));
-}, [paymentMethods]);
+}, [currentMonthPayments]);
+
+  const currentMonthReceipts =
+    currentMonthSummary?.salesCount ?? 0;
+  
+  // Fake growth for now (replace later when backend supports it)
+  const receiptsGrowth = 12;
+
+
 
   
 
@@ -566,8 +595,20 @@ const paymentChartData = useMemo(() => {
                   <Receipt className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">756</p>
-              <p className="text-sm text-muted-foreground">Receipts Generated</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Receipts Generated (This Month)
+              </p>
+              
+              <div className="flex items-center gap-3">
+                <p className="text-2xl font-bold text-foreground">
+                  {currentMonthReceipts}
+                </p>
+              
+                <span className="text-sm font-medium text-green-600">
+                  ↑ {receiptsGrowth}%
+                </span>
+              </div>
+             
             </CardContent>
           </Card>
         </motion.div>
