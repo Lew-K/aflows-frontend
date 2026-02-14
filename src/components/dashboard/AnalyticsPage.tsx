@@ -614,7 +614,7 @@ const paymentChartData = useMemo(() => {
         </motion.div>
 
         
-        {{/* Payment Methods + Receipts (Current Month Only) */}
+        {/* Payment Methods + Receipts (Current Month Only) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
