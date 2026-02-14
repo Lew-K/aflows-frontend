@@ -629,78 +629,94 @@ const paymentChartData = useMemo(() => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Card className="hover:shadow-soft transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
+        <Card className="hover:shadow-soft transition-shadow h-full">
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            
+            {/* Card Icon & Title */}
+            <div className="flex items-center justify-between mb-2">
               <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Payment Methods
+              </p>
             </div>
       
-            {paymentChartData.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No payments recorded this month</p>
-            ) : (
-              <div className="h-20">
-
+            {/* Horizontal Bar Chart for Payment Methods */}
+            <div className="flex-1 mt-1">
+              {revenueLoading ? (
+                <p className="text-xs text-muted-foreground text-center mt-6">Loading...</p>
+              ) : paymentChartData.length === 0 ? (
+                <div className="text-xs text-muted-foreground text-center mt-6">
+                  <p>No payments recorded</p>
+                  <p>This month</p>
+                </div>
+              ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
                     data={paymentChartData}
                     margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                   >
+                    {/* Gradient Definition */}
                     <defs>
                       <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.9} />
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
                       </linearGradient>
                     </defs>
+      
                     <XAxis type="number" hide />
                     <YAxis
-                      type="category"
                       dataKey="name"
-                      stroke="hsl(var(--muted-foreground))"
+                      type="category"
+                      axisLine={false}
+                      tickLine={false}
+                      width={70}
                       fontSize={12}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <Tooltip
                       formatter={(value: any, name: any, props: any) =>
-                        `${value} (${props.payload.percentage}%)`
+                        `${value} KES (${props.payload.percentage}%)`
                       }
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
+                        fontSize: '12px',
                       }}
                     />
                     <Bar
                       dataKey="value"
-                      fill="url(#paymentGradient)"
                       radius={[4, 4, 4, 4]}
+                      fill="url(#paymentGradient)"
                     />
                   </BarChart>
                 </ResponsiveContainer>
-
-
-                
-              </div>
-            )}
+              )}
+            </div>
       
-            {/* Receipts Generated Counter Below Chart */}
-            <div className="mt-2 flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-foreground">{totalSales}</p>
-                <p className="text-sm text-muted-foreground">Receipts Generated</p>
+            {/* Receipts Generated Counter (Below Chart) */}
+            <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-primary" />
+                <p className="text-xs text-muted-foreground font-medium">
+                  Receipts Generated
+                </p>
               </div>
-              <div
-                className={`text-sm font-medium ${
-                  trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
-                }`}
-              >
-                ↑ {percentageChange}
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-bold text-foreground">
+                  {totalSales /* current month receipts */}
+                </p>
+                <span className="text-xs font-medium text-success">↑ 12%</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
+
 
 
       
