@@ -613,19 +613,20 @@ const paymentChartData = useMemo(() => {
           </Card>
         </motion.div>
 
-
+        
         {/* Payment Methods + Receipts (Current Month Only) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Card className="hover:shadow-soft transition-shadow">
-            <CardContent className="p-4">
+          <Card className="hover:shadow-soft transition-shadow h-full">
+            <CardContent className="p-4 flex flex-col justify-between h-full">
+              
               {/* Card Icon & Title */}
               <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Payment Methods
@@ -633,7 +634,7 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-24">
+              <div className="flex-1 mt-1">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">Loading...</p>
                 ) : paymentChartData.length === 0 ? (
@@ -654,16 +655,27 @@ const paymentChartData = useMemo(() => {
                         type="category"
                         axisLine={false}
                         tickLine={false}
-                        width={60}
+                        width={70}
                         fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       />
                       <Tooltip
                         formatter={(value: any, name: any, props: any) =>
-                          `${value} (${props.payload.percentage}%)`
+                          `${value} KES (${props.payload.percentage}%)`
                         }
-                        wrapperStyle={{ fontSize: '12px' }}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          color: 'hsl(var(--foreground))',
+                          fontSize: '12px',
+                        }}
                       />
-                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} />
+                      <Bar
+                        dataKey="value"
+                        radius={[4, 4, 4, 4]}
+                        fill="hsl(var(--primary))"
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -679,7 +691,7 @@ const paymentChartData = useMemo(() => {
                 </div>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-bold text-foreground">
-                    {totalSales /* replace with currentMonthReceipts if available */}
+                    {totalSales /* current month receipts */}
                   </p>
                   <span className="text-xs font-medium text-success">↑ 12%</span>
                 </div>
@@ -687,6 +699,7 @@ const paymentChartData = useMemo(() => {
             </CardContent>
           </Card>
         </motion.div>
+
 
 
       
