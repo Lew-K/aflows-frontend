@@ -614,7 +614,7 @@ const paymentChartData = useMemo(() => {
         </motion.div>
 
         
-        {/* Payment Methods + Receipts (Current Month Only) */}
+        {{/* Payment Methods + Receipts (Current Month Only) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -649,6 +649,14 @@ const paymentChartData = useMemo(() => {
                       data={paymentChartData}
                       margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                     >
+                      {/* Gradient Definition */}
+                      <defs>
+                        <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                        </linearGradient>
+                      </defs>
+        
                       <XAxis type="number" hide />
                       <YAxis
                         dataKey="name"
@@ -674,7 +682,7 @@ const paymentChartData = useMemo(() => {
                       <Bar
                         dataKey="value"
                         radius={[4, 4, 4, 4]}
-                        fill="hsl(var(--primary))"
+                        fill="url(#paymentGradient)"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -699,6 +707,7 @@ const paymentChartData = useMemo(() => {
             </CardContent>
           </Card>
         </motion.div>
+
 
 
 
