@@ -614,8 +614,7 @@ const paymentChartData = useMemo(() => {
         </motion.div>
 
 
-
-        {/* Payment Methods + Receipts (Current Month) */}
+        {/* Payment Methods + Receipts (Current Month Only) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -624,54 +623,54 @@ const paymentChartData = useMemo(() => {
           <Card className="hover:shadow-soft transition-shadow">
             <CardContent className="p-4">
               {/* Card Icon & Title */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-                  <FileUp className="w-5 h-5 text-primary" />
+                  <DollarSign className="w-5 h-5 text-primary" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Payment Methods
                 </p>
               </div>
         
-              {/* Payment Methods Chart */}
-              <div className="h-28">
+              {/* Horizontal Bar Chart for Payment Methods */}
+              <div className="h-24">
                 {revenueLoading ? (
-                  <p className="text-sm text-muted-foreground text-center mt-8">Loading...</p>
+                  <p className="text-xs text-muted-foreground text-center mt-6">Loading...</p>
                 ) : paymentChartData.length === 0 ? (
-                  <div className="text-xs text-muted-foreground text-center mt-8">
+                  <div className="text-xs text-muted-foreground text-center mt-6">
                     <p>No payments recorded</p>
                     <p>This month</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={paymentChartData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={30}
-                        outerRadius={40}
-                        paddingAngle={2}
-                      >
-                        {paymentChartData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={`hsl(var(--primary) / ${1 - index * 0.2})`}
-                          />
-                        ))}
-                      </Pie>
+                    <BarChart
+                      layout="vertical"
+                      data={paymentChartData}
+                      margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                    >
+                      <XAxis type="number" hide />
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        axisLine={false}
+                        tickLine={false}
+                        width={60}
+                        fontSize={12}
+                      />
                       <Tooltip
                         formatter={(value: any, name: any, props: any) =>
-                          `${props.payload.percentage}%`
+                          `${value} (${props.payload.percentage}%)`
                         }
+                        wrapperStyle={{ fontSize: '12px' }}
                       />
-                    </PieChart>
+                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
         
-              {/* Receipts Generated (Below Chart) */}
-              <div className="mt-3 flex items-center justify-between border-t border-border pt-2">
+              {/* Receipts Generated Counter (Below Chart) */}
+              <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
                 <div className="flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-primary" />
                   <p className="text-xs text-muted-foreground font-medium">
@@ -680,15 +679,15 @@ const paymentChartData = useMemo(() => {
                 </div>
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-bold text-foreground">
-                    {totalSales /* or currentMonthReceipts if different */}
+                    {totalSales /* replace with currentMonthReceipts if available */}
                   </p>
-                  {/* Temporary growth % (replace with backend later) */}
                   <span className="text-xs font-medium text-success">↑ 12%</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
+
 
       
        
