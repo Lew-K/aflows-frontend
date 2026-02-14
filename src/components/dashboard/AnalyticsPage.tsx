@@ -220,6 +220,26 @@ export const AnalyticsPage = () => {
     }));
   }, [topSellingItems, chartMetric]);
 
+  // Normalize payment methods for chart (always current month)
+const paymentChartData = useMemo(() => {
+  if (!paymentMethods || paymentMethods.length === 0) return [];
+
+  const total = paymentMethods.reduce(
+    (sum, method) => sum + method.total,
+    0
+  );
+
+  if (total === 0) return [];
+
+  return paymentMethods.map(method => ({
+    name: method.method,
+    value: method.total,
+    percentage: ((method.total / total) * 100).toFixed(0)
+  }));
+}, [paymentMethods]);
+
+  
+
 
   
   // const chartTopItems = topSellingItems?.map(item => ({
@@ -552,7 +572,7 @@ export const AnalyticsPage = () => {
           </Card>
         </motion.div>
       
-        {/* Files Uploaded */}
+        {/* Payment Methods (Current Month Only) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -565,11 +585,50 @@ export const AnalyticsPage = () => {
                   <FileUp className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">234</p>
-              <p className="text-sm text-muted-foreground">Files Uploaded</p>
+        
+              {revenueLoading ? (
+                <p className="text-muted-foreground">Loading...</p>
+              ) : paymentChartData.length === 0 ? (
+                <div className="text-sm text-muted-foreground">
+                  <p>No payments recorded</p>
+                  <p>This month</p>
+                </div>
+              ) : (
+                <div className="h-32">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={paymentChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={40}
+                        outerRadius={55}
+                        paddingAngle={2}
+                      >
+                        {paymentChartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={`hsl(var(--primary) / ${1 - index * 0.2})`}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: any, name: any, props: any) =>
+                          `${props.payload.percentage}%`
+                        }
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+        
+              <p className="text-sm text-muted-foreground mt-2">
+                Payment Methods (This Month)
+              </p>
             </CardContent>
           </Card>
         </motion.div>
+
       </div>
 
       
