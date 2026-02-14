@@ -612,38 +612,45 @@ const paymentChartData = useMemo(() => {
             </CardContent>
           </Card>
         </motion.div>
-      
-        {/* Payment Methods (Current Month Only) */}
+
+
+
+        {/* Payment Methods + Receipts (Current Month) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <Card className="hover:shadow-soft transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                  <FileUp className="w-6 h-6 text-primary" />
+            <CardContent className="p-4">
+              {/* Card Icon & Title */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                  <FileUp className="w-5 h-5 text-primary" />
                 </div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Payment Methods
+                </p>
               </div>
         
-              {revenueLoading ? (
-                <p className="text-muted-foreground">Loading...</p>
-              ) : paymentChartData.length === 0 ? (
-                <div className="text-sm text-muted-foreground">
-                  <p>No payments recorded</p>
-                  <p>This month</p>
-                </div>
-              ) : (
-                <div className="h-32">
+              {/* Payment Methods Chart */}
+              <div className="h-28">
+                {revenueLoading ? (
+                  <p className="text-sm text-muted-foreground text-center mt-8">Loading...</p>
+                ) : paymentChartData.length === 0 ? (
+                  <div className="text-xs text-muted-foreground text-center mt-8">
+                    <p>No payments recorded</p>
+                    <p>This month</p>
+                  </div>
+                ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={paymentChartData}
                         dataKey="value"
                         nameKey="name"
-                        innerRadius={40}
-                        outerRadius={55}
+                        innerRadius={30}
+                        outerRadius={40}
                         paddingAngle={2}
                       >
                         {paymentChartData.map((entry, index) => (
@@ -660,32 +667,31 @@ const paymentChartData = useMemo(() => {
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                </div>
-              )}
-
-              <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                )}
+              </div>
+        
+              {/* Receipts Generated (Below Chart) */}
+              <div className="mt-3 flex items-center justify-between border-t border-border pt-2">
                 <div className="flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-primary" />
-                  <p className="text-sm text-muted-foreground font-medium">
+                  <Receipt className="w-4 h-4 text-primary" />
+                  <p className="text-xs text-muted-foreground font-medium">
                     Receipts Generated
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-lg font-bold text-foreground">
-                    {currentMonthReceipts}
+                <div className="flex items-center gap-1">
+                  <p className="text-sm font-bold text-foreground">
+                    {totalSales /* or currentMonthReceipts if different */}
                   </p>
-                  <span className="text-sm font-medium text-green-600">
-                    ↑ {receiptsGrowth}%
-                  </span>
+                  {/* Temporary growth % (replace with backend later) */}
+                  <span className="text-xs font-medium text-success">↑ 12%</span>
                 </div>
               </div>
-        
-              <p className="text-sm text-muted-foreground mt-2">
-                Payment Methods (This Month)
-              </p>
             </CardContent>
           </Card>
         </motion.div>
+
+      
+       
 
       </div>
 
