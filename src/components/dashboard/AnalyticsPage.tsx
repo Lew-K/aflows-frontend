@@ -662,6 +662,23 @@ const paymentChartData = useMemo(() => {
                   </ResponsiveContainer>
                 </div>
               )}
+
+              <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-primary" />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Receipts Generated
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-lg font-bold text-foreground">
+                    {currentMonthReceipts}
+                  </p>
+                  <span className="text-sm font-medium text-green-600">
+                    ↑ {receiptsGrowth}%
+                  </span>
+                </div>
+              </div>
         
               <p className="text-sm text-muted-foreground mt-2">
                 Payment Methods (This Month)
