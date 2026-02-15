@@ -44,19 +44,22 @@ export const RegisterSection = () => {
         password: data.password,
       });
       
-      if (response.success && response.token && response.user) {
-        login(response.token, response.user);
+      if (response.success && response.access_token) {
+        login(response.access_token, {
+          businessId: response.business_id,
+          businessName: response.business_name,
+          ownerName: response.business_owner,
+          email: data.email,
+        });
+      
+        localStorage.setItem('access_token', response.access_token);
+      
         toast.success('Registration successful! Welcome to Aflows.');
         navigate('/dashboard');
       } else {
         toast.error(response.message || 'Registration failed. Please try again.');
       }
-    } catch (error) {
-      toast.error('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   return (
     <section id="register" className="section-padding bg-secondary/30">
@@ -176,7 +179,7 @@ export const RegisterSection = () => {
                 )}
               </div>
 
-              <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+              <Button type="submit" variant="hero" className="w-full" disabled={isLoading || passwordsDontMatch}>
                 {isLoading ? (
                   <LoadingSpinner size="sm" />
                 ) : (
