@@ -45,7 +45,7 @@ export const LoginSection = () => {
 
         });
 
-        localStorage.setItem('refresh_token', response.refresh_token);
+        localStorage.setItem('access_token', response.access_token);
 
 
         toast.success('Login successful! Redirecting to dashboard...');
