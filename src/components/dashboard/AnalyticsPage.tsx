@@ -684,13 +684,34 @@ export const AnalyticsPage = () => {
                         width={80}
                         fontSize={12}
                       />
-                  
+
                       <Tooltip
-                        formatter={(value: any, name: any, props: any) =>
-                          `KES ${props.payload.revenue.toLocaleString()}`
-                        }
-                        separator=""
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length > 0) {
+                            const data = payload[0].payload; // get the full data object
+                            return (
+                              <div
+                                style={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px',
+                                  padding: '6px 10px',
+                                  fontSize: 12,
+                                }}
+                              >
+                                <div style={{ fontWeight: 600, marginBottom: 2 }}>
+                                  {data.name}
+                                </div>
+                                <div>Revenue: KES {data.revenue.toLocaleString()}</div>
+                                <div>Transactions: {data.percentage}%</div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
                       />
+
+                      
                   
                       <Bar
                         dataKey="percentage"
