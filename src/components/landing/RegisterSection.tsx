@@ -44,8 +44,6 @@ export const RegisterSection = () => {
         phone: data.phone,
         password: data.password,
       });
-
-      const res = resArray[0];      
       
       if (res.success && res.access_token) {
         login(res.access_token, {
