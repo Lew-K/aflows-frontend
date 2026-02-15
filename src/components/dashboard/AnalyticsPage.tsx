@@ -253,27 +253,34 @@ export const AnalyticsPage = () => {
   
 
   // Normalize payment methods for chart (always current month)
-const paymentChartData = useMemo(() => {
-  if (!currentMonthPayments || currentMonthPayments.length === 0) return [];
+// const paymentChartData = useMemo(() => {
+//   if (!currentMonthPayments || currentMonthPayments.length === 0) return [];
 
-  const total = currentMonthPayments.reduce(
-    (sum, method) => sum + method.total,
-    0
-  );
+//   const total = currentMonthPayments.reduce(
+//     (sum, method) => sum + method.total,
+//     0
+//   );
 
-  if (total === 0) return [];
+//   if (total === 0) return [];
 
-  return currentMonthPayments
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 3)
-    .map(method => ({
-      name: method.method,
-      value: method.total,
-      percentage: ((method.total / total) * 100).toFixed(0)
-    }));
-}, [currentMonthPayments]);
+//   return currentMonthPayments
+//     .sort((a, b) => b.total - a.total)
+//     .slice(0, 3)
+//     .map(method => ({
+//       name: method.method,
+//       value: method.total,
+//       percentage: ((method.total / total) * 100).toFixed(0)
+//     }));
+// }, [currentMonthPayments]);
 
 
+  const paymentChartData = paymentMethods.map(method => ({
+    name: method.method,
+    percentage: Number(method.percentageOfRevenue) || 0,
+    revenue: Number(method.metrics?.revenue) || 0,
+  }));
+  
+  
   const currentMonthReceipts =
     currentMonthSummary?.salesCount ?? 0;
   
@@ -655,14 +662,19 @@ const paymentChartData = useMemo(() => {
                     <p>This month</p>
                   </div>
                 ) : (
+
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       layout="vertical"
                       data={paymentChartData}
                       margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
                     >
-                      <XAxis type="number" hide />
-              
+                      <XAxis
+                        type="number"
+                        domain={[0, 100]}
+                        hide
+                      />
+                  
                       <YAxis
                         dataKey="name"
                         type="category"
@@ -670,37 +682,32 @@ const paymentChartData = useMemo(() => {
                         tickLine={false}
                         width={80}
                         fontSize={12}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       />
-              
+                  
                       <Tooltip
                         formatter={(value: any, name: any, props: any) =>
-                          `KES ${value.toLocaleString()} (${props.payload.percentage}%)`
+                          `KES ${props.payload.revenue.toLocaleString()}`
                         }
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
+                        labelFormatter={(label) => `${label}`}
                       />
-              
+                  
                       <Bar
-                        dataKey="value"
-                        fill="hsl(var(--primary))"
+                        dataKey="percentage"
+                        fill="#2563eb"
                         radius={[4, 4, 4, 4]}
                         isAnimationActive
                         animationDuration={800}
                       >
-                        {/* <LabelList
+                        <LabelList
                           dataKey="percentage"
-                          position="right"
+                          position="insideRight"
                           formatter={(value: any) => `${value}%`}
                           style={{
-                            fill: "hsl(var(--foreground))",
+                            fill: "#ffffff",
                             fontSize: 11,
                             fontWeight: 600,
                           }}
-                        /> */}
+                        />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
