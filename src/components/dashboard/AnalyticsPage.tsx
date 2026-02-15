@@ -276,7 +276,7 @@ export const AnalyticsPage = () => {
 
   const paymentChartData = paymentMethods.map(method => ({
     name: method.method,
-    percentage: Number(method.percentageOfRevenue) || 0,
+    percentage: Number(method.percentageOfTransactions) || 0,
     revenue: Number(method.metrics?.revenue) || 0,
   }));
   
@@ -638,7 +638,8 @@ export const AnalyticsPage = () => {
                   <DollarSign className="w-5 h-5 text-primary" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Payment Methods
+                  Payment Breakdown (This Month)
+
                 </p>
               </div>
         
@@ -689,12 +690,13 @@ export const AnalyticsPage = () => {
                           `KES ${props.payload.revenue.toLocaleString()}`
                         }
                         labelFormatter={(label) => `${label}`}
+                        separator=""
                       />
                   
                       <Bar
                         dataKey="percentage"
-                        fill="#2563eb"
-                        radius={[4, 4, 4, 4]}
+                        fill="hsl(var(--primary))"
+                        radius={[6, 6, 6, 6]}
                         isAnimationActive
                         animationDuration={800}
                       >
@@ -703,7 +705,7 @@ export const AnalyticsPage = () => {
                           position="insideRight"
                           formatter={(value: any) => `${value}%`}
                           style={{
-                            fill: "#ffffff",
+                            fill: "hsl(var(--primary-foreground))",
                             fontSize: 11,
                             fontWeight: 600,
                           }}
