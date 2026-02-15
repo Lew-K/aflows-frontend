@@ -38,8 +38,8 @@ export const RegisterSection = () => {
     try {
 
       const [res] = await registerBusiness({
-        businessName: data.businessName,
-        ownerName: data.ownerName,
+        business_name: data.businessName,
+        business_owner: data.ownerName,
         email: data.email,
         phone: data.phone,
         password: data.password,
