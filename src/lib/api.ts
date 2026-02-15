@@ -43,12 +43,40 @@ export const registerBusiness = async (data: RegisterData): Promise<AuthResponse
     }),
   });
 
-  if (!response.ok) {
-    throw new Error('Registration failed');
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("Empty response from server");
   }
 
-  return response.json();
+  const parsed = JSON.parse(text);
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Registration failed');
+  }
+
+  return parsed;
 };
+
+
+// export const registerBusiness = async (data: RegisterData): Promise<AuthResponse> => {
+//   const response = await fetch(`${BASE_URL}/register-business`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       ...data,
+//       password: hashPassword(data.password),
+//     }),
+//   });
+
+//   if (!response.ok) {
+//     throw new Error('Registration failed');
+//   }
+
+//   return response.json();
+// };
 
 export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
   const response = await fetch(`${BASE_URL}/login-business`, {
