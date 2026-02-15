@@ -633,9 +633,11 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-24">
+              <div className="h-28">
                 {revenueLoading ? (
-                  <p className="text-xs text-muted-foreground text-center mt-6">Loading...</p>
+                  <p className="text-xs text-muted-foreground text-center mt-6">
+                    Loading...
+                  </p>
                 ) : paymentChartData.length === 0 ? (
                   <div className="text-xs text-muted-foreground text-center mt-6">
                     <p>No payments recorded</p>
@@ -646,28 +648,49 @@ const paymentChartData = useMemo(() => {
                     <BarChart
                       layout="vertical"
                       data={paymentChartData}
-                      margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                      margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
                     >
+                      {/* Gradient like Revenue Trend */}
+                      <defs>
+                        <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                        </linearGradient>
+                      </defs>
+              
                       <XAxis type="number" hide />
+              
                       <YAxis
                         dataKey="name"
                         type="category"
                         axisLine={false}
                         tickLine={false}
-                        width={60}
+                        width={70}
                         fontSize={12}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       />
+              
                       <Tooltip
                         formatter={(value: any, name: any, props: any) =>
-                          `${value} (${props.payload.percentage}%)`
+                          `KES ${value.toLocaleString()} (${props.payload.percentage}%)`
                         }
-                        wrapperStyle={{ fontSize: '12px' }}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
                       />
-                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} />
+              
+                      <Bar
+                        dataKey="value"
+                        fill="url(#paymentGradient)"
+                        radius={[4, 4, 4, 4]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
+
         
               {/* Receipts Generated Counter (Below Chart) */}
               <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
@@ -789,12 +812,30 @@ const paymentChartData = useMemo(() => {
               </div>
             ) : (
               
-              <div className="h-72">
+              <div className="h-64 sm:h-72">
                <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartTopItems}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+
+                  <XAxis
+                    dataKey="name"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    interval={0}
+                    angle={-25}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+
+                  
+                
+
+                  
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
