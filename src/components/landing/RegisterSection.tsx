@@ -36,7 +36,8 @@ export const RegisterSection = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const response = await registerBusiness({
+
+      const [res] = await registerBusiness({
         businessName: data.businessName,
         ownerName: data.ownerName,
         email: data.email,
@@ -44,21 +45,48 @@ export const RegisterSection = () => {
         password: data.password,
       });
       
-      if (response.success && response.access_token) {
-        login(response.access_token, {
-          businessId: response.business_id,
-          businessName: response.business_name,
-          ownerName: response.business_owner,
+      if (res.success && res.access_token) {
+        login(res.access_token, {
+          businessId: res.business_id,
+          businessName: res.business_name,
+          ownerName: res.business_owner,
           email: data.email,
         });
       
-        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('access_token', res.access_token);
+        localStorage.setItem('refresh_token', res.refresh_token);
       
         toast.success('Registration successful! Welcome to Aflows.');
         navigate('/dashboard');
       } else {
-        toast.error(response.message || 'Registration failed. Please try again.');
+        toast.error(res.message || 'Registration failed. Please try again.');
       }
+
+
+      
+  //     const response = await registerBusiness({
+  //       businessName: data.businessName,
+  //       ownerName: data.ownerName,
+  //       email: data.email,
+  //       phone: data.phone,
+  //       password: data.password,
+  //     });
+      
+  //     if (response.success && response.access_token) {
+  //       login(response.access_token, {
+  //         businessId: response.business_id,
+  //         businessName: response.business_name,
+  //         ownerName: response.business_owner,
+  //         email: data.email,
+  //       });
+      
+  //       localStorage.setItem('access_token', response.access_token);
+      
+  //       toast.success('Registration successful! Welcome to Aflows.');
+  //       navigate('/dashboard');
+  //     } else {
+  //       toast.error(response.message || 'Registration failed. Please try again.');
+  //     }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
     } finally {
