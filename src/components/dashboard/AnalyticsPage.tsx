@@ -237,11 +237,20 @@ export const AnalyticsPage = () => {
 
   const chartTopItems = useMemo(() => {
     if (!topSellingItems) return [];
+  
     return topSellingItems.map(item => ({
-      name: item.item,
-      total: chartMetric === 'quantity' ? item.quantity : item.revenue
+      name: item.item
+        ?.toLowerCase()
+        .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+  
+      total: chartMetric === 'quantity'
+        ? item.quantity
+        : item.revenue
     }));
   }, [topSellingItems, chartMetric]);
+
+
+  
 
   // Normalize payment methods for chart (always current month)
 const paymentChartData = useMemo(() => {
@@ -261,31 +270,12 @@ const paymentChartData = useMemo(() => {
   }));
 }, [currentMonthPayments]);
 
-  // const filteredSales = allSales.filter(sale =>
-  //   sale.date >= startDate && sale.date <= endDate
-  // );
-
 
   const currentMonthReceipts =
     currentMonthSummary?.salesCount ?? 0;
   
   // Fake growth for now (replace later when backend supports it)
   const receiptsGrowth = 12;
-
-
-
-  
-
-
-  
-  // const chartTopItems = topSellingItems?.map(item => ({
-  //   name: item.item,
-  //   total: chartMetric === 'quantity' ? item.quantity : item.revenue
-  // })) ?? [];
-
-  
-
-
 
 
 
@@ -838,9 +828,15 @@ const paymentChartData = useMemo(() => {
               </div>
             ) : (
               
-              <div className="h-64 sm:h-72">
+              <div className="h-72">
                <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartTopItems}>
+                <BarChart
+                  data={chartTopItems}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                >
+
+
+                  
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
 
                   <XAxis
@@ -869,7 +865,17 @@ const paymentChartData = useMemo(() => {
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="total"
+                    fill="hsl(var(--primary))"
+                    radius={[6, 6, 0, 0]}
+                    isAnimationActive
+                    animationDuration={900}
+                  />
+
+
+
+                  
                 </BarChart>
               </ResponsiveContainer>
             </div>
