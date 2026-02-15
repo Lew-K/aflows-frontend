@@ -277,6 +277,9 @@ const paymentChartData = useMemo(() => {
   // Fake growth for now (replace later when backend supports it)
   const receiptsGrowth = 12;
 
+  const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
+
+
 
 
   // const { percentageChange, trend } = useMemo(() => {
@@ -630,7 +633,8 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-12 mt-2">
+
+              <div className="h-20 mt-2">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
@@ -645,21 +649,8 @@ const paymentChartData = useMemo(() => {
                     <BarChart
                       layout="vertical"
                       data={paymentChartData}
-                      margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
+                      margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
                     >
-                      {/* Gradient like Revenue Trend */}
-
-
-                      {/* <defs>
-                        <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
-                        </linearGradient>
-                      </defs> */}
-
-
-
-                                  
                       <XAxis type="number" hide />
               
                       <YAxis
@@ -667,7 +658,7 @@ const paymentChartData = useMemo(() => {
                         type="category"
                         axisLine={false}
                         tickLine={false}
-                        width={70}
+                        width={80}
                         fontSize={12}
                         tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       />
@@ -682,33 +673,30 @@ const paymentChartData = useMemo(() => {
                           borderRadius: '8px',
                         }}
                       />
-
+              
                       <Bar
                         dataKey="value"
+                        fill="hsl(var(--primary))"
                         radius={[4, 4, 4, 4]}
                         isAnimationActive
                         animationDuration={900}
                       >
-                        {paymentChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill="#3b82f6" />
-                        ))}
-                        
                         <LabelList
                           dataKey="percentage"
-                          position="insideRight"
+                          position="right"
                           formatter={(value: any) => `${value}%`}
                           style={{
-                            fill: "#ffffff",
+                            fill: "hsl(var(--foreground))",
                             fontSize: 11,
                             fontWeight: 600,
                           }}
                         />
                       </Bar>
-                      
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
+
 
         
               {/* Receipts Generated Counter (Below Chart) */}
@@ -756,9 +744,50 @@ const paymentChartData = useMemo(() => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+
+              <div className="flex justify-center gap-2 mb-4">
+                <button
+                  className={`px-3 py-1 rounded-xl text-sm font-medium ${
+                    revenueView === 'monthly'
+                      ? 'bg-primary text-white'
+                      : 'bg-card text-foreground'
+                  }`}
+                  onClick={() => setRevenueView('monthly')}
+                >
+                  Monthly
+                </button>
+              
+                <button
+                  className={`px-3 py-1 rounded-xl text-sm font-medium ${
+                    revenueView === 'daily'
+                      ? 'bg-primary text-white'
+                      : 'bg-card text-foreground'
+                  }`}
+                  onClick={() => setRevenueView('daily')}
+                >
+                  Daily
+                </button>
+              </div>
+
+              
+
+              
+              
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueData ?? []}>
+
+                  <AreaChart
+                    data={
+                      revenueView === 'monthly'
+                        ? revenueData
+                        : dailyRevenue ?? []
+                    }
+                  >
+
+                  
+                  {/* <AreaChart data={revenueData ?? []}> */}
+
+                    
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -766,7 +795,8 @@ const paymentChartData = useMemo(() => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <XAxis 
+                      dataKey={revenueView === 'monthly' ? 'month' : 'date'} stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <Tooltip
                       contentStyle={{
@@ -803,7 +833,8 @@ const paymentChartData = useMemo(() => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2 mb-3">
+              <div className="flex justify-center gap-2 mb-4">
+
                 <button
                   className={`px-3 py-1 rounded-xl text-sm font-medium ${
                     chartMetric === 'quantity' ? 'bg-primary text-white' : 'bg-card text-foreground'
