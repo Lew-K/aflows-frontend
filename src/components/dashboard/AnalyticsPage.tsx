@@ -1,4 +1,6 @@
 import React from 'react';
+import { LabelList } from "recharts";
+
 import { useAuth } from '@/contexts/AuthContext';
 
 import { useSales } from '@/hooks/useSales';
@@ -258,6 +260,11 @@ const paymentChartData = useMemo(() => {
     percentage: ((method.total / total) * 100).toFixed(0)
   }));
 }, [currentMonthPayments]);
+
+  const filteredSales = allSales.filter(sale =>
+    sale.date >= startDate && sale.date <= endDate
+  );
+
 
   const currentMonthReceipts =
     currentMonthSummary?.salesCount ?? 0;
@@ -633,7 +640,7 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-28">
+              <div className="h-20 mt-2">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
@@ -651,13 +658,18 @@ const paymentChartData = useMemo(() => {
                       margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
                     >
                       {/* Gradient like Revenue Trend */}
+
+
                       <defs>
                         <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
                           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
                         </linearGradient>
                       </defs>
-              
+
+
+
+                                  
                       <XAxis type="number" hide />
               
                       <YAxis
@@ -680,12 +692,26 @@ const paymentChartData = useMemo(() => {
                           borderRadius: '8px',
                         }}
                       />
-              
+
                       <Bar
                         dataKey="value"
                         fill="url(#paymentGradient)"
                         radius={[4, 4, 4, 4]}
-                      />
+                        isAnimationActive
+                        animationDuration={800}
+                      >
+                        <LabelList
+                          dataKey="percentage"
+                          position="insideRight"
+                          formatter={(value: any) => `${value}%`}
+                          style={{
+                            fill: "#fff",
+                            fontSize: 11,
+                            fontWeight: 500,
+                          }}
+                        />
+                      </Bar>
+                      
                     </BarChart>
                   </ResponsiveContainer>
                 )}
