@@ -500,7 +500,7 @@ const paymentChartData = useMemo(() => {
           <Card className="hover:shadow-soft transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                <div className="w-12 h-9 rounded-xl bg-secondary flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-primary" />
                 </div>
               </div>
@@ -630,7 +630,7 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-12 mt-2">
+              <div className="h-13 mt-2">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
