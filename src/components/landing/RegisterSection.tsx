@@ -37,9 +37,10 @@ export const RegisterSection = () => {
     setIsLoading(true);
     try {
 
-      const [res] = await registerBusiness({
-        business_name: data.businessName,
-        business_owner: data.ownerName,
+      const res = await registerBusiness({
+        
+        businessName: data.businessName,
+        ownerName: data.ownerName,
         email: data.email,
         phone: data.phone,
         password: data.password,
