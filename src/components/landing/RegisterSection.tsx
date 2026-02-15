@@ -44,6 +44,8 @@ export const RegisterSection = () => {
         phone: data.phone,
         password: data.password,
       });
+
+      const res = resArray[0];      
       
       if (res.success && res.access_token) {
         login(res.access_token, {
@@ -54,8 +56,7 @@ export const RegisterSection = () => {
         });
       
         localStorage.setItem('access_token', res.access_token);
-        localStorage.setItem('refresh_token', res.refresh_token);
-      
+
         toast.success('Registration successful! Welcome to Aflows.');
         navigate('/dashboard');
       } else {
@@ -88,6 +89,7 @@ export const RegisterSection = () => {
   //       toast.error(response.message || 'Registration failed. Please try again.');
   //     }
     } catch (error) {
+      console.error('Register error:', error); // <-- log for debugging
       toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
