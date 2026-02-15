@@ -630,7 +630,7 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-16 mt-2">
+              <div className="h-14 mt-2">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
