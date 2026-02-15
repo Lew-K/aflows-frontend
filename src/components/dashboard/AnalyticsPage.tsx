@@ -638,8 +638,7 @@ export const AnalyticsPage = () => {
                   <DollarSign className="w-5 h-5 text-primary" />
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Payment Breakdown (This Month)
-
+                  Payment Breakdown
                 </p>
               </div>
         
