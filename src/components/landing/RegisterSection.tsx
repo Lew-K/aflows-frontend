@@ -59,6 +59,12 @@ export const RegisterSection = () => {
       } else {
         toast.error(response.message || 'Registration failed. Please try again.');
       }
+    } catch (error) {
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   return (
