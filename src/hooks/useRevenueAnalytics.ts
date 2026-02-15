@@ -26,7 +26,8 @@ interface PaymentMethod {
     revenue: number;
     transactionCount: number;
   };
-  percentageOfTotal: number;
+  percentageOfRevenue: number;
+  percentageOfTransactions: number;
 }
 
 export const useRevenueAnalytics = (
