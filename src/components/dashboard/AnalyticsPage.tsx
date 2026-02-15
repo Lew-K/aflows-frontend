@@ -261,9 +261,9 @@ const paymentChartData = useMemo(() => {
   }));
 }, [currentMonthPayments]);
 
-  const filteredSales = allSales.filter(sale =>
-    sale.date >= startDate && sale.date <= endDate
-  );
+  // const filteredSales = allSales.filter(sale =>
+  //   sale.date >= startDate && sale.date <= endDate
+  // );
 
 
   const currentMonthReceipts =
