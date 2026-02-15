@@ -36,17 +36,20 @@ export const LoginSection = () => {
         email: data.email,
         password: data.password,
       });      
-      if (response.success && response.token && response.user) {      
-        login(response.token, response.user);
+      if (response.success && response.access_token) {    
+        login(response.access_token, {
+          businessId: response.business_id,
+          businessName: response.business_name,
+          ownerName: response.business_owner,
+          email: data.email, // from form
+
+        });
+
+        localStorage.setItem('refresh_token', response.refresh_token);
+
+
         toast.success('Login successful! Redirecting to dashboard...');
         navigate('/dashboard');
-        localStorage.setItem(
-          'business',
-          JSON.stringify({
-            id: response.business_id,
-            name: response.business_name,
-          })
-        );  
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
