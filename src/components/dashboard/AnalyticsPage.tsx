@@ -263,11 +263,14 @@ const paymentChartData = useMemo(() => {
 
   if (total === 0) return [];
 
-  return currentMonthPayments.map(method => ({
-    name: method.method,
-    value: method.total,
-    percentage: ((method.total / total) * 100).toFixed(0)
-  }));
+  return currentMonthPayments
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3)
+    .map(method => ({
+      name: method.method,
+      value: method.total,
+      percentage: ((method.total / total) * 100).toFixed(0)
+    }));
 }, [currentMonthPayments]);
 
 
@@ -634,7 +637,14 @@ const paymentChartData = useMemo(() => {
         
               {/* Horizontal Bar Chart for Payment Methods */}
 
-              <div className="h-20 mt-2">
+              <div
+                className="mt-2"
+                style={{
+                  height: `${paymentChartData.length * 28}px`,
+                  minHeight: "56px",
+                }}
+              >
+
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
@@ -679,9 +689,9 @@ const paymentChartData = useMemo(() => {
                         fill="hsl(var(--primary))"
                         radius={[4, 4, 4, 4]}
                         isAnimationActive
-                        animationDuration={900}
+                        animationDuration={800}
                       >
-                        <LabelList
+                        {/* <LabelList
                           dataKey="percentage"
                           position="right"
                           formatter={(value: any) => `${value}%`}
@@ -690,7 +700,7 @@ const paymentChartData = useMemo(() => {
                             fontSize: 11,
                             fontWeight: 600,
                           }}
-                        />
+                        /> */}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -796,7 +806,23 @@ const paymentChartData = useMemo(() => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
-                      dataKey={revenueView === 'monthly' ? 'month' : 'date'} stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      dataKey={revenueView === 'monthly' ? 'month' : 'date'} 
+                      stroke="hsl(var(--muted-foreground))" 
+                      fontSize={12} 
+                      tickFormatter={(value) => {
+                        if (revenueView === 'monthly') return value;
+                    
+                        const date = new Date(value);
+                        return date.toLocaleDateString(undefined, {
+                          day: 'numeric',
+                          month: 'short',
+                        });
+                      }}
+                    />
+                    
+                      
+                      
+                                      
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <Tooltip
                       contentStyle={{
