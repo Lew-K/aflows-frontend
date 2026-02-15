@@ -689,7 +689,6 @@ export const AnalyticsPage = () => {
                         formatter={(value: any, name: any, props: any) =>
                           `KES ${props.payload.revenue.toLocaleString()}`
                         }
-                        labelFormatter={(label) => `${label}`}
                         separator=""
                       />
                   
