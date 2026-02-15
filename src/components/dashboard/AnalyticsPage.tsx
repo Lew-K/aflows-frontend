@@ -630,7 +630,7 @@ const paymentChartData = useMemo(() => {
               </div>
         
               {/* Horizontal Bar Chart for Payment Methods */}
-              <div className="h-20 mt-2">
+              <div className="h-16 mt-2">
                 {revenueLoading ? (
                   <p className="text-xs text-muted-foreground text-center mt-6">
                     Loading...
@@ -650,12 +650,12 @@ const paymentChartData = useMemo(() => {
                       {/* Gradient like Revenue Trend */}
 
 
-                      <defs>
+                      {/* <defs>
                         <linearGradient id="paymentGradient" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
                           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
                         </linearGradient>
-                      </defs>
+                      </defs> */}
 
 
 
@@ -685,19 +685,22 @@ const paymentChartData = useMemo(() => {
 
                       <Bar
                         dataKey="value"
-                        fill="url(#paymentGradient)"
                         radius={[4, 4, 4, 4]}
                         isAnimationActive
-                        animationDuration={800}
+                        animationDuration={900}
                       >
+                        {paymentChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill="#3b82f6" />
+                        ))}
+                        
                         <LabelList
                           dataKey="percentage"
                           position="insideRight"
                           formatter={(value: any) => `${value}%`}
                           style={{
-                            fill: "#fff",
+                            fill: "#ffffff",
                             fontSize: 11,
-                            fontWeight: 500,
+                            fontWeight: 600,
                           }}
                         />
                       </Bar>
@@ -799,6 +802,7 @@ const paymentChartData = useMemo(() => {
                 Top Selling Items
               </CardTitle>
             </CardHeader>
+            <CardContent>
               <div className="flex gap-2 mb-3">
                 <button
                   className={`px-3 py-1 rounded-xl text-sm font-medium ${
@@ -818,7 +822,6 @@ const paymentChartData = useMemo(() => {
                 </button>
               </div>
 
-            <CardContent>
             {loading ? (
               <p className="text-center text-muted-foreground">Loading...</p>
             ) : chartTopItems.length === 0 ? (
