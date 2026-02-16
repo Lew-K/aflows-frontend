@@ -151,7 +151,6 @@ const recentActivity = [
 
 export const AnalyticsPage = () => {
 
-  const businessId = user?.businessId;
 
 
   const { user } = useAuth(); 
@@ -165,7 +164,7 @@ export const AnalyticsPage = () => {
   const [customEnd, setCustomEnd] = useState('');
   const [fetchKey, setFetchKey] = useState(0);
   
-  // const businessId = user?.businessId;
+  const businessId = user?.businessId;
   
   const { sales, loading } = useSales(
     businessId ?? undefined,
