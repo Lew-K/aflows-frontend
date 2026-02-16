@@ -47,12 +47,26 @@ export const RegisterSection = () => {
       });
       
       if (res.success && res.access_token) {
-        login(res.access_token, {
-          businessId: res.business_id,
-          businessName: res.business_name,
-          ownerName: res.business_owner,
-          email: data.email,
-        });
+        login(
+          res.access_token,
+          res.refresh_token,
+          {
+            businessId: res.user.businessId,
+            businessName: res.user.businessName,
+            ownerName: res.user.ownerName,
+            email: data.email,
+          }
+        );
+
+
+
+        
+        // login(res.access_token, {
+        //   businessId: res.business_id,
+        //   businessName: res.business_name,
+        //   ownerName: res.business_owner,
+        //   email: data.email,
+        // });
       
         localStorage.setItem('access_token', res.access_token);
 
