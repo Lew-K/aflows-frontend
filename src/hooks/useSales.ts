@@ -36,7 +36,13 @@ export const useSales = (
           url.searchParams.append('end', end);
         }
 
-        const res = await fetch(url.toString());
+        const accessToken = localStorage.getItem("access_token");
+
+        const res = await fetch(url.toString(), {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
         
         if (!res.ok) {
           throw new Error(`HTTP error ${res.status}`);
