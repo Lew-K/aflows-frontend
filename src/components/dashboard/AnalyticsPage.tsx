@@ -120,13 +120,6 @@ import {
 // const revenueData: any[] = [];
 // const salesByCategory: any[] = [];
 // const recentActivity: any[] = [];
-if (!user?.businessId) {
-  return (
-    <div className="flex justify-center items-center h-full">
-      <p>Loading...</p>
-    </div>
-  );
-}
 
 
 
@@ -159,6 +152,15 @@ const recentActivity = [
 export const AnalyticsPage = () => {
 
   const { user } = useAuth(); 
+
+  if (!user?.businessId) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   
   const [period, setPeriod] = useState<
     'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
