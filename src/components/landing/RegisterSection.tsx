@@ -46,14 +46,14 @@ export const RegisterSection = () => {
         password: data.password,
       });
       
-      if (res.success && res.access_token) {
+      if (res.success && res.access_token && res.refresh_token) {
         login(
           res.access_token,
           res.refresh_token,
           {
-            businessId: res.user.businessId,
-            businessName: res.user.businessName,
-            ownerName: res.user.ownerName,
+            businessId: res.businessId,
+            businessName: res.businessName,
+            ownerName: res.ownerName,
             email: data.email,
           }
         );
@@ -68,7 +68,7 @@ export const RegisterSection = () => {
         //   email: data.email,
         // });
       
-        localStorage.setItem('access_token', res.access_token);
+        // localStorage.setItem('access_token', res.access_token);
 
         toast.success('Registration successful! Welcome to Aflows.');
         navigate('/dashboard');
