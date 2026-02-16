@@ -9,7 +9,9 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
+  accesstoken: string | null;
+  refreshtoken: string | null;
+
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (token: string, user: User) => void;
@@ -18,51 +20,65 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'aflows_token';
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'aflows_user';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);  
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check for existing session
-    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const storedAccess = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const storedRefresh = localStorage.getItem(REFRESH_TOKEN_KEY);    
     const storedUser = localStorage.getItem(USER_KEY);
 
-    if (storedToken && storedUser) {
+    if (storedAccess && storedRefresh && storedUser) {
       try {
-        setToken(storedToken);
+        setAccessToken(storedAccess);
+        setRefreshToken(storedRefresh);
         setUser(JSON.parse(storedUser));
       } catch (e) {
-        localStorage.removeItem(TOKEN_KEY);
+        // Cleanup corrupted data
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
       }
     }
+    
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
-    localStorage.setItem(TOKEN_KEY, newToken);
+  const login = (newAccessToken: string, newRefreshToken: string, newUser: User) => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
-    setToken(newToken);
+
+    setAccessToken(newAccessToken);
+    setRefreshToken(newRefreshToken);
     setUser(newUser);
   };
-
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+  
+   const logout = () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    setToken(null);
+
+    setAccessToken(null);
+    setRefreshToken(null);
     setUser(null);
   };
-
-  return (
+  
+   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
-        isAuthenticated: !!token,
+        accessToken,
+        refreshToken,
+        isAuthenticated: !!accessToken,
         isLoading,
         login,
         logout,
