@@ -35,21 +35,38 @@ export const LoginSection = () => {
       const response = await loginBusiness({
         email: data.email,
         password: data.password,
-      });      
-      if (response.success && response.access_token) {    
-        login(response.access_token, {
-          businessId: response.business_id,
-          businessName: response.business_name,
-          ownerName: response.business_owner,
-          email: data.email, // from form
-
-        });
-
-        localStorage.setItem('access_token', response.access_token);
+      });     
 
 
+      if (response.success && response.access_token && response.refresh_token) {
+
+        login(
+          response.access_token,
+          response.refresh_token,
+          {
+            businessId: response.user.businessId,
+            businessName: response.user.businessName,
+            ownerName: response.user.ownerName,
+            email: data.email,
+          }
+        );
+      
         toast.success('Login successful! Redirecting to dashboard...');
         navigate('/dashboard');
+      // if (response.success && response.access_token) {    
+      //   login(response.access_token, {
+      //     businessId: response.business_id,
+      //     businessName: response.business_name,
+      //     ownerName: response.business_owner,
+      //     email: data.email, // from form
+
+      //   });
+
+      //   localStorage.setItem('access_token', response.access_token);
+
+
+      //   toast.success('Login successful! Redirecting to dashboard...');
+      //   navigate('/dashboard');
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
