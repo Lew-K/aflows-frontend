@@ -120,6 +120,13 @@ import {
 // const revenueData: any[] = [];
 // const salesByCategory: any[] = [];
 // const recentActivity: any[] = [];
+if (!user?.businessId) {
+  return (
+    <div className="flex justify-center items-center h-full">
+      <p>Loading...</p>
+    </div>
+  );
+}
 
 
 
