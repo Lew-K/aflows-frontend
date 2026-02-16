@@ -167,7 +167,7 @@ export const AnalyticsPage = () => {
   const businessId = user?.businessId;
   
   const { sales, loading } = useSales(
-    businessId ?? undefined,
+    businessId,
     period,
     customStart,
     customEnd,
@@ -181,7 +181,7 @@ export const AnalyticsPage = () => {
     paymentMethods,
     loading: revenueLoading,
   } = useRevenueAnalytics(
-    businessId ?? undefined,
+    businessId,
     period,
     customStart,
     customEnd,
