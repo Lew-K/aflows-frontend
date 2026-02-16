@@ -154,15 +154,15 @@ export const AnalyticsPage = () => {
 
 
   const { user } = useAuth(); 
-  const businessId = user?.businessId;
 
-  if (!businessId) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Loading business data...</p>
-      </div>
-    );
-  }
+  if (isLoading || !user) {
+    return <div>Loading...</div>;
+  };
+    
+  const businessId = user?.businessId;
+  
+
+ 
 
 
   
