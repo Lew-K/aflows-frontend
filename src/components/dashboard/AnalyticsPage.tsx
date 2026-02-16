@@ -153,16 +153,6 @@ export const AnalyticsPage = () => {
 
   const { user } = useAuth(); 
 
-  if (!user?.businessId) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  const businessId = user.businessId;
-
   
   const [period, setPeriod] = useState<
     'today' | 'yesterday' | 'this_week' |'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'
@@ -172,7 +162,7 @@ export const AnalyticsPage = () => {
   const [customEnd, setCustomEnd] = useState('');
   const [fetchKey, setFetchKey] = useState(0);
   
-  // const businessId = user?.businessId ?? '';
+  const businessId = user?.businessId ?? '';
   
   const { sales, loading } = useSales(
     businessId,
