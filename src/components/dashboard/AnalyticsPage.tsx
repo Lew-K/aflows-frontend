@@ -154,6 +154,16 @@ export const AnalyticsPage = () => {
 
 
   const { user } = useAuth(); 
+  const businessId = user?.businessId;
+
+  if (!businessId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Loading business data...</p>
+      </div>
+    );
+  }
+
 
   
   const [period, setPeriod] = useState<
@@ -164,7 +174,6 @@ export const AnalyticsPage = () => {
   const [customEnd, setCustomEnd] = useState('');
   const [fetchKey, setFetchKey] = useState(0);
   
-  const businessId = user?.businessId;
   
   const { sales, loading } = useSales(
     businessId,
