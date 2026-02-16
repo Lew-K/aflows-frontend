@@ -155,9 +155,13 @@ export const AnalyticsPage = () => {
 
   const { user, isLoading } = useAuth(); 
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return <div>Loading...</div>;
-  };
+  }
+  
+  if (!user) {
+    return <div>Please login again.</div>;
+  }
     
   const businessId = user?.businessId;
   
