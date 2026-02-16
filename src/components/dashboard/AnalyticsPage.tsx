@@ -153,7 +153,7 @@ export const AnalyticsPage = () => {
 
 
 
-  const { user } = useAuth(); 
+  const { user, isLoading } = useAuth(); 
 
   if (isLoading || !user) {
     return <div>Loading...</div>;
