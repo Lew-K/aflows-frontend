@@ -58,7 +58,7 @@ export const UploadsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { token, user } = useAuth();
+  const { accessToken, user } = useAuth();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,7 +78,7 @@ export const UploadsPage = () => {
       return;
     }
 
-    if (!token) {
+    if (!accessToken) {
       toast.error('You are not authenticated. Please log in.');
       return;
     }
@@ -118,7 +118,7 @@ export const UploadsPage = () => {
       const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: formData,
       });
