@@ -14,7 +14,7 @@ interface AuthContextType {
 
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
+  login: (accessToken: string, refreshToken: string, user: User) => void;
   logout: () => void;
 }
 
@@ -29,6 +29,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);  
   const [isLoading, setIsLoading] = useState(true);
+
+  const INACTIVITY_LIMIT = 3 * 60 * 60 * 1000; // 3 hours
+  let inactivityTimeout: NodeJS.Timeout;
+  
+  const resetInactivityTimer = () => {
+    if (inactivityTimeout) {
+      clearTimeout(inactivityTimeout);
+    }
+  
+    inactivityTimeout = setTimeout(() => {
+      logout();
+    }, INACTIVITY_LIMIT);
+  };
 
   useEffect(() => {
     // Check for existing session
@@ -48,7 +61,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(USER_KEY);
       }
     }
+
+
+    useEffect(() => {
+      if (!accessToken) return;
     
+      const events = ["mousemove", "keydown", "click", "scroll"];
+    
+      const handleActivity = () => {
+        resetInactivityTimer();
+      };
+    
+      events.forEach((event) =>
+        window.addEventListener(event, handleActivity)
+      );
+    
+      resetInactivityTimer(); // start timer
+    
+      return () => {
+        events.forEach((event) =>
+          window.removeEventListener(event, handleActivity)
+        );
+        if (inactivityTimeout) {
+          clearTimeout(inactivityTimeout);
+        }
+      };
+    }, [accessToken]);
+        
     setIsLoading(false);
   }, []);
 
