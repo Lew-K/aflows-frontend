@@ -519,7 +519,7 @@ export const SalesPage = () => {
                           <span>{new Date(sale.created_at).toLocaleString()}</span>
                         </div>
                       
-                        {sale.receipt_id && (
+                        {sale.receipt_number && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -528,7 +528,7 @@ export const SalesPage = () => {
                               const token = localStorage.getItem("access_token");
                             
                               const response = await fetch(
-                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_number}`,
                                 {
                                   headers: {
                                     Authorization: `Bearer ${token}`,
@@ -545,7 +545,7 @@ export const SalesPage = () => {
                               const url = window.URL.createObjectURL(blob);
                               const a = document.createElement("a");
                               a.href = url;
-                              a.download = `receipt.pdf`;
+                              a.download = `${sale.receipt_number}.pdf`;
                               document.body.appendChild(a);
                               a.click();
                               a.remove();
