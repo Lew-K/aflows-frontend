@@ -499,45 +499,57 @@ export const SalesPage = () => {
                   {recentSales.map((sale) => (
                     <div
                       key={`${sale.id ?? sale.created_at}`}
-                      className="p-4 rounded-lg bg-secondary/50 border border-border flex flex-col gap-2"
+                      className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
-                          <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
+                      {/* Sale info */}
+                      <div>
+                        <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
+                        <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
+                        <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                          <span>{sale.payment_method}</span>
+                          <span>{new Date(sale.created_at).toLocaleString()}</span>
                         </div>
-                        <span className="font-bold text-primary">
-                          KES {Number(sale.amount).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                        <span>{sale.payment_method}</span>
-                        <span>{new Date(sale.created_at).toLocaleString()}</span>
                       </div>
                   
-                      {/* Minimal Download Button */}
+                      {/* Minimal Download Button on the right */}
                       {sale.receipt_id && (
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            // Construct your download URL
-                            const url = `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`;
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `${sale.receipt_number}.pdf`; // use receipt_number as file name
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+                          size="icon" // small square icon size
+                          variant="ghost" // no extra styling
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem("access_token");
+                              const res = await fetch(
+                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+                                {
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                }
+                              );
+                              if (!res.ok) throw new Error("Failed to fetch receipt");
+                  
+                              const blob = await res.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.download = `${sale.receipt_number}.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                            } catch (err) {
+                              console.error("Download error:", err);
+                              toast.error("Failed to download receipt");
+                            }
                           }}
-                          className="w-full flex items-center justify-center gap-2"
+                          className="ml-4"
                         >
                           <Download className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
                   ))}
-
                   
                   
                 </div>
