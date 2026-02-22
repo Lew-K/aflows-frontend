@@ -512,10 +512,58 @@ export const SalesPage = () => {
                           KES {Number(sale.amount).toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{sale.payment_method}</span>
-                        <span>{new Date(sale.created_at).toLocaleString()}</span>
+
+                      <div className="flex justify-between text-sm text-muted-foreground items-center">
+                        <div className="flex gap-3 items-center">
+                          <span>{sale.payment_method}</span>
+                          <span>{new Date(sale.created_at).toLocaleString()}</span>
+                        </div>
+                      
+                        {sale.receipt_id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+
+                            onClick={async () => {
+                              const token = localStorage.getItem("access_token");
+                            
+                              const response = await fetch(
+                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+                                {
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                }
+                              );
+                            
+                              if (!response.ok) {
+                                alert("Unauthorized or failed download");
+                                return;
+                              }
+                            
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = `receipt.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                            }}
+                            
+
+                            
+                            className="flex items-center gap-1"
+                          >
+                            <Download className="w-4 h-4" />
+                            Receipt
+                          </Button>
+                        )}
                       </div>
+                      
+
+
+                      
                     </div>
                   ))}
                 </div>
