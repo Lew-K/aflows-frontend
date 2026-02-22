@@ -521,12 +521,9 @@ export const SalesPage = () => {
                               const token = localStorage.getItem("access_token");
                               const res = await fetch(
                                 `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
-                                {
-                                  headers: {
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
+                                {headers: { Authorization: `Bearer ${token}` } }
                               );
+                              
                               if (!res.ok) throw new Error("Failed to fetch receipt");
                   
                               const blob = await res.blob();
