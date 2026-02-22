@@ -494,6 +494,8 @@ export const SalesPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
+
+                  
                   {recentSales.map((sale) => (
                     <div
                       key={`${sale.id ?? sale.created_at}`}
@@ -532,9 +534,11 @@ export const SalesPage = () => {
                         >
                           <Download className="w-4 h-4" />
                         </Button>
-                      )}                 
+                      )}
                     </div>
                   ))}
+
+                  
                   
                 </div>
               )}
