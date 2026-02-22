@@ -4,6 +4,8 @@ type Sale = {
   id: string;
   amount: number;
   created_at: string;
+  receipt_id?: string | null;
+  receipt_number?: string | null;
 };
 
 
