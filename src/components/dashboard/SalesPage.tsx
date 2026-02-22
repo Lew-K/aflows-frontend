@@ -497,75 +497,45 @@ export const SalesPage = () => {
                   {recentSales.map((sale) => (
                     <div
                       key={`${sale.id ?? sale.created_at}`}
-                      className="p-4 rounded-lg bg-secondary/50 border border-border"
+                      className="p-4 rounded-lg bg-secondary/50 border border-border flex flex-col gap-2"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <p className="font-medium">
-                            {sale.customer_name || 'Walk-in customer'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {sale.item_sold}
-                          </p>
+                          <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
+                          <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
                         </div>
                         <span className="font-bold text-primary">
                           KES {Number(sale.amount).toLocaleString()}
                         </span>
                       </div>
-
-                      <div className="flex justify-between text-sm text-muted-foreground items-center">
-                        <div className="flex gap-3 items-center">
-                          <span>{sale.payment_method}</span>
-                          <span>{new Date(sale.created_at).toLocaleString()}</span>
-                        </div>
-                      
-                        {sale.receipt_number && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-
-                            onClick={async () => {
-                              const token = localStorage.getItem("access_token");
-                            
-                              const response = await fetch(
-                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_number}`,
-                                {
-                                  headers: {
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
-                              );
-                            
-                              if (!response.ok) {
-                                alert("Unauthorized or failed download");
-                                return;
-                              }
-                            
-                              const blob = await response.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement("a");
-                              a.href = url;
-                              a.download = `${sale.receipt_number}.pdf`;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                            }}
-                            
-
-                            
-                            className="flex items-center gap-1"
-                          >
-                            <Download className="w-4 h-4" />
-                            Receipt
-                          </Button>
-                        )}
+                      <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                        <span>{sale.payment_method}</span>
+                        <span>{new Date(sale.created_at).toLocaleString()}</span>
                       </div>
-                      
-
-
-                      
+                  
+                      {/* Minimal Download Button */}
+                      {sale.receipt_id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // Construct your download URL
+                            const url = `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`;
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${sale.receipt_number}.pdf`; // use receipt_number as file name
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          className="w-full flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      )}                 
                     </div>
                   ))}
+                  
                 </div>
               )}
             </CardContent>
