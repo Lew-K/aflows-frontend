@@ -47,7 +47,7 @@ export const SalesPage = () => {
   const { user, accessToken } = useAuth(); // move this above useEffect
   
   const fetchSales = async () => {
-    if (!user?.businessId) return;
+    if (!user?.businessId || !accessToken) return;
 
     try {
       const res = await fetch(
@@ -86,7 +86,7 @@ export const SalesPage = () => {
     const interval = setInterval(fetchSales, 60000);
     
     return () => clearInterval(interval);
-  }, [user?.businessId]);
+  }, [user?.businessId, accessToken]);
   
     useEffect(() => {   
       if (!Array.isArray(allSales)) return;
@@ -523,14 +523,18 @@ export const SalesPage = () => {
                           variant="ghost" // no extra styling
                           onClick={async () => {
                             try {
-                              const token = accessToken;
+
+                              if (!accessToken) {
+                                toast.error("Session expired. Please log in again.");
+                                return;
+                              }
+                              
                               const res = await fetch(
                                 `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
-
                                 {
                                   method: "GET",
                                   headers: {
-                                    Authorization: `Bearer ${token}`,
+                                    Authorization: `Bearer ${accessToken}`,
                                   },
                                 }
                                 
