@@ -44,14 +44,19 @@ export const SalesPage = () => {
     totalValue: 0,
   });
 
-  const { user } = useAuth(); // move this above useEffect
+  const { user, accessToken } = useAuth(); // move this above useEffect
   
   const fetchSales = async () => {
     if (!user?.businessId) return;
 
     try {
       const res = await fetch(
-      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
+      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
   
       const data = await res.json();
@@ -518,10 +523,17 @@ export const SalesPage = () => {
                           variant="ghost" // no extra styling
                           onClick={async () => {
                             try {
-                              const token = localStorage.getItem("access_token");
+                              const token = accessToken;
                               const res = await fetch(
                                 `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
-                                {headers: { Authorization: `Bearer ${token}` } }
+
+                                {
+                                  method: "GET",
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                }
+                                
                               );
                               
                               if (!res.ok) throw new Error("Failed to fetch receipt");
