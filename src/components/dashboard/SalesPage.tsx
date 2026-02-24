@@ -474,7 +474,7 @@ export const SalesPage = () => {
                      layout
                      key={`${sale.id ?? sale.created_at}`}
                 
-                      className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
+                     className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
                     >
                       {/* Sale info */}
                       <div>
@@ -484,9 +484,7 @@ export const SalesPage = () => {
                           <span>{sale.payment_method}</span>
                           <span>{new Date(sale.created_at).toLocaleString()}</span>
                         </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
+                      </div>
                   
                       {/* Minimal Download Button on the right */}
                       {sale.receipt_id ? (
@@ -535,8 +533,10 @@ export const SalesPage = () => {
                           Generating...
                         </span>
                       )}
-                    </div>
+                    </motion.div>
                   ))}
+              </motion.div>
+
                   
                   
                 </div>
