@@ -6,9 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-
-
 import {
   Select,
   SelectContent,
@@ -18,11 +15,9 @@ import {
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
-// import { recordSale } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ShoppingCart, Download, Check } from 'lucide-react';
-
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -31,24 +26,27 @@ const paymentMethods = [
   { value: 'card', label: 'Card Payment' },
 ];
 
-
 export const SalesPage = () => {
-
   const [allSales, setAllSales] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const { user, accessToken } = useAuth();
+  const businessId = user?.businessId;
+
   const weeklySummary = React.useMemo(() => {
     if (!Array.isArray(allSales)) {
       return { totalSales: 0, totalValue: 0 };
     }
-  
+
     const now = new Date();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
-  
+
     const weeklySales = allSales.filter(
       (sale) => new Date(sale.created_at) >= startOfWeek
     );
-  
+
     return {
       totalSales: weeklySales.length,
       totalValue: weeklySales.reduce(
@@ -58,82 +56,34 @@ export const SalesPage = () => {
     };
   }, [allSales]);
 
-  const { user, accessToken } = useAuth(); // move this above useEffect
-  
   const fetchSales = async () => {
     if (!user?.businessId || !accessToken) return;
 
     try {
       const res = await fetch(
-      `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`,
+        `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-  
-      const data = await res.json();
-  
-      console.log("RAW webhook response:", data);
-  
-        // Your webhook returns: [ { sales: [...] } ]
-      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
-  
-      console.log("Extracted sales array:", sales, "count:", sales.length);
 
-      setAllSales(sales); // ✅ ONLY responsibility
+      const data = await res.json();
+      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
+      setAllSales(sales);
     } catch (err) {
       console.error("Failed to fetch sales:", err);
       setAllSales([]);
     }
   };
-     
 
-  
-  
-  
   useEffect(() => {
-
     if (!user?.businessId) return;
-    fetchSales(); // initial load
+    fetchSales();
     const interval = setInterval(fetchSales, 60000);
-    
     return () => clearInterval(interval);
   }, [user?.businessId, accessToken]);
-  
-    useEffect(() => {   
-      if (!Array.isArray(allSales)) return;
-  
-      // const lastFive = [...allSales]
-      //   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      //   .slice(0, 5);
-      // setRecentSales(lastFive);
-    
-      const now = new Date();
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-      startOfWeek.setHours(0, 0, 0, 0);
-    
-      const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
-      const totalSales = weeklySales.length;
-      const totalValue = weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
-    
-      setWeeklySummary({
-        totalSales: weeklySales.length,
-        totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0), 
-      });
-    }, [allSales]);
-    
-
-    
-
-    
-
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const businessId = user?.businessId; 
 
   const {
     register,
@@ -151,56 +101,36 @@ export const SalesPage = () => {
       paymentMethod: undefined,
     },
   });
-  
-  const paymentMethod = watch("paymentMethod");
 
+  const paymentMethod = watch("paymentMethod");
   const quantityWatch = watch("quantity");
   const unitCostWatch = watch("unitCost");
-  
-  const calculatedAmount =
-    (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
-  
+
+  const calculatedAmount = (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
+
   useEffect(() => {
-    setValue('amount', calculatedAmount, {        
+    setValue('amount', calculatedAmount, {
       shouldValidate: true,
       shouldDirty: true,
-      });
+    });
   }, [calculatedAmount, setValue]);
-  
+
   const onSubmit = async (data: SaleFormData) => {
-
-
-
-
-    
-      
     setIsLoading(true);
     try {
-      const amount = data.amount;
-      
-      console.log("FINAL SEND:", {
-        quantity: data.quantity,
-        unitCost: data.unitCost,
-        amount: data.amount,
-      });
-
-
-
-    
       const response = await fetch(
         'https://n8n.aflows.uk/webhook/record-sales',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
             item_sold: data.itemSold,
-            quantity: data.quantity,  
-            unit_cost: data.unitCost,  
+            quantity: data.quantity,
+            unit_cost: data.unitCost,
             amount: data.amount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
@@ -208,78 +138,63 @@ export const SalesPage = () => {
         }
       );
 
-    
-
       let result: any = {};
-      const text = await response.text(); // read raw text
+      const text = await response.text();
       if (text) {
         try {
           result = JSON.parse(text);
         } catch {
-          console.warn("Response is not valid JSON, skipping parse", text);
+          console.warn("Response is not valid JSON", text);
         }
       }
-      
-      
+
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
-        fetchSales(); // no await — makes UI feel faster
-      
+        fetchSales();
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
       console.error(error);
       toast.error('Something went wrong!');
-
     } finally {
       setIsLoading(false);
     }
   };
 
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Sales Dashboard</h1>
-        <p className="text-muted-foreground">  Track, record, and review your business sales in real time
-        </p>
+        <p className="text-muted-foreground">Track, record, and review your business sales in real time</p>
       </div>
 
-    
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-         <Card>
-           <CardContent className="p-4">
-             <p className="text-sm text-muted-foreground">Total Sales</p>
-             <p className="text-2xl font-bold">
-               {weeklySummary.totalSales === 0 ? "—" : weeklySummary.totalSales}
-             </p>
-             <p className="text-xs text-muted-foreground mt-1">
-               This Week
-             </p>
-           </CardContent>
-         </Card>
-      
-         <Card>
-           <CardContent className="p-4">
-             <p className="text-sm text-muted-foreground">Total Value</p>
-             <p className="text-2xl font-bold text-primary">
-               {weeklySummary.totalValue === 0
-                  ? "KES —"
-                  : `KES ${weeklySummary.totalValue.toLocaleString()}`}               
-             </p>
-             <p className="text-xs text-muted-foreground mt-1">
-               This Week
-             </p>
-           </CardContent>
-         </Card>
-       </div>
-    
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Total Sales</p>
+            <p className="text-2xl font-bold">
+              {weeklySummary.totalSales === 0 ? "—" : weeklySummary.totalSales}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">This Week</p>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Total Value</p>
+            <p className="text-2xl font-bold text-primary">
+              {weeklySummary.totalValue === 0
+                ? "KES —"
+                : `KES ${weeklySummary.totalValue.toLocaleString()}`}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">This Week</p>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Form */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -294,7 +209,6 @@ export const SalesPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <input type="hidden" {...register("paymentMethod")} />
                 <div>
                   <Label htmlFor="customerName">Customer Name</Label>
                   <Input
@@ -337,8 +251,7 @@ export const SalesPage = () => {
                     )}
                   </div>
 
-
-                   <div>
+                  <div>
                     <Label htmlFor="unitCost">Price per Unit / Rate</Label>
                     <Input
                       id="unitCost"
@@ -353,7 +266,6 @@ export const SalesPage = () => {
                     )}
                   </div>
                 </div>
-                        
 
                 <div>
                   <Label htmlFor="amount">Amount (KES)</Label>
@@ -365,7 +277,6 @@ export const SalesPage = () => {
                     readOnly
                     value={calculatedAmount}
                   />
-                  <input type="hidden" {...register("amount", { valueAsNumber: true })} />
                   {errors.amount && (
                     <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
                   )}
@@ -394,7 +305,7 @@ export const SalesPage = () => {
                   <Label htmlFor="paymentReference">Payment Reference</Label>
                   <Input
                     id="paymentReference"
-                    placeholder="Paste M-Pesa or bank confirmation message here"
+                    placeholder="Paste confirmation message here"
                     disabled={paymentMethod === "cash"}
                     className="mt-2"
                     {...register('paymentReference')}
@@ -410,7 +321,7 @@ export const SalesPage = () => {
                   ) : (
                     <>
                       Record Sale
-                      <Check className="w-4 h-4" />
+                      <Check className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
@@ -422,12 +333,10 @@ export const SalesPage = () => {
                     className="p-4 bg-success/10 rounded-lg border border-success/20"
                   >
                     <p className="text-success font-medium mb-2 flex items-center gap-2">
-                      <Check className="w-4 h-4" />
-                      Receipt Generated!
+                      <Check className="w-4 h-4" /> Receipt Generated!
                     </p>
                     <Button variant="outline" size="sm" className="w-full">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Receipt
+                      <Download className="w-4 h-4 mr-2" /> Download Receipt
                     </Button>
                   </motion.div>
                 )}
@@ -436,7 +345,6 @@ export const SalesPage = () => {
           </Card>
         </motion.div>
 
-        {/* Recent Sales */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -446,100 +354,72 @@ export const SalesPage = () => {
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
             </CardHeader>
-
             <CardContent>
               {allSales.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <ShoppingCart className="w-10 h-10 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold">
-                    No sales yet
-                  </h3>
+                  <h3 className="text-lg font-semibold">No sales yet</h3>
                   <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-                    Record your first sale to start tracking your business performance.
+                    Record your first sale to start tracking performance.
                   </p>
                 </div>
               ) : (
                 <motion.div layout className="space-y-4">
-
                   {[...allSales]
-                    .sort(
-                      (a, b) =>
-                        new Date(b.created_at).getTime() -
-                        new Date(a.created_at).getTime()
-                    )
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                     .slice(0, 5)
                     .map((sale) => (
-
-                   <motion.div
-                     layout
-                     key={`${sale.id ?? sale.created_at}`}
-                
-                     className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
-                    >
-                      {/* Sale info */}
-                      <div>
-                        <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
-                        <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
-                        <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                          <span>{sale.payment_method}</span>
-                          <span>{new Date(sale.created_at).toLocaleString()}</span>
+                      <motion.div
+                        layout
+                        key={sale.id ?? sale.created_at}
+                        className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
+                          <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <span className="mr-4">{sale.payment_method}</span>
+                            <span>{new Date(sale.created_at).toLocaleString()}</span>
+                          </div>
                         </div>
-                      </div>
-                  
-                      {/* Minimal Download Button on the right */}
-                      {sale.receipt_id ? (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={async () => {
-                            try {
-                              if (!accessToken) {
-                                toast.error("Session expired. Please log in again.");
-                                return;
-                              }
-                      
-                              const res = await fetch(
-                                `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
-                                {
-                                  method: "GET",
-                                  headers: {
-                                    Authorization: `Bearer ${accessToken}`,
-                                  },
-                                }
-                              );
-                      
-                              if (!res.ok) throw new Error("Failed to fetch receipt");
-                      
-                              const blob = await res.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = `${sale.receipt_number}.pdf`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              window.URL.revokeObjectURL(url);
-                            } catch (err) {
-                              console.error("Download error:", err);
-                              toast.error("Failed to download receipt");
-                            }
-                          }}
-                          className="ml-4"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground ml-4">
-                          Generating...
-                        </span>
-                      )}
-                    </motion.div>
-                  ))}
-              </motion.div>
 
-                  
-                  
-                </div>
+                        {sale.receipt_id ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={async () => {
+                              try {
+                                if (!accessToken) {
+                                  toast.error("Session expired.");
+                                  return;
+                                }
+                                const res = await fetch(
+                                  `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+                                  {
+                                    headers: { Authorization: `Bearer ${accessToken}` },
+                                  }
+                                );
+                                if (!res.ok) throw new Error();
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement("a");
+                                link.href = url;
+                                link.download = `${sale.receipt_number || 'receipt'}.pdf`;
+                                link.click();
+                                window.URL.revokeObjectURL(url);
+                              } catch (err) {
+                                toast.error("Failed to download receipt");
+                              }
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Generating...</span>
+                        )}
+                      </motion.div>
+                    ))}
+                </motion.div>
               )}
             </CardContent>
           </Card>
@@ -548,5 +428,3 @@ export const SalesPage = () => {
     </div>
   );
 };
-
-             
