@@ -35,7 +35,6 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const [allSales, setAllSales] = useState<any[]>([]);
-  const [recentSales, setRecentSales] = useState<any[]>([]);
   const [weeklySummary, setWeeklySummary] = useState<{
     totalSales: number;
     totalValue: number;
@@ -113,41 +112,7 @@ export const SalesPage = () => {
     
 
     
-  //   if (!Array.isArray(allSales)) return;
-  
-  //   const lastFive = [...allSales]
-  //     .sort(
-  //       (a, b) =>
-  //         new Date(b.created_at).getTime() -
-  //         new Date(a.created_at).getTime()
-  //     )
-  //     .slice(0, 5);
-  
-  //   setRecentSales(lastFive);
-  //   const now = new Date();
-  
-  //   const startOfWeek = new Date(now);
-  //   startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  //   startOfWeek.setHours(0, 0, 0, 0);
-  
-  //   const weeklySales = allSales.filter((sale) => {
-  //     const saleDate = new Date(sale.created_at);
-  //     return saleDate >= startOfWeek;
-  //   });
-  
-  //   const totalSales = weeklySales.length;
-  //   const totalValue = weeklySales.reduce(
-  //     (sum, sale) => sum + Number(sale.amount || 0),
-  //     0
-  //   );
-  
-  //   setWeeklySummary({
-  //     totalSales,
-  //     totalValue,
-  //   });
-  // }, [allSales]);
-  
-   
+
     
 
 
@@ -190,16 +155,7 @@ export const SalesPage = () => {
   const onSubmit = async (data: SaleFormData) => {
 
 
-    setAllSales((prev) => [
-      {
-        customer_name: data.customerName || 'Walk-in customer',
-        item_sold: data.itemSold,
-        amount: data.amount,
-        payment_method: data.paymentMethod,
-        created_at: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+
 
     
       
@@ -237,14 +193,7 @@ export const SalesPage = () => {
         }
       );
 
-      // const result = await response.json();
-
-      // let result = null;
-
-      // const text = await response.text();
-      // if (text) {
-      //   result = JSON.parse(text);
-      // }
+    
 
       let result: any = {};
       const text = await response.text(); // read raw text
@@ -259,12 +208,9 @@ export const SalesPage = () => {
       
       if (response.ok) {
         toast.success('Sale recorded successfully!');
-        await fetchSales(); // 👈 THIS is what makes it dynamic
-
-        if (response.receiptUrl) {
-          setReceiptUrl(response.receiptUrl);
-        }
         reset();
+        fetchSales(); // no await — makes UI feel faster
+      
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
@@ -500,8 +446,15 @@ export const SalesPage = () => {
               ) : (
                 <div className="space-y-4">
 
-                  
-                  {recentSales.map((sale) => (
+                  {[...allSales]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime()
+                    )
+                    .slice(0, 5)
+                    .map((sale) => (
+                 
                     <div
                       key={`${sale.id ?? sale.created_at}`}
                       className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
@@ -517,7 +470,13 @@ export const SalesPage = () => {
                       </div>
                   
                       {/* Minimal Download Button on the right */}
-                      {sale.receipt_id && (
+                      {sale.receipt_id ? (
+                        <DownloadButton />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          Generating...
+                        </span>
+                      )}
                         <Button
                           size="icon" // small square icon size
                           variant="ghost" // no extra styling
