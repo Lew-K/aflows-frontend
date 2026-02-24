@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Check, TrendingUp, History, User, Package, CreditCard } from 'lucide-react';
+import { ShoppingCart, Download, Check, TrendingUp, History, User, Package, CreditCard, Receipt } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -29,25 +29,10 @@ const paymentMethods = [
 export const SalesPage = () => {
   const [allSales, setAllSales] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId;
 
-  // LOGIC PRESERVED: Weekly Summary Calculation
-  const weeklySummary = React.useMemo(() => {
-    if (!Array.isArray(allSales)) return { totalSales: 0, totalValue: 0 };
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-    const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
-    return {
-      totalSales: weeklySales.length,
-      totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0),
-    };
-  }, [allSales]);
-
-  // LOGIC PRESERVED: API Fetching
+  // --- LOGIC: FETCH SALES ---
   const fetchSales = async () => {
     if (!user?.businessId || !accessToken) return;
     try {
@@ -70,7 +55,21 @@ export const SalesPage = () => {
     return () => clearInterval(interval);
   }, [user?.businessId, accessToken]);
 
-  // LOGIC PRESERVED: Form Configuration
+  // --- LOGIC: WEEKLY SUMMARY ---
+  const weeklySummary = React.useMemo(() => {
+    if (!Array.isArray(allSales)) return { totalSales: 0, totalValue: 0 };
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+    const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
+    return {
+      totalSales: weeklySales.length,
+      totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0),
+    };
+  }, [allSales]);
+
+  // --- LOGIC: FORM HANDLING ---
   const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
     defaultValues: { quantity: 1, unitCost: 0, amount: 0, paymentMethod: undefined },
@@ -116,196 +115,161 @@ export const SalesPage = () => {
     }
   };
 
+  // --- LOGIC: DOWNLOAD RECEIPT (Restored) ---
+  const handleDownloadReceipt = async (receiptId: string, receiptNumber?: string) => {
+    try {
+      if (!accessToken) {
+        toast.error("Session expired.");
+        return;
+      }
+      const res = await fetch(
+        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${receiptId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${receiptNumber || 'receipt'}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error("Failed to download receipt");
+    }
+  };
+
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 pb-10">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Sales Terminal</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Real-time revenue tracking and receipt management.</p>
-        </div>
-        <div className="flex gap-3">
-            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-medium text-white/70">
-                Business ID: <span className="text-primary">{businessId}</span>
+    <div className="max-w-7xl mx-auto space-y-6 pb-10">
+      {/* Centered Top Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-card/40 border-white/5">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest">Weekly Sales</p>
+              <p className="text-3xl font-bold text-white mt-1">
+                {weeklySummary.totalSales || "0"}
+              </p>
             </div>
-        </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/40 border-white/5 overflow-hidden relative group">
-          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-            <TrendingUp size={48} className="text-primary" />
-          </div>
-          <CardContent className="p-6">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest">Weekly Volume</p>
-            <p className="text-3xl font-bold text-white mt-2">
-              {weeklySummary.totalSales === 0 ? "0" : weeklySummary.totalSales}
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <p className="text-[10px] text-muted-foreground uppercase">Live sales updates</p>
-            </div>
+            <div className="p-3 bg-primary/10 rounded-xl text-primary"><TrendingUp size={24} /></div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/40 border-white/5 lg:col-span-2 overflow-hidden relative group">
-           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-            <CreditCard size={48} className="text-primary" />
-          </div>
-          <CardContent className="p-6">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest">Revenue This Week</p>
-            <p className="text-3xl font-bold text-white mt-2">
-              {weeklySummary.totalValue === 0 ? "KES 0.00" : `KES ${weeklySummary.totalValue.toLocaleString()}`}
-            </p>
-            <div className="w-full bg-white/5 h-1.5 rounded-full mt-5 overflow-hidden">
-                <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: '65%' }}
-                    className="h-full bg-primary" 
-                />
+        <Card className="bg-card/40 border-white/5 md:col-span-2">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest">Total Revenue (Weekly)</p>
+              <p className="text-3xl font-bold text-white mt-1">
+                KES {weeklySummary.totalValue.toLocaleString()}
+              </p>
             </div>
+            <div className="p-3 bg-primary/10 rounded-xl text-primary"><CreditCard size={24} /></div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Entry Form */}
-        <motion.div className="xl:col-span-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="bg-card border-white/5 shadow-2xl rounded-[2rem] overflow-hidden">
-            <CardHeader className="border-b border-white/5 bg-white/[0.01] p-8">
-              <CardTitle className="text-xl flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <ShoppingCart size={20} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Sale Entry Form */}
+        <Card className="lg:col-span-7 bg-card border-white/5 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white/[0.02] border-b border-white/5">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary" />
+              Quick Sales Entry
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Customer Name</Label>
+                  <Input {...register('customerName')} placeholder="Optional" className="bg-white/5 border-white/10 rounded-xl" />
                 </div>
-                New Sale Entry
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Customer Name</Label>
-                    <div className="relative">
-                        <User className="absolute left-3 top-3 w-4 h-4 text-white/20" />
-                        <Input {...register('customerName')} placeholder="Optional" className="pl-10 bg-white/5 border-white/10 h-12 focus:border-primary transition-all rounded-xl" />
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Item Sold</Label>
+                  <Input {...register('itemSold')} placeholder="e.g. Consulting" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Quantity</Label>
+                  <Input type="number" {...register('quantity', { valueAsNumber: true })} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Unit Price</Label>
+                  <Input type="number" {...register('unitCost', { valueAsNumber: true })} className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Amount</Label>
+                  <div className="h-10 flex items-center px-3 bg-primary/10 border border-primary/20 rounded-xl text-primary font-bold">
+                    {calculatedAmount.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Payment Method</Label>
+                  <Select onValueChange={(value) => setValue('paymentMethod', value)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 rounded-xl">
+                      <SelectValue placeholder="Select Method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-white/50 ml-1">Reference Code</Label>
+                  <Input disabled={paymentMethod === 'cash'} {...register('paymentReference')} placeholder="Ref ID" className="bg-white/5 border-white/10 rounded-xl" />
+                </div>
+              </div>
+
+              <Button type="submit" variant="hero" className="w-full h-12 rounded-xl text-black font-bold" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner size="sm" /> : <span className="flex items-center gap-2">Record Sale <Check size={16} /></span>}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* History List */}
+        <Card className="lg:col-span-5 bg-card/40 border-white/5 rounded-3xl overflow-hidden">
+          <CardHeader className="border-b border-white/5 flex flex-row items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2"><History size={18} className="text-primary" /> History</CardTitle>
+            <Button variant="ghost" size="sm" onClick={fetchSales} className="text-[10px] uppercase text-primary/60">Refresh</Button>
+          </CardHeader>
+          <CardContent className="p-4">
+            {allSales.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground text-sm">No sales yet.</div>
+            ) : (
+              <div className="space-y-2">
+                {[...allSales].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5).map((sale, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{sale.customer_name || 'Walk-in Customer'}</p>
+                      <p className="text-[11px] text-white/40 truncate">{sale.item_sold}</p>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Item/Service</Label>
-                    <div className="relative">
-                        <Package className="absolute left-3 top-3 w-4 h-4 text-white/20" />
-                        <Input {...register('itemSold')} placeholder="What was sold?" className="pl-10 bg-white/5 border-white/10 h-12 focus:border-primary transition-all rounded-xl" />
+                    <div className="text-right mx-4">
+                      <p className="text-sm font-bold text-primary">KES {Number(sale.amount).toLocaleString()}</p>
+                      <p className="text-[10px] text-white/30">{new Date(sale.created_at).toLocaleTimeString()}</p>
                     </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Qty</Label>
-                    <Input type="number" {...register('quantity', { valueAsNumber: true })} className="bg-white/5 border-white/10 h-12 focus:border-primary rounded-xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Unit Price</Label>
-                    <Input type="number" {...register('unitCost', { valueAsNumber: true })} className="bg-white/5 border-white/10 h-12 focus:border-primary rounded-xl text-primary font-bold" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Total (KES)</Label>
-                    <Input readOnly value={calculatedAmount.toLocaleString()} className="bg-primary/5 border-primary/20 h-12 rounded-xl font-bold text-primary" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Payment Method</Label>
-                    <Select onValueChange={(value) => setValue('paymentMethod', value)}>
-                      <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border-white/10">
-                        {paymentMethods.map((m) => (
-                          <SelectItem key={m.value} value={m.value} className="focus:bg-primary/20">{m.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/60 text-xs font-bold uppercase ml-1">Reference Code</Label>
-                    <Input disabled={paymentMethod === "cash"} {...register('paymentReference')} placeholder="M-Pesa ID / Bank Ref" className="bg-white/5 border-white/10 h-12 focus:border-primary rounded-xl" />
-                  </div>
-                </div>
-
-                <Button type="submit" variant="hero" className="w-full h-14 rounded-xl text-black font-bold text-lg shadow-lg shadow-primary/10" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" /> : <span className="flex items-center gap-2">Finalize Sale <Check size={18} /></span>}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Recent Activity List */}
-        <div className="xl:col-span-5 space-y-6">
-          <Card className="bg-card/40 border-white/5 rounded-[2rem] overflow-hidden h-full">
-            <CardHeader className="p-8 border-b border-white/5 flex flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <History size={18} className="text-primary" />
-                Recent History
-              </CardTitle>
-              <button onClick={fetchSales} className="text-[10px] font-bold text-primary/60 hover:text-primary tracking-widest uppercase">Refresh</button>
-            </CardHeader>
-            <CardContent className="p-6">
-              {allSales.length === 0 ? (
-                <div className="py-20 text-center flex flex-col items-center">
-                   <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                      <ShoppingCart size={24} className="text-white/20" />
-                   </div>
-                   <p className="text-white/40 text-sm font-medium italic">No sales recorded yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {[...allSales]
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 6)
-                    .map((sale, i) => (
-                      <motion.div
-                        key={sale.id || i}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between hover:bg-white/[0.04] transition-all group"
+                    {sale.receipt_id ? (
+                      <Button 
+                        size="icon" variant="ghost" 
+                        onClick={() => handleDownloadReceipt(sale.receipt_id, sale.receipt_number)}
+                        className="text-primary hover:bg-primary/20"
                       >
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary uppercase">
-                                {sale.payment_method?.substring(0, 2) || '??'}
-                           </div>
-                           <div>
-                              <p className="font-bold text-sm text-white">{sale.customer_name || 'Walk-in'}</p>
-                              <p className="text-[11px] text-muted-foreground line-clamp-1">{sale.item_sold}</p>
-                           </div>
-                        </div>
-                        <div className="text-right">
-                           <p className="font-bold text-sm text-primary">KES {Number(sale.amount).toLocaleString()}</p>
-                           <p className="text-[9px] text-white/30 uppercase tracking-tighter">{new Date(sale.created_at).toLocaleTimeString()}</p>
-                        </div>
-                        <div className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {sale.receipt_id && (
-                                <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-8 w-8 text-primary hover:bg-primary/20"
-                                    onClick={() => {/* Preserved Download Logic from original */}}
-                                >
-                                    <Download size={14} />
-                                </Button>
-                            )}
-                        </div>
-                      </motion.div>
-                    ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                        <Download size={14} />
+                      </Button>
+                    ) : (
+                      <div className="w-8 h-8 flex items-center justify-center"><LoadingSpinner size="xs" /></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
