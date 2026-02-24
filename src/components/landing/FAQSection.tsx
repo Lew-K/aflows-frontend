@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     question: 'What file types can I upload?',
-    answer: 'Aflows supports a wide range of business documents including invoices, receipts, bank statements, M-Pesa statements, contracts, tax documents, and more. You can organize them by category for easy access.',
+    answer: 'Aflows supports a wide range of business documents including invoices, receipts, bank statements, M-Pesa statements, contracts, tax documents, and more.',
   },
   {
     question: 'How does receipt generation work?',
@@ -32,16 +32,12 @@ const faqs = [
     question: 'Can I access Aflows on mobile?',
     answer: 'Yes! Aflows is fully responsive and works seamlessly on desktop, tablet, and mobile devices. Manage your business from anywhere.',
   },
-  {
-    question: 'What payment methods are supported?',
-    answer: 'Aflows supports multiple payment method tracking including M-Pesa, bank transfers, cash, and card payments. You can record the payment reference for easy reconciliation.',
-  },
 ];
 
 export const FAQSection = () => {
   return (
-    <section id="faq" className="section-padding">
-      <div className="container mx-auto px-4">
+    <section id="faq" className="py-24 bg-background">
+      <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,12 +45,12 @@ export const FAQSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-primary font-medium mb-4 block">FAQ</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <span className="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-4 block">Support</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Frequently Asked Questions
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Find answers to common questions about Aflows and how it can help your business.
+            Everything you need to know about Aflows and how it simplifies your business operations.
           </p>
         </motion.div>
 
@@ -70,12 +66,12 @@ export const FAQSection = () => {
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="bg-card border border-border rounded-xl px-6 data-[state=open]:border-primary/30 transition-colors"
+                className="group bg-card/40 border border-white/5 rounded-2xl px-6 data-[state=open]:border-primary/40 data-[state=open]:bg-primary/5 transition-all duration-300"
               >
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-5">
+                <AccordionTrigger className="text-left font-bold text-white hover:no-underline py-6 text-lg group-hover:text-primary transition-colors">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-muted-foreground leading-relaxed text-base pb-6">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
