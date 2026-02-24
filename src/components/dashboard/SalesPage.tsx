@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Check, TrendingUp, Activity, User, Package, CreditCard, Sparkles } from 'lucide-react';
+import { ShoppingCart, Download, Check, TrendingUp, Clock, User, Package, CreditCard, Calendar } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -29,9 +29,9 @@ const paymentMethods = [
 export const SalesPage = () => {
   const [allSales, setAllSales] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const { user, accessToken } = useAuth();
-  const businessId = user?.businessId;
-
+  
   // LOGIC: Fetch Sales
   const fetchSales = async () => {
     if (!user?.businessId || !accessToken) return;
@@ -40,283 +40,232 @@ export const SalesPage = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = await res.json();
-      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
-      setAllSales(sales);
+      setAllSales(Array.isArray(data?.sales?.sales) ? data.sales.sales : []);
     } catch (err) {
-      console.error("Failed to fetch sales:", err);
       setAllSales([]);
     }
   };
 
   useEffect(() => {
-    if (!user?.businessId) return;
     fetchSales();
     const interval = setInterval(fetchSales, 60000);
     return () => clearInterval(interval);
   }, [user?.businessId, accessToken]);
 
-  // LOGIC: Weekly Summary
   const weeklySummary = React.useMemo(() => {
-    if (!Array.isArray(allSales)) return { totalSales: 0, totalValue: 0 };
     const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-    const weeklySales = allSales.filter((sale) => new Date(sale.created_at) >= startOfWeek);
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const weeklySales = allSales.filter(s => new Date(s.created_at) >= startOfWeek);
     return {
-      totalSales: weeklySales.length,
-      totalValue: weeklySales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0),
+      count: weeklySales.length,
+      total: weeklySales.reduce((sum, s) => sum + Number(s.amount || 0), 0)
     };
   }, [allSales]);
 
-  // LOGIC: Receipt Download
-  const handleDownloadReceipt = async (receiptId: string, receiptNumber?: string) => {
+  // LOGIC: Restored Receipt Download
+  const handleDownload = async (id: string, ref?: string) => {
     try {
-      if (!accessToken) {
-        toast.error("Session expired.");
-        return;
-      }
-      const res = await fetch(
-        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${receiptId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (!res.ok) throw new Error();
+      const res = await fetch(`https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${receiptNumber || 'receipt'}.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `receipt-${ref || id}.pdf`;
+      a.click();
     } catch (err) {
-      toast.error("Failed to download receipt");
+      toast.error("Download failed");
     }
   };
 
-  // LOGIC: Form Handling
-  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<SaleFormData>({
+  // NEW LOGIC: Bulk Export
+  const handleBulkExport = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsExporting(true);
+    const formData = new FormData(e.currentTarget);
+    try {
+      const res = await fetch(`https://n8n.aflows.uk/webhook/export-sales?business_id=${user?.businessId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({
+          start_date: formData.get('startDate'),
+          end_date: formData.get('endDate')
+        })
+      });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sales-report-${formData.get('startDate')}-to-${formData.get('endDate')}.pdf`;
+      a.click();
+      toast.success("Report generated");
+    } catch (err) {
+      toast.error("Export failed");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const { register, handleSubmit, setValue, reset, watch } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
-    defaultValues: { quantity: 1, unitCost: 0, amount: 0, paymentMethod: undefined },
+    defaultValues: { quantity: 1, unitCost: 0, amount: 0 },
   });
 
-  const paymentMethod = watch("paymentMethod");
-  const quantityWatch = watch("quantity");
-  const unitCostWatch = watch("unitCost");
-  const calculatedAmount = (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
-
-  useEffect(() => {
-    setValue('amount', calculatedAmount, { shouldValidate: true, shouldDirty: true });
-  }, [calculatedAmount, setValue]);
+  const calculatedAmount = (Number(watch("quantity")) || 0) * (Number(watch("unitCost")) || 0);
+  useEffect(() => { setValue('amount', calculatedAmount); }, [calculatedAmount, setValue]);
 
   const onSubmit = async (data: SaleFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://n8n.aflows.uk/webhook/record-sales', {
+      const res = await fetch('https://n8n.aflows.uk/webhook/record-sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          business_id: businessId,
-          customer_name: data.customerName || null,
-          item_sold: data.itemSold,
-          quantity: data.quantity,
-          unit_cost: data.unitCost,
-          amount: data.amount,
-          payment_method: data.paymentMethod || null,
-          payment_reference: data.paymentReference || null,
-        }),
+        body: JSON.stringify({ ...data, business_id: user?.businessId }),
       });
-      if (response.ok) {
-        toast.success('Sale recorded successfully!');
-        reset();
-        fetchSales();
-      } else {
-        toast.error('Failed to record sale');
-      }
-    } catch (error) {
-      toast.error('Something went wrong!');
-    } finally {
-      setIsLoading(false);
-    }
+      if (res.ok) { toast.success('Sale recorded'); reset(); fetchSales(); }
+    } catch (error) { toast.error('Error recording sale'); } finally { setIsLoading(false); }
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 pb-10">
-      {/* Refined Modern Header */}
-      <div className="flex flex-col gap-2 border-b border-white/5 pb-8">
-        <div className="flex items-center gap-2">
-           <Sparkles className="text-primary w-5 h-5" />
-           <span className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Transaction Management</span>
-        </div>
-        <h1 className="text-4xl font-black text-white tracking-tight">Sales Command</h1>
-        <p className="text-muted-foreground text-base max-w-xl">
-          Complete, track, and audit your business transactions with real-time accuracy.
-        </p>
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-10">
+      {/* Balanced Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
+        <p className="text-muted-foreground text-sm">Track, record, and review your business sales in real time.</p>
       </div>
 
-      {/* Stats Overview - Now 3 Columns for better centering */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-card/40 border-white/5 overflow-hidden relative group">
+      {/* Consistent Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="bg-card/40 border-white/5">
+          <CardContent className="p-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Sales (This Week)</p>
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="text-3xl font-bold text-white">{weeklySummary.count}</p>
+              <span className="text-primary text-xs font-bold">Transactions</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 border-white/5">
+          <CardContent className="p-6">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Revenue (This Week)</p>
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="text-3xl font-bold text-white">KES {weeklySummary.total.toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/40 border-white/10 border-dashed">
+          <CardContent className="p-4">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Export Sales Records</p>
+            <form onSubmit={handleBulkExport} className="flex gap-2">
+              <Input name="startDate" type="date" className="h-8 text-[10px] bg-white/5 border-white/10" required />
+              <Input name="endDate" type="date" className="h-8 text-[10px] bg-white/5 border-white/10" required />
+              <Button type="submit" size="sm" className="h-8 px-2 text-[10px]" disabled={isExporting}>
+                {isExporting ? <LoadingSpinner size="xs" /> : <Download size={12} />}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Sales Entry */}
+        <Card className="xl:col-span-8 bg-card border-white/5 shadow-xl rounded-2xl">
+          <CardHeader className="border-b border-white/5">
+            <CardTitle className="text-lg flex items-center gap-2 text-white/80">
+              <ShoppingCart size={18} className="text-primary" /> Quick Sales Entry
+            </CardTitle>
+          </CardHeader>
           <CardContent className="p-8">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest">Weekly Volume</p>
-            <p className="text-4xl font-bold text-white mt-2">
-              {weeklySummary.totalSales || "0"}
-            </p>
-            <div className="mt-4 flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-wider">
-               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-               Live stream active
-            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Customer Name</Label>
+                  <Input {...register('customerName')} placeholder="e.g. Joyce K" className="bg-white/5 border-white/10 h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Item Sold / Service Rendered</Label>
+                  <Input {...register('itemSold')} placeholder="e.g. iPhone 13" className="bg-white/5 border-white/10 h-11" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Units / Quantity</Label>
+                  <Input type="number" {...register('quantity', { valueAsNumber: true })} className="bg-white/5 border-white/10 h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Price per Unit</Label>
+                  <Input type="number" {...register('unitCost', { valueAsNumber: true })} className="bg-white/5 border-white/10 h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Amount (KES)</Label>
+                  <div className="h-11 flex items-center px-4 bg-primary/10 border border-primary/20 rounded-md text-primary font-bold">
+                    {calculatedAmount.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Payment Method</Label>
+                  <Select onValueChange={(v) => setValue('paymentMethod', v)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 h-11">
+                      <SelectValue placeholder="Select Method" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-white/10">
+                      {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Payment Reference</Label>
+                  <Input {...register('paymentReference')} placeholder="M-Pesa ID / Ref" className="bg-white/5 border-white/10 h-11" />
+                </div>
+              </div>
+
+              <Button type="submit" variant="hero" className="w-full h-12 text-black font-bold uppercase tracking-wider" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/40 border-white/5 md:col-span-2 overflow-hidden relative group">
-          <CardContent className="p-8 flex flex-col justify-between h-full">
-            <div>
-                <p className="text-xs font-bold text-primary uppercase tracking-widest">Gross Revenue (7D)</p>
-                <p className="text-4xl font-bold text-white mt-2">
-                  KES {weeklySummary.totalValue.toLocaleString()}
-                </p>
-            </div>
-            <div className="w-full bg-white/5 h-1 rounded-full mt-6 overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2 }} className="h-full bg-primary/40" />
+        {/* Recent Sales List */}
+        <Card className="xl:col-span-4 bg-card/40 border-white/5 rounded-2xl flex flex-col">
+          <CardHeader className="p-6 border-b border-white/5 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Clock size={16} className="text-primary" /> Recent Sales
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 flex-grow">
+            <div className="space-y-3">
+              {allSales.slice(0, 6).map((sale, i) => (
+                <div key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/5 flex justify-between items-start group">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-white">{sale.customer_name || 'Walk-in'}</p>
+                    <p className="text-xs text-primary font-medium">{sale.item_sold}</p>
+                    <div className="flex gap-2 items-center text-[10px] text-muted-foreground">
+                      <span className="capitalize">{sale.payment_method}</span>
+                      <span>•</span>
+                      <span>{new Date(sale.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-2">
+                    <p className="text-sm font-bold text-white">KES {Number(sale.amount).toLocaleString()}</p>
+                    {sale.receipt_id && (
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-primary hover:bg-primary/10" onClick={() => handleDownload(sale.receipt_id, sale.receipt_number)}>
+                        <Download size={12} />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Expanded Sales Entry Form */}
-        <motion.div className="xl:col-span-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="bg-card border-white/5 shadow-2xl rounded-[2.5rem] overflow-hidden">
-            <CardHeader className="border-b border-white/5 bg-white/[0.01] p-10">
-              <CardTitle className="text-2xl flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-2xl text-primary">
-                    <ShoppingCart size={24} />
-                </div>
-                Record Transaction
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-10">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Client Identity</Label>
-                    <div className="relative">
-                        <User className="absolute left-4 top-4 w-4 h-4 text-white/20" />
-                        <Input {...register('customerName')} placeholder="e.g. Walk-in Customer" className="pl-12 bg-white/[0.03] border-white/10 h-14 focus:border-primary transition-all rounded-2xl" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Service or Product</Label>
-                    <div className="relative">
-                        <Package className="absolute left-4 top-4 w-4 h-4 text-white/20" />
-                        <Input {...register('itemSold')} placeholder="Specify item" className="pl-12 bg-white/[0.03] border-white/10 h-14 focus:border-primary transition-all rounded-2xl" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Quantity</Label>
-                    <Input type="number" {...register('quantity', { valueAsNumber: true })} className="bg-white/[0.03] border-white/10 h-14 focus:border-primary rounded-2xl" />
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Unit Value</Label>
-                    <Input type="number" {...register('unitCost', { valueAsNumber: true })} className="bg-white/[0.03] border-white/10 h-14 focus:border-primary rounded-2xl text-primary font-bold" />
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Gross Total (KES)</Label>
-                    <div className="h-14 flex items-center px-6 bg-primary/5 border border-primary/20 rounded-2xl font-black text-primary text-lg">
-                        {calculatedAmount.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Method of Payment</Label>
-                    <Select onValueChange={(value) => setValue('paymentMethod', value)}>
-                      <SelectTrigger className="h-14 bg-white/[0.03] border-white/10 rounded-2xl">
-                        <SelectValue placeholder="Select Method" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#0A0A0A] border-white/10">
-                        {paymentMethods.map((m) => (
-                          <SelectItem key={m.value} value={m.value} className="focus:bg-primary/20">{m.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-white/40 text-xs font-bold uppercase tracking-widest ml-1">Transaction Reference</Label>
-                    <Input disabled={paymentMethod === "cash"} {...register('paymentReference')} placeholder="Ref Code" className="bg-white/[0.03] border-white/10 h-14 focus:border-primary rounded-2xl" />
-                  </div>
-                </div>
-
-                <Button type="submit" variant="hero" className="w-full h-16 rounded-2xl text-black font-black text-xl shadow-2xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" /> : <span className="flex items-center gap-3 tracking-tight">Finalize Transaction <Check size={22} strokeWidth={3} /></span>}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Live Audit Trail List */}
-        <div className="xl:col-span-4 space-y-6">
-          <Card className="bg-card/40 border-white/5 rounded-[2.5rem] overflow-hidden flex flex-col h-full">
-            <CardHeader className="p-8 border-b border-white/5">
-              <CardTitle className="text-lg flex items-center gap-3">
-                <Activity size={20} className="text-primary" />
-                Live Audit Trail
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 flex-grow">
-              {allSales.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center py-20 opacity-20">
-                   <Activity size={48} className="mb-4" />
-                   <p className="text-sm font-bold uppercase tracking-widest text-center">Awaiting Data...</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {[...allSales]
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 7)
-                    .map((sale, i) => (
-                      <motion.div
-                        key={sale.id || i}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="p-5 rounded-[1.5rem] bg-white/[0.02] border border-white/5 flex items-center justify-between group hover:bg-white/[0.05] transition-all"
-                      >
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-black text-white/40">
-                                {sale.payment_method?.substring(0, 2).toUpperCase() || 'TX'}
-                           </div>
-                           <div className="max-w-[120px]">
-                              <p className="font-bold text-sm text-white truncate">{sale.customer_name || 'Walk-in'}</p>
-                              <p className="text-[10px] text-white/30 uppercase tracking-tighter">{new Date(sale.created_at).toLocaleTimeString()}</p>
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="text-right">
-                                <p className="font-black text-sm text-primary">KES {Number(sale.amount).toLocaleString()}</p>
-                            </div>
-                            {sale.receipt_id && (
-                                <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-9 w-9 rounded-xl bg-white/5 text-primary hover:bg-primary/20"
-                                    onClick={() => handleDownloadReceipt(sale.receipt_id, sale.receipt_number)}
-                                >
-                                    <Download size={14} />
-                                </Button>
-                            )}
-                        </div>
-                      </motion.div>
-                    ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
