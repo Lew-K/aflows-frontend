@@ -35,13 +35,28 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const [allSales, setAllSales] = useState<any[]>([]);
-  const [weeklySummary, setWeeklySummary] = useState<{
-    totalSales: number;
-    totalValue: number;
-  }>({
-    totalSales: 0,
-    totalValue: 0,
-  });
+  const weeklySummary = React.useMemo(() => {
+    if (!Array.isArray(allSales)) {
+      return { totalSales: 0, totalValue: 0 };
+    }
+  
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+  
+    const weeklySales = allSales.filter(
+      (sale) => new Date(sale.created_at) >= startOfWeek
+    );
+  
+    return {
+      totalSales: weeklySales.length,
+      totalValue: weeklySales.reduce(
+        (sum, sale) => sum + Number(sale.amount || 0),
+        0
+      ),
+    };
+  }, [allSales]);
 
   const { user, accessToken } = useAuth(); // move this above useEffect
   
@@ -90,10 +105,10 @@ export const SalesPage = () => {
     useEffect(() => {   
       if (!Array.isArray(allSales)) return;
   
-      const lastFive = [...allSales]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5);
-      setRecentSales(lastFive);
+      // const lastFive = [...allSales]
+      //   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      //   .slice(0, 5);
+      // setRecentSales(lastFive);
     
       const now = new Date();
       const startOfWeek = new Date(now);
@@ -444,7 +459,7 @@ export const SalesPage = () => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <motion.div layout className="space-y-4">
 
                   {[...allSales]
                     .sort(
@@ -454,9 +469,11 @@ export const SalesPage = () => {
                     )
                     .slice(0, 5)
                     .map((sale) => (
-                 
-                    <div
-                      key={`${sale.id ?? sale.created_at}`}
+
+                   <motion.div
+                     layout
+                     key={`${sale.id ?? sale.created_at}`}
+                
                       className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
                     >
                       {/* Sale info */}
@@ -471,23 +488,16 @@ export const SalesPage = () => {
                   
                       {/* Minimal Download Button on the right */}
                       {sale.receipt_id ? (
-                        <DownloadButton />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          Generating...
-                        </span>
-                      )}
                         <Button
-                          size="icon" // small square icon size
-                          variant="ghost" // no extra styling
+                          size="icon"
+                          variant="ghost"
                           onClick={async () => {
                             try {
-
                               if (!accessToken) {
                                 toast.error("Session expired. Please log in again.");
                                 return;
                               }
-                              
+                      
                               const res = await fetch(
                                 `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
                                 {
@@ -496,11 +506,10 @@ export const SalesPage = () => {
                                     Authorization: `Bearer ${accessToken}`,
                                   },
                                 }
-                                
                               );
-                              
+                      
                               if (!res.ok) throw new Error("Failed to fetch receipt");
-                  
+                      
                               const blob = await res.blob();
                               const url = window.URL.createObjectURL(blob);
                               const link = document.createElement("a");
@@ -519,6 +528,10 @@ export const SalesPage = () => {
                         >
                           <Download className="w-4 h-4" />
                         </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground ml-4">
+                          Generating...
+                        </span>
                       )}
                     </div>
                   ))}
