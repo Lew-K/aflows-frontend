@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Clock, CreditCard, Tag } from 'lucide-react';
+import { ShoppingCart, Download, Check } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -28,16 +29,46 @@ const paymentMethods = [
 export const SalesPage = () => {
   const [allSales, setAllSales] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId;
 
-  // --- LOGIC: FETCH SALES (Original logic preserved) ---
+  const weeklySummary = React.useMemo(() => {
+    if (!Array.isArray(allSales)) {
+      return { totalSales: 0, totalValue: 0 };
+    }
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const weeklySales = allSales.filter(
+      (sale) => new Date(sale.created_at) >= startOfWeek
+    );
+
+    return {
+      totalSales: weeklySales.length,
+      totalValue: weeklySales.reduce(
+        (sum, sale) => sum + Number(sale.amount || 0),
+        0
+      ),
+    };
+  }, [allSales]);
+
   const fetchSales = async () => {
-    if (!businessId || !accessToken) return;
+    if (!user?.businessId || !accessToken) return;
+
     try {
-      const res = await fetch(`https://n8n.aflows.uk/webhook/get-sales?business_id=${businessId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await fetch(
+        `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
       const data = await res.json();
       const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
       setAllSales(sales);
@@ -48,203 +79,352 @@ export const SalesPage = () => {
   };
 
   useEffect(() => {
+    if (!user?.businessId) return;
     fetchSales();
     const interval = setInterval(fetchSales, 60000);
     return () => clearInterval(interval);
-  }, [businessId, accessToken]);
+  }, [user?.businessId, accessToken]);
 
-  // --- LOGIC: WEEKLY SUMMARY ---
-  const weeklySummary = React.useMemo(() => {
-    const now = new Date();
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-    startOfWeek.setHours(0,0,0,0);
-    const weeklySales = allSales.filter(s => new Date(s.created_at) >= startOfWeek);
-    return {
-      count: weeklySales.length,
-      total: weeklySales.reduce((sum, s) => sum + Number(s.amount || 0), 0)
-    };
-  }, [allSales]);
-
-  // --- LOGIC: FORM HANDLING ---
-  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<SaleFormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
-    defaultValues: { quantity: 1, unitCost: 0, amount: 0 },
+    defaultValues: {
+      quantity: 1,
+      unitCost: 0,
+      amount: 0,
+      paymentMethod: undefined,
+    },
   });
 
+  const paymentMethod = watch("paymentMethod");
   const quantityWatch = watch("quantity");
   const unitCostWatch = watch("unitCost");
+
   const calculatedAmount = (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
 
   useEffect(() => {
-    setValue('amount', calculatedAmount);
+    setValue('amount', calculatedAmount, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   }, [calculatedAmount, setValue]);
 
   const onSubmit = async (data: SaleFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://n8n.aflows.uk/webhook/record-sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, business_id: businessId }),
-      });
+      const response = await fetch(
+        'https://n8n.aflows.uk/webhook/record-sales',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            business_id: businessId,
+            customer_name: data.customerName || null,
+            item_sold: data.itemSold,
+            quantity: data.quantity,
+            unit_cost: data.unitCost,
+            amount: data.amount,
+            payment_method: data.paymentMethod || null,
+            payment_reference: data.paymentReference || null,
+          }),
+        }
+      );
+
+      let result: any = {};
+      const text = await response.text();
+      if (text) {
+        try {
+          result = JSON.parse(text);
+        } catch {
+          console.warn("Response is not valid JSON", text);
+        }
+      }
+
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
         fetchSales();
+      } else {
+        toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
-      toast.error('Failed to record sale');
+      console.error(error);
+      toast.error('Something went wrong!');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- LOGIC: DOWNLOAD RECEIPT ---
-  const handleDownload = async (receiptId: string, receiptNumber?: string) => {
-    try {
-      const res = await fetch(`https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${receiptId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `receipt-${receiptNumber || receiptId}.pdf`;
-      link.click();
-    } catch (err) {
-      toast.error("Download failed");
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-10 px-4">
-      {/* Header */}
-      <div className="pt-4">
-        <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
-        <p className="text-muted-foreground text-sm">Track, record, and review your business sales in real time.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Sales Dashboard</h1>
+        <p className="text-muted-foreground">Track, record, and review your business sales in real time</p>
       </div>
 
-      {/* Stats Cards - Unified and Consistent */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-card/40 border-white/10">
-          <CardContent className="p-6">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Sales (This Week)</p>
-            <p className="text-4xl font-bold text-white mt-2">{weeklySummary.count}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 border-white/10">
-          <CardContent className="p-6">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Value (This Week)</p>
-            <p className="text-4xl font-bold text-white mt-2">KES {weeklySummary.total.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Quick Sales Entry */}
-        <Card className="lg:col-span-8 bg-card border-white/5 rounded-xl">
-          <CardHeader className="border-b border-white/5">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ShoppingCart size={18} className="text-primary" /> Quick Sales Entry
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Customer Name</Label>
-                  <Input {...register('customerName')} placeholder="Joyce K" className="bg-white/5 border-white/10" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Item Sold / Service Rendered</Label>
-                  <Input {...register('itemSold')} placeholder="iPhone 13" className="bg-white/5 border-white/10" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Units / Quantity</Label>
-                  <Input type="number" {...register('quantity', { valueAsNumber: true })} className="bg-white/5 border-white/10" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Price per Unit</Label>
-                  <Input type="number" {...register('unitCost', { valueAsNumber: true })} className="bg-white/5 border-white/10" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Amount (KES)</Label>
-                  <div className="h-10 flex items-center px-3 bg-primary/10 border border-primary/20 rounded-md text-primary font-bold">
-                    {calculatedAmount.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Payment Method</Label>
-                  <Select onValueChange={(v) => setValue('paymentMethod', v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10">
-                      <SelectValue placeholder="Select Method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Payment Reference</Label>
-                  <Input {...register('paymentReference')} placeholder="M-Pesa Ref" className="bg-white/5 border-white/10" />
-                </div>
-              </div>
-
-              <Button type="submit" variant="hero" className="w-full h-11 text-black font-bold" disabled={isLoading}>
-                {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Recent Sales */}
-        <Card className="lg:col-span-4 bg-card/40 border-white/5 rounded-xl">
-          <CardHeader className="border-b border-white/5">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Clock size={16} className="text-primary" /> Recent Sales
-            </CardTitle>
-          </CardHeader>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card>
           <CardContent className="p-4">
-            <div className="space-y-4">
-              {allSales.slice(0, 5).map((sale, i) => (
-                <div key={i} className="flex justify-between items-start border-b border-white/5 pb-4 last:border-0">
-                  <div className="space-y-1">
-                    {/* Fixed Logic: Explicitly using sale.customer_name from n8n response */}
-                    <p className="text-sm font-bold text-white leading-none">
-                      {sale.customer_name || 'Walk-in Customer'}
-                    </p>
-                    <p className="text-xs text-primary flex items-center gap-1">
-                      <Tag size={10} /> {sale.item_sold}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground uppercase">
-                      {sale.payment_method} • {new Date(sale.created_at).toLocaleString()}
-                    </p>
+            <p className="text-sm text-muted-foreground">Total Sales</p>
+            <p className="text-2xl font-bold">
+              {weeklySummary.totalSales === 0 ? "—" : weeklySummary.totalSales}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">This Week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Total Value</p>
+            <p className="text-2xl font-bold text-primary">
+              {weeklySummary.totalValue === 0
+                ? "KES —"
+                : `KES ${weeklySummary.totalValue.toLocaleString()}`}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">This Week</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                Quick Sales Entry
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <div>
+                  <Label htmlFor="customerName">Customer Name</Label>
+                  <Input
+                    id="customerName"
+                    placeholder="Enter customer name"
+                    className="mt-2"
+                    {...register('customerName')}
+                  />
+                  {errors.customerName && (
+                    <p className="text-destructive text-sm mt-1">{errors.customerName.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="itemSold">Item Sold / Service Rendered</Label>
+                  <Input
+                    id="itemSold"
+                    placeholder="Describe the item or service"
+                    className="mt-2"
+                    {...register('itemSold')}
+                  />
+                  {errors.itemSold && (
+                    <p className="text-destructive text-sm mt-1">{errors.itemSold.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="quantity">Units / Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      className="mt-2"
+                      {...register('quantity', { valueAsNumber: true })}
+                    />
+                    {errors.quantity && (
+                      <p className="text-destructive text-sm mt-1">{errors.quantity.message}</p>
+                    )}
                   </div>
-                  <div className="text-right flex flex-col items-end gap-2">
-                    <p className="text-sm font-bold text-white">KES {Number(sale.amount).toLocaleString()}</p>
-                    {sale.receipt_id && (
-                      <Button 
-                        size="icon" variant="ghost" className="h-7 w-7 text-primary hover:bg-primary/10" 
-                        onClick={() => handleDownload(sale.receipt_id, sale.receipt_number)}
-                      >
-                        <Download size={14} />
-                      </Button>
+
+                  <div>
+                    <Label htmlFor="unitCost">Price per Unit / Rate</Label>
+                    <Input
+                      id="unitCost"
+                      type="number"
+                      min={0}
+                      placeholder="0.00"
+                      className="mt-2"
+                      {...register('unitCost', { valueAsNumber: true })}
+                    />
+                    {errors.unitCost && (
+                      <p className="text-destructive text-sm mt-1">{errors.unitCost.message}</p>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
+                <div>
+                  <Label htmlFor="amount">Amount (KES)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="Calculated automatically"
+                    className="mt-2 bg-muted/10 cursor-not-allowed"
+                    readOnly
+                    value={calculatedAmount}
+                  />
+                  {errors.amount && (
+                    <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Payment Method</Label>
+                  <Select onValueChange={(value) => setValue('paymentMethod', value)}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.paymentMethod && (
+                    <p className="text-destructive text-sm mt-1">{errors.paymentMethod.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="paymentReference">Payment Reference</Label>
+                  <Input
+                    id="paymentReference"
+                    placeholder="Paste confirmation message here"
+                    disabled={paymentMethod === "cash"}
+                    className="mt-2"
+                    {...register('paymentReference')}
+                  />
+                  {errors.paymentReference && (
+                    <p className="text-destructive text-sm mt-1">{errors.paymentReference.message}</p>
+                  )}
+                </div>
+
+                <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <>
+                      Record Sale
+                      <Check className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+
+                {receiptUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-success/10 rounded-lg border border-success/20"
+                  >
+                    <p className="text-success font-medium mb-2 flex items-center gap-2">
+                      <Check className="w-4 h-4" /> Receipt Generated!
+                    </p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Download className="w-4 h-4 mr-2" /> Download Receipt
+                    </Button>
+                  </motion.div>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Sales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {allSales.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ShoppingCart className="w-10 h-10 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold">No sales yet</h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-sm">
+                    Record your first sale to start tracking performance.
+                  </p>
+                </div>
+              ) : (
+                <motion.div layout className="space-y-4">
+                  {[...allSales]
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .slice(0, 5)
+                    .map((sale) => (
+                      <motion.div
+                        layout
+                        key={sale.id ?? sale.created_at}
+                        className="p-4 rounded-lg bg-secondary/50 border border-border flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium">{sale.customer_name || 'Walk-in customer'}</p>
+                          <p className="text-sm text-muted-foreground">{sale.item_sold || sale.item}</p>
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <span className="mr-4">{sale.payment_method}</span>
+                            <span>{new Date(sale.created_at).toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        {sale.receipt_id ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={async () => {
+                              try {
+                                if (!accessToken) {
+                                  toast.error("Session expired.");
+                                  return;
+                                }
+                                const res = await fetch(
+                                  `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+                                  {
+                                    headers: { Authorization: `Bearer ${accessToken}` },
+                                  }
+                                );
+                                if (!res.ok) throw new Error();
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement("a");
+                                link.href = url;
+                                link.download = `${sale.receipt_number || 'receipt'}.pdf`;
+                                link.click();
+                                window.URL.revokeObjectURL(url);
+                              } catch (err) {
+                                toast.error("Failed to download receipt");
+                              }
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Generating...</span>
+                        )}
+                      </motion.div>
+                    ))}
+                </motion.div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
 };
-
