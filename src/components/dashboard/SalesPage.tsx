@@ -484,7 +484,9 @@ export const SalesPage = () => {
                           <span>{sale.payment_method}</span>
                           <span>{new Date(sale.created_at).toLocaleString()}</span>
                         </div>
-                      </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
                   
                       {/* Minimal Download Button on the right */}
                       {sale.receipt_id ? (
