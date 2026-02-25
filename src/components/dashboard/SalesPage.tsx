@@ -17,7 +17,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Check, ReceiptText, TrendingUp, History } from 'lucide-react';
+import { ShoppingCart, Download, Check, ReceiptText, History, Info } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -111,6 +111,31 @@ export const SalesPage = () => {
     });
   }, [calculatedAmount, setValue]);
 
+  const handleDownload = async (sale: any) => {
+    try {
+      if (!accessToken) {
+        toast.error("Session expired.");
+        return;
+      }
+      const res = await fetch(
+        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${sale.receipt_number || 'receipt'}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error("Failed to download receipt");
+    }
+  };
+
   const onSubmit = async (data: SaleFormData) => {
     setIsLoading(true);
     try {
@@ -153,223 +178,146 @@ export const SalesPage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 p-4 md:p-6">
-      {/* Header Section */}
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Sales Dashboard</h1>
-        <p className="text-muted-foreground">Track, record, and review your business sales in real time.</p>
+    <div className="max-w-7xl mx-auto space-y-8 p-4 md:p-6">
+      <header className="space-y-1">
+        <h1 className="text-3xl font-extrabold tracking-tight">Sales Dashboard</h1>
+        <p className="text-muted-foreground text-lg">Manage transactions and monitor performance.</p>
       </header>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <Card className="relative overflow-hidden border-none bg-primary/5 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bg-primary/5 border-none">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Sales</p>
-                <p className="text-3xl font-bold mt-1">
-                  {weeklySummary.totalSales === 0 ? "0" : weeklySummary.totalSales}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground uppercase">Weekly Sales</p>
+                <h3 className="text-3xl font-bold">{weeklySummary.totalSales}</h3>
               </div>
-              <div className="p-2 bg-primary/10 rounded-full">
-                <ReceiptText className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs text-muted-foreground">
-              <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                <TrendingUp className="w-3 h-3" /> Active
-              </span>
-              <span className="ml-2">Current Week</span>
+              <ReceiptText className="w-8 h-8 text-primary opacity-20" />
             </div>
           </CardContent>
         </Card>
-
-        <Card className="relative overflow-hidden border-none bg-primary/5 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
+        <Card className="bg-primary/5 border-none">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Value</p>
-                <p className="text-3xl font-bold mt-1 text-primary">
-                  {weeklySummary.totalValue === 0
-                    ? "KES 0"
-                    : `KES ${weeklySummary.totalValue.toLocaleString()}`}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground uppercase">Weekly Revenue</p>
+                <h3 className="text-3xl font-bold text-primary">
+                  KES {weeklySummary.totalValue.toLocaleString()}
+                </h3>
               </div>
-              <div className="p-2 bg-primary/10 rounded-full">
-                <ShoppingCart className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-            <div className="mt-4 text-xs text-muted-foreground">
-              Across {weeklySummary.totalSales} transactions this week
+              <ShoppingCart className="w-8 h-8 text-primary opacity-20" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Form Column */}
-        <motion.div 
-          className="lg:col-span-3"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card className="shadow-md border-border/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl flex items-center gap-2">
+      {/* Equal Height Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        {/* Entry Form */}
+        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-primary" />
                 Quick Sales Entry
               </CardTitle>
-              <CardDescription>Enter details of the new transaction below.</CardDescription>
+              <CardDescription>Record a new transaction instantly.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <CardContent className="flex-grow">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="customerName">Customer Name</Label>
-                    <Input id="customerName" placeholder="e.g. John Doe" {...register('customerName')} />
+                    <Label>Customer Name</Label>
+                    <Input placeholder="Optional" {...register('customerName')} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="itemSold">Item / Service</Label>
-                    <Input id="itemSold" placeholder="What was sold?" {...register('itemSold')} />
+                    <Label>Item Sold</Label>
+                    <Input placeholder="Item name" {...register('itemSold')} />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity</Label>
-                    <Input id="quantity" type="number" {...register('quantity', { valueAsNumber: true })} />
+                    <Label>Qty</Label>
+                    <Input type="number" {...register('quantity', { valueAsNumber: true })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="unitCost">Unit Price</Label>
-                    <Input id="unitCost" type="number" {...register('unitCost', { valueAsNumber: true })} />
+                    <Label>Unit Price</Label>
+                    <Input type="number" {...register('unitCost', { valueAsNumber: true })} />
                   </div>
-                  <div className="space-y-2 col-span-2 md:col-span-1">
-                    <Label htmlFor="amount">Total (KES)</Label>
-                    <Input id="amount" className="bg-muted font-bold" readOnly value={calculatedAmount.toLocaleString()} />
+                  <div className="space-y-2">
+                    <Label>Total</Label>
+                    <Input className="bg-muted" readOnly value={calculatedAmount} />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Payment Method</Label>
-                    <Select onValueChange={(value) => setValue('paymentMethod', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select method" />
-                      </SelectTrigger>
+                    <Select onValueChange={(v) => setValue('paymentMethod', v)}>
+                      <SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
                       <SelectContent>
-                        {paymentMethods.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                        ))}
+                        {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="paymentReference">Reference Code</Label>
-                    <Input 
-                      id="paymentReference" 
-                      placeholder="Ref number" 
-                      disabled={paymentMethod === "cash"} 
-                      {...register('paymentReference')} 
-                    />
+                    <Label>Reference</Label>
+                    <Input disabled={paymentMethod === 'cash'} {...register('paymentReference')} />
                   </div>
                 </div>
-
-                <Button type="submit" variant="hero" className="w-full py-6 text-lg shadow-lg shadow-primary/20" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" /> : <><Check className="w-5 h-5 mr-2" /> Record Sale</>}
+                <Button type="submit" variant="hero" className="w-full mt-2" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
                 </Button>
-
-                <AnimatePresence>
-                  {receiptUrl && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
-                          <Check className="w-4 h-4" /> Receipt Ready
-                        </div>
-                        <Button variant="outline" size="sm" className="bg-white">
-                          <Download className="w-4 h-4 mr-2" /> Download
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </form>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* List Column */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <History className="w-4 h-4 text-muted-foreground" />
-              Recent Activity
-            </h2>
-            <span className="text-xs text-muted-foreground">Last 5 sales</span>
-          </div>
-
-          <div className="space-y-3">
-            {allSales.length === 0 ? (
-              <Card className="border-dashed py-12">
-                <CardContent className="flex flex-col items-center justify-center text-center">
-                  <div className="p-3 bg-muted rounded-full mb-4">
-                    <ShoppingCart className="w-6 h-6 text-muted-foreground" />
+        {/* Recent Sales - Equal Height */}
+        <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
+          <Card className="h-full flex flex-col overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5 text-primary" />
+                  Recent Sales
+                </CardTitle>
+                <CardDescription>Your latest 5 activities.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-grow overflow-auto">
+              <div className="space-y-3">
+                {allSales.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center py-20 opacity-50">
+                    <Info className="w-8 h-8 mb-2" />
+                    <p>No sales activity found</p>
                   </div>
-                  <p className="text-sm font-medium">No sales recorded yet</p>
-                </CardContent>
-              </Card>
-            ) : (
-              [...allSales]
-                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                .slice(0, 5)
-                .map((sale) => (
-                  <motion.div
-                    key={sale.id ?? sale.created_at}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="group p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors flex items-center justify-between shadow-sm"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm leading-none">
-                        {sale.customer_name || 'Walk-in Customer'}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[150px]">
-                        {sale.item_sold || sale.item}
-                      </p>
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-secondary text-secondary-foreground uppercase">
-                          {sale.payment_method}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {new Date(sale.created_at).toLocaleDateString()}
-                        </span>
+                ) : (
+                  [...allSales]
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .slice(0, 5)
+                    .map((sale) => (
+                      <div key={sale.id ?? sale.created_at} className="p-3 rounded-lg border bg-card/50 flex items-center justify-between group hover:border-primary/50 transition-all">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate">{sale.customer_name || 'Walk-in'}</p>
+                          <p className="text-xs text-muted-foreground truncate">{sale.item_sold || sale.item}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 uppercase">{sale.payment_method} • {new Date(sale.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-3 ml-4">
+                          <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.amount).toLocaleString()}</p>
+                          {sale.receipt_id && (
+                            <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => handleDownload(sale)}>
+                              <Download className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <p className="text-sm font-bold text-primary">
-                        KES {Number(sale.amount).toLocaleString()}
-                      </p>
-                      {sale.receipt_id && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => {/* logic kept internal as per original */}}
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))
-            )}
-          </div>
-        </div>
+                    ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
