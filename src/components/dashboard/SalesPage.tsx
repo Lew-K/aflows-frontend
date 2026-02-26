@@ -12,12 +12,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/select';
+} from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Check, ReceiptText, History, Info, Search, Calendar, X } from 'lucide-react';
+import { ShoppingCart, Download, Check, ReceiptText, History, Info, ArrowLeft } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -30,21 +30,11 @@ export const SalesPage = () => {
   const [allSales, setAllSales] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
-  
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId;
+  
+  // Ref for auto-focusing the first input
   const firstInputRef = useRef<HTMLInputElement | null>(null);
-
-  // LOGIC: Filtered Sales (Logic ready for your backend integration later)
-  const filteredSales = React.useMemo(() => {
-    return allSales.filter(sale => {
-      const matchesName = (sale.customer_name || 'Walk-in').toLowerCase().includes(searchQuery.toLowerCase());
-      // Period logic can be expanded here
-      return matchesName;
-    }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
-  }, [allSales, searchQuery, dateFilter]);
 
   const weeklySummary = React.useMemo(() => {
     if (!Array.isArray(allSales)) return { totalSales: 0, totalValue: 0 };
@@ -80,7 +70,7 @@ export const SalesPage = () => {
     return () => clearInterval(interval);
   }, [user?.businessId, accessToken]);
 
-  const { register, handleSubmit, setValue, reset, watch } = useForm<SaleFormData>({
+  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
     defaultValues: { quantity: 1, unitCost: 0, amount: 0 },
   });
@@ -119,12 +109,17 @@ export const SalesPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, business_id: businessId }),
       });
+
       if (response.ok) {
         setIsSuccess(true);
         toast.success('Sale recorded!');
         reset();
         fetchSales();
-        setTimeout(() => { setIsSuccess(false); firstInputRef.current?.focus(); }, 2000);
+        // Reset focus to the first input after a short delay
+        setTimeout(() => {
+          setIsSuccess(false);
+          firstInputRef.current?.focus();
+        }, 2000);
       }
     } catch (error) {
       toast.error('Error saving sale');
@@ -140,14 +135,12 @@ export const SalesPage = () => {
         <p className="text-muted-foreground text-lg">Manage transactions and monitor performance.</p>
       </header>
 
-      {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-primary/5 border-none shadow-none"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Transactions</p><h3 className="text-3xl font-bold">{weeklySummary.totalSales}</h3></div><ReceiptText className="w-8 h-8 text-primary opacity-20" /></div></CardContent></Card>
         <Card className="bg-primary/5 border-none shadow-none"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Revenue (Weekly)</p><h3 className="text-3xl font-bold text-primary">KES {weeklySummary.totalValue.toLocaleString()}</h3></div><ShoppingCart className="w-8 h-8 text-primary opacity-20" /></div></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {/* ENTRY FORM */}
         <Card className="h-full flex flex-col shadow-sm border-border/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl"><ShoppingCart className="w-5 h-5 text-primary" />Quick Entry</CardTitle>
@@ -158,7 +151,11 @@ export const SalesPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Customer Name</Label>
-                  <Input placeholder="e.g. Jane Doe" {...customerNameRest} ref={(e) => { ref(e); firstInputRef.current = e; }} />
+                  <Input 
+                    placeholder="e.g. Jane Doe" 
+                    {...customerNameRest} 
+                    ref={(e) => { ref(e); firstInputRef.current = e; }} 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Item Sold</Label>
@@ -183,81 +180,52 @@ export const SalesPage = () => {
                   <Input placeholder="M-Pesa Ref / Check #" disabled={paymentMethod === 'cash'} {...register('paymentReference')} />
                 </div>
               </div>
-              <Button type="submit" variant={isSuccess ? "outline" : "hero"} className={`w-full py-6 transition-all duration-300 ${isSuccess ? 'border-green-500 text-green-600' : ''}`} disabled={isLoading || isSuccess}>
+              <Button 
+                type="submit" 
+                variant={isSuccess ? "outline" : "hero"} 
+                className={`w-full py-6 transition-all duration-300 ${isSuccess ? 'border-green-500 text-green-600' : ''}`} 
+                disabled={isLoading || isSuccess}
+              >
                 {isLoading ? <LoadingSpinner size="sm" /> : isSuccess ? <><Check className="mr-2 h-5 w-5" /> Saved Successfully</> : "Record Sale"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* RECENT HISTORY WITH SEARCH */}
         <Card className="h-full flex flex-col overflow-hidden shadow-sm border-border/60">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-xl"><History className="w-5 h-5 text-primary" />Recent History</CardTitle>
-                <CardDescription>Search and download receipts.</CardDescription>
-              </div>
-              <Select defaultValue="all" onValueChange={setDateFilter}>
-                <SelectTrigger className="w-full md:w-[140px] h-8 text-xs">
-                  <Calendar className="w-3 h-3 mr-2 text-muted-foreground" />
-                  <SelectValue placeholder="Period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="flex items-center gap-2 text-xl"><History className="w-5 h-5 text-primary" />Recent History</CardTitle>
+            <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-1 rounded">Latest 5</span>
           </CardHeader>
-          
-          <div className="px-6 pb-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search customer name..." 
-                className="pl-9 h-10 bg-secondary/20 border-none"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-2.5">
-                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <CardContent className="flex-grow overflow-auto p-6 pt-0">
+          <CardContent className="flex-grow overflow-auto p-6 pt-2">
             <div className="space-y-3">
-              {filteredSales.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center py-20 text-center">
-                  <Search className="w-10 h-10 text-muted-foreground/20 mb-2" />
-                  <p className="font-medium text-muted-foreground">No matching receipts found</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Try a different name or clear filters.</p>
+              {allSales.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center py-24 text-center">
+                  <div className="relative mb-4">
+                    <div className="absolute -right-8 -top-4 animate-bounce text-primary"><ArrowLeft className="w-6 h-6" /></div>
+                    <Info className="w-12 h-12 text-muted-foreground/30" />
+                  </div>
+                  <p className="font-medium text-muted-foreground">No sales recorded yet.</p>
+                  <p className="text-xs text-muted-foreground/60 max-w-[200px] mt-1">Start by adding your first transaction on the left.</p>
                 </div>
               ) : (
-                filteredSales.map((sale) => (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={sale.id ?? sale.created_at} className="p-4 rounded-xl border bg-card/50 flex items-center justify-between group hover:border-primary/40 transition-all">
+                [...allSales].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5).map((sale) => (
+                  <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} key={sale.id ?? sale.created_at} className="p-4 rounded-xl border bg-card/50 flex items-center justify-between group hover:shadow-md transition-all">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold truncate">{sale.customer_name || 'Walk-in'}</p>
-                      <p className="text-xs text-muted-foreground truncate italic">{sale.item_sold || sale.item}</p>
+                      <p className="text-xs text-muted-foreground truncate">{sale.item_sold || sale.item}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase">{sale.payment_method}</span>
-                        <span className="text-[10px] text-muted-foreground/70">{new Date(sale.created_at).toLocaleDateString()}</span>
+                        <span className="text-[10px] text-muted-foreground/70">{new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 ml-4">
                       <p className="text-sm font-black text-primary">KES {Number(sale.amount).toLocaleString()}</p>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-8 px-2 text-xs font-medium gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" 
-                        onClick={() => handleDownload(sale)}
-                      >
-                        <Download className="w-3.5 h-3.5" /> Receipt
-                      </Button>
+                      {sale.receipt_id && (
+                        <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/10 rounded-full" onClick={() => handleDownload(sale)}>
+                          <Download className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 ))
