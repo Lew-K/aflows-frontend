@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (Date.now() - lastActivity.current > INACTIVITY_LIMIT) {
         logout();
       }
-    }, 60000); // check every minute
+    }, 10000); // check every minute ( return to 60000 once done with test)
   
     const events = ["mousemove", "keydown", "click", "scroll"];
   
