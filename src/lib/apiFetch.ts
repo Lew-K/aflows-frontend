@@ -35,16 +35,23 @@ export const apiFetch = async (
   isRefreshing = false;
 
   if (!newAccessToken) {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("aflows_user");
+  
+    window.location.href = "/login?reason=session-expired";
+  
     throw new Error("Session expired");
   }
 
   // Retry original request with new token
   const retryResponse = await fetch(input, {
     ...init,
-    headers: {
+    const headers = {
       ...(init.headers || {}),
-      Authorization: `Bearer ${newAccessToken}`,
-      "Content-Type": "application/json",
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      // Authorization: `Bearer ${newAccessToken}`,
+      // "Content-Type": "application/json",
     },
   });
 
