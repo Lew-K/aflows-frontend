@@ -65,7 +65,7 @@ export const SalesPage = () => {
       );
       
       const data = await res.json();
-      const data = await res.json();
+      
       const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
       setAllSales(sales);
     } catch (err) {
