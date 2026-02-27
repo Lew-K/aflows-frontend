@@ -1,3 +1,5 @@
+import { apiFetch } from '@/lib/apiFetch';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -58,14 +60,11 @@ export const SalesPage = () => {
   const fetchSales = async () => {
     if (!user?.businessId || !accessToken) return;
     try {
-      const res = await fetch(
-        `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
       );
+      
+      const data = await res.json();
       const data = await res.json();
       const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
       setAllSales(sales);
@@ -117,12 +116,10 @@ export const SalesPage = () => {
         toast.error("Session expired.");
         return;
       }
-      const res = await fetch(
-        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`
       );
+      
       if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -139,11 +136,11 @@ export const SalesPage = () => {
   const onSubmit = async (data: SaleFormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         'https://n8n.aflows.uk/webhook/record-sales',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          // headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
