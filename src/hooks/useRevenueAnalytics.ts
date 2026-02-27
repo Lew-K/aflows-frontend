@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiFetch";
 
 interface RevenueSummary {
   totalRevenue: number;
@@ -50,103 +51,43 @@ export const useRevenueAnalytics = (
   useEffect(() => {
     if (!businessId) return;
     if (period === "custom" && (!customStart || !customEnd)) return;
-  
+
     const fetchRevenue = async () => {
       setLoading(true);
-  
+
       try {
         const url = new URL(
           "https://n8n.aflows.uk/webhook/revenue"
         );
-  
+
         url.searchParams.append("businessId", businessId);
-  
+
         if (period === "custom") {
           url.searchParams.append("start", customStart!);
           url.searchParams.append("end", customEnd!);
         } else {
           url.searchParams.append("period", period);
         }
-  
-        const accessToken = localStorage.getItem("access_token");
 
-        const res = await fetch(url.toString(), {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const res = await apiFetch(url.toString());
 
-  
-        if (!res.ok) {
-          throw new Error(`HTTP error ${res.status}`);
-        }
-  
         const json = await res.json();
-  
-        // If n8n returns an array with one item
+
         const data = Array.isArray(json) ? json[0] : json;
-  
+
         setRevenueSummary(data?.revenueSummary ?? null);
         setDailyRevenue(data?.dailyRevenue ?? []);
         setTopSellingItems(data?.topSellingItems ?? []);
         setPaymentMethods(data?.paymentMethods ?? []);
-  
       } catch (err) {
         console.error("Revenue fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchRevenue();
   }, [businessId, period, customStart, customEnd, fetchKey]);
-
-
-  
-
-  // useEffect(() => {
-  //   if (!businessId) return;
-
-  //   // prevent firing incomplete custom
-  //   if (period === "custom" && (!customStart || !customEnd)) {
-  //     return;
-  //   }
-
-  //   const fetchRevenue = async () => {
-  //     setLoading(true);
-
-  //     try {
-  //       const url = new URL(
-  //         "https://n8n.aflows.uk/webhook/revenue"
-  //       );
-
-  //       url.searchParams.append("businessId", businessId);
-
-  //       if (period === "custom") {
-  //         url.searchParams.append("start", customStart!);
-  //         url.searchParams.append("end", customEnd!);
-  //       } else {
-  //         url.searchParams.append("period", period);
-  //       }
-
-  //       const res = await fetch(url.toString());
-  //       const json = await res.json();
-
-  //       const data = json?.[0];
-
-  //       setRevenueSummary(data?.revenueSummary ?? null);
-  //       setDailyRevenue(data?.dailyRevenue ?? []);
-  //       setTopSellingItems(data?.topSellingItems ?? []);
-  //       setPaymentMethods(data?.paymentMethods ?? []);
-  //     } catch (err) {
-  //       console.error("Revenue fetch error:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchRevenue();
-  // }, [businessId, period, customStart, customEnd, fetchKey]);
 
   return {
     revenueSummary,
