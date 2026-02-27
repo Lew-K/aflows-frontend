@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/apiFetch';
 
 type Sale = {
   id: string;
@@ -8,12 +9,11 @@ type Sale = {
   receipt_number?: string | null;
 };
 
-
 export const useSales = (
   businessId: string,
   period: string,
   start?: string,
-  end?: string,  
+  end?: string,
   fetchKey?: number
 ) => {
   const [sales, setSales] = useState<Sale[]>([]);
@@ -29,27 +29,17 @@ export const useSales = (
         const url = new URL(
           `https://n8n.aflows.uk/webhook/get-sales`
         );
+
         url.searchParams.append('business_id', businessId);
         url.searchParams.append('period', period);
 
-        // Add custom dates if period === 'custom'
         if (period === 'custom' && start && end) {
           url.searchParams.append('start', start);
           url.searchParams.append('end', end);
         }
 
-        const accessToken = localStorage.getItem("access_token");
+        const res = await apiFetch(url.toString());
 
-        const res = await fetch(url.toString(), {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error ${res.status}`);
-        }
-        
         const data = await res.json();
 
         setSales(data?.sales?.sales || []);
@@ -62,8 +52,7 @@ export const useSales = (
     };
 
     fetchSales();
-  }, [businessId, period, start, end, fetchKey]); 
+  }, [businessId, period, start, end, fetchKey]);
 
   return { sales, loading };
 };
-
