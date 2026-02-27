@@ -48,7 +48,7 @@ export const apiFetch = async (
   // Retry original request with new token
   const retryResponse = await fetch(input, {
     ...init,
-    headers = {
+    headers: {
       ...(init.headers || {}),
       Authorization: `Bearer ${newAccessToken}`,
       "Content-Type": "application/json",
