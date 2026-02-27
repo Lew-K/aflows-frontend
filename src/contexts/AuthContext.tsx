@@ -64,35 +64,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ✅ 2️⃣ Inactivity timer (separate hook)
+  const lastActivity = useRef(Date.now());
+
   useEffect(() => {
     if (!accessToken) return;
-
-    const resetTimer = () => {
-      if (inactivityTimeout.current) {
-        clearTimeout(inactivityTimeout.current);
-      }
-
-      inactivityTimeout.current = setTimeout(() => {
-        logout();
-      }, INACTIVITY_LIMIT);
+  
+    const updateActivity = () => {
+      lastActivity.current = Date.now();
     };
-
-    const events = ["mousemove", "keydown", "click", "scroll"];
-
-    events.forEach(event =>
-      window.addEventListener(event, resetTimer)
-    );
-
-    resetTimer(); // start timer
-
-    return () => {
-      events.forEach(event =>
-        window.removeEventListener(event, resetTimer)
-      );
-
-      if (inactivityTimeout.current) {
-        clearTimeout(inactivityTimeout.current);
+  
+    const checkInterval = setInterval(() => {
+      if (Date.now() - lastActivity.current > INACTIVITY_LIMIT) {
+        logout();
       }
+    }, 60000); // check every minute
+  
+    const events = ["mousemove", "keydown", "click", "scroll"];
+  
+    events.forEach(event =>
+      window.addEventListener(event, updateActivity)
+    );
+  
+    return () => {
+      clearInterval(checkInterval);
+      events.forEach(event =>
+        window.removeEventListener(event, updateActivity)
+      );
     };
   }, [accessToken]);
 
