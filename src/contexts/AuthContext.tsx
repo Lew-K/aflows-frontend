@@ -30,7 +30,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const inactivityTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const INACTIVITY_LIMIT = 3 * 60 * 60 * 1000; // 3 hours
+
+  const INACTIVITY_LIMIT = 10 * 1000; // 10 seconds for testing
+
+  
+  // const INACTIVITY_LIMIT = 3 * 60 * 60 * 1000; // 3 hours
 
   // ✅ 1️⃣ Restore session on load
   useEffect(() => {
@@ -77,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (Date.now() - lastActivity.current > INACTIVITY_LIMIT) {
         logout();
       }
-    }, 10000); // check every minute ( return to 60000 once done with test)
+    }, 60000); // check every minute ( return to 60000 once done with test)
   
     const events = ["mousemove", "keydown", "click", "scroll"];
   
