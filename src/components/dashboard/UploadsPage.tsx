@@ -115,13 +115,13 @@ export const UploadsPage = () => {
       }
       formData.append('file_name', selectedFile.name);
 
-      const response = await fetch('https://n8n.aflows.uk/webhook/upload-business-file', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
+      const response = await apiFetch(
+        'https://n8n.aflows.uk/webhook/upload-business-file',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
       // Attempt to parse response safely
       let data: any = null;
