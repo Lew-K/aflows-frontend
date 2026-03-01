@@ -243,78 +243,118 @@ export const SalesPage = () => {
                     <Label>Customer Name</Label>
                     <Input placeholder="Enter customer name" {...register('customerName')} />
                   </div>
-                  <div className="space-y-4">
-                    {items.map((entry, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                        
-                        <div className="col-span-5 space-y-1">
-                          <Label>Item / Service</Label>
-                          <Input
-                            placeholder="e.g. 13kg Refill, Cleaning Service"
-                            value={entry.item}
-                            onChange={(e) => {
-                              const updated = [...items];
-                              updated[index].item = e.target.value;
-                              setItems(updated);
-                            }}
-                          />
-                        </div>
+                  {/* Items Section */}
+                  <div className="space-y-3">
                   
-                        <div className="col-span-2 space-y-1">
-                          <Label>Qty</Label>
-                          <Input
-                            type="number"
-                            value={entry.quantity}
-                            onChange={(e) => {
-                              const updated = [...items];
-                              updated[index].quantity = Number(e.target.value);
-                              setItems(updated);
-                            }}
-                          />
-                        </div>
+                    {/* Header Row */}
+                    <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-1">
+                      <div className="col-span-5">Item / Service</div>
+                      <div className="col-span-2 text-center">Qty</div>
+                      <div className="col-span-2 text-center">Price</div>
+                      <div className="col-span-2 text-right">Subtotal</div>
+                      <div className="col-span-1"></div>
+                    </div>
                   
-                        <div className="col-span-3 space-y-1">
-                          <Label>Unit Price</Label>
-                          <Input
-                            type="number"
-                            value={entry.unitCost}
-                            onChange={(e) => {
-                              const updated = [...items];
-                              updated[index].unitCost = Number(e.target.value);
-                              setItems(updated);
-                            }}
-                          />
-                        </div>
+                    {/* Scrollable Items */}
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                      {items.map((entry, index) => {
+                        const subtotal = entry.quantity * entry.unitCost;
                   
-                        <div className="col-span-2">
-                          {items.length > 1 && (
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
-                                setItems(items.filter((_, i) => i !== index));
-                              }}
-                            >
-                              ✕
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                        return (
+                          <div
+                            key={index}
+                            className="grid grid-cols-12 gap-2 items-center bg-muted/30 rounded-md p-2"
+                          >
+                            <div className="col-span-5">
+                              <Input
+                                placeholder="e.g. 13kg Refill or Cleaning"
+                                value={entry.item}
+                                className="h-8"
+                                onChange={(e) => {
+                                  const updated = [...items];
+                                  updated[index].item = e.target.value;
+                                  setItems(updated);
+                                }}
+                              />
+                            </div>
                   
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={entry.quantity}
+                                className="h-8 text-center"
+                                onChange={(e) => {
+                                  const updated = [...items];
+                                  updated[index].quantity = Number(e.target.value);
+                                  setItems(updated);
+                                }}
+                              />
+                            </div>
+                  
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                min="0"
+                                value={entry.unitCost}
+                                className="h-8 text-center"
+                                onChange={(e) => {
+                                  const updated = [...items];
+                                  updated[index].unitCost = Number(e.target.value);
+                                  setItems(updated);
+                                }}
+                              />
+                            </div>
+                  
+                            <div className="col-span-2 text-right text-sm font-semibold">
+                              {subtotal > 0 ? `KES ${subtotal.toLocaleString()}` : "-"}
+                            </div>
+                  
+                            <div className="col-span-1 text-right">
+                              {items.length > 1 && (
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7"
+                                  onClick={() =>
+                                    setItems(items.filter((_, i) => i !== index))
+                                  }
+                                >
+                                  ✕
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  
+                    {/* Add Item Button */}
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
+                      className="text-sm text-primary"
                       onClick={() =>
                         setItems([...items, { item: "", quantity: 1, unitCost: 0 }])
                       }
                     >
-                      + Add Another Item
+                      + Add Item
                     </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Total</Label>
-                    <Input className="bg-muted" readOnly value={calculatedAmount} />
+
+
+                  
+                  <div className="flex justify-between items-center border-t pt-3 mt-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Total
+                    </span>
+                    <span className="text-lg font-bold text-primary">
+                      KES {calculatedAmount.toLocaleString()}
+                    </span>
                   </div>
+
+                  
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
