@@ -116,6 +116,17 @@ export const SalesPage = () => {
         toast.error("Session expired.");
         return;
       }
+
+      const receiptId =
+        sale.receipt_id ||
+        sale.receipt_number ||
+        sale.id;
+  
+      if (!receiptId) {
+        toast.error("Receipt not available");
+        return;
+      }
+
       const res = await apiFetch(
         `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`
       );
@@ -302,11 +313,20 @@ export const SalesPage = () => {
                         </div>
                         <div className="flex items-center gap-3 ml-4">
                           <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.amount).toLocaleString()}</p>
-                          {sale.receipt_id && (
-                            <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => handleDownload(sale)}>
+
+                          {(sale.receipt_id || sale.receipt_number) && (
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 rounded-full"
+                              onClick={() => handleDownload(sale)}
+                            >
                               <Download className="w-3 h-3" />
                             </Button>
                           )}
+
+                          
+                          
                         </div>
                       </div>
                     ))
