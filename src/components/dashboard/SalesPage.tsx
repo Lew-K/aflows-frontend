@@ -237,41 +237,60 @@ export const SalesPage = () => {
               <CardDescription>Record a new transaction instantly.</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow space-y-5">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Customer
-                    </Label>
-                    <Input
-                      placeholder="Walk-in customer or full name"
-                      className="h-10"
-                      {...register('customerName')}
-                    />
+
+
+              
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+                {/* Customer */}
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Customer
+                  </Label>
+                  <Input
+                    placeholder="Walk-in customer or full name"
+                    className="h-10"
+                    {...register('customerName')}
+                  />
+                </div>
+              
+                {/* Items Section */}
+                <div className="space-y-4 border border-border/40 rounded-xl p-4 bg-muted/20">
+              
+                  {/* Header */}
+                  <div className="grid grid-cols-12 gap-2 text-[11px] uppercase tracking-wide font-medium text-muted-foreground px-2">
+                    <div className="col-span-1 text-center">#</div>
+                    <div className="col-span-4">Item / Service</div>
+                    <div className="col-span-2 text-center">Qty</div>
+                    <div className="col-span-2 text-center">Price</div>
+                    <div className="col-span-2 text-right">Subtotal</div>
+                    <div className="col-span-1"></div>
                   </div>
-                  {/* Items Section */}
-                  <div className="space-y-3">
-                  
-                    {/* Header Row */}
-                    <div className="grid grid-cols-12 gap-2 text-[11px] uppercase tracking-wide font-medium text-muted-foreground px-2">
-                      <div className="col-span-5">Item / Service</div>
-                      <div className="col-span-2 text-center">Qty</div>
-                      <div className="col-span-2 text-center">Price</div>
-                      <div className="col-span-2 text-right">Subtotal</div>
-                      <div className="col-span-1"></div>
-                    </div>
-                  
-                    {/* Scrollable Items */}
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+              
+                  {/* Scrollable Rows */}
+                  <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+              
+                    <AnimatePresence>
                       {items.map((entry, index) => {
                         const subtotal = entry.quantity * entry.unitCost;
-                  
+              
                         return (
-                          <div
+                          <motion.div
                             key={index}
-                            className="grid grid-cols-12 gap-2 items-center bg-background/50 border border-border/30 rounded-lg px-2 py-2 hover:border-primary/40 transition"
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.18 }}
+                            className="grid grid-cols-12 gap-2 items-center bg-background/60 border border-border/30 rounded-lg px-2 py-2 hover:border-primary/40 transition"
                           >
-                            <div className="col-span-5">
+              
+                            {/* Row Number */}
+                            <div className="col-span-1 text-center text-xs text-muted-foreground font-medium">
+                              {index + 1}
+                            </div>
+              
+                            {/* Item */}
+                            <div className="col-span-4">
                               <Input
                                 placeholder="e.g. 13kg Refill or Cleaning"
                                 value={entry.item}
@@ -283,7 +302,8 @@ export const SalesPage = () => {
                                 }}
                               />
                             </div>
-                  
+              
+                            {/* Quantity */}
                             <div className="col-span-2">
                               <Input
                                 type="number"
@@ -297,7 +317,8 @@ export const SalesPage = () => {
                                 }}
                               />
                             </div>
-                  
+              
+                            {/* Unit Price */}
                             <div className="col-span-2">
                               <Input
                                 type="number"
@@ -311,11 +332,15 @@ export const SalesPage = () => {
                                 }}
                               />
                             </div>
-                  
+              
+                            {/* Subtotal */}
                             <div className="col-span-2 text-right text-sm font-semibold">
-                              {subtotal > 0 ? `KES ${subtotal.toLocaleString()}` : "-"}
+                              {subtotal > 0
+                                ? `KES ${subtotal.toLocaleString()}`
+                                : "-"}
                             </div>
-                  
+              
+                            {/* Remove */}
                             <div className="col-span-1 text-right">
                               {items.length > 1 && (
                                 <Button
@@ -331,68 +356,93 @@ export const SalesPage = () => {
                                 </Button>
                               )}
                             </div>
-                          </div>
+              
+                          </motion.div>
                         );
                       })}
-                    </div>
-                  
-                    {/* Add Item Button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-sm text-primary"
-                      onClick={() =>
-                        setItems([...items, { item: "", quantity: 1, unitCost: 0 }])
-                      }
-                    >
-                      + Add Item
-                    </Button>
+                    </AnimatePresence>
+              
                   </div>
-                  <div className="space-y-4 border border-border/40 rounded-xl p-4 bg-muted/20">
-
-
-                  
-                  <div className="rounded-xl bg-primary/5 border border-primary/20 px-5 py-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      Total Amount
-                    </span>
-                    <span className="text-2xl font-bold text-primary tracking-tight">
-                      KES {calculatedAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  
+              
+                  {/* Add Item */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-sm text-primary"
+                    onClick={() =>
+                      setItems([...items, { item: "", quantity: 1, unitCost: 0 }])
+                    }
+                  >
+                    + Add Item
+                  </Button>
+              
                 </div>
-                  
+              
+                {/* Total */}
+                <div className="rounded-xl bg-primary/5 border border-primary/20 px-5 py-4 flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Total Amount
+                  </span>
+                  <span className="text-2xl font-bold text-primary tracking-tight">
+                    KES {calculatedAmount.toLocaleString()}
+                  </span>
+                </div>
+              
+                {/* Payment Section */}
                 <div className="space-y-4 pt-2 border-t border-border/40">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Payment Method</Label>
-                    <Select
-                      value={paymentMethod}
-                      onValueChange={(v) => setValue('paymentMethod', v)}
-                    >
-                      <SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
-                      <SelectContent>
-                        {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+                    <div className="space-y-2">
+                      <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Payment Method
+                      </Label>
+                      <Select
+                        value={paymentMethod}
+                        onValueChange={(v) => setValue('paymentMethod', v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {paymentMethods.map(m => (
+                            <SelectItem key={m.value} value={m.value}>
+                              {m.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+              
+                    <div className="space-y-2">
+                      <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Payment Reference
+                      </Label>
+                      <Input
+                        placeholder={
+                          paymentMethod === 'cash'
+                            ? "Not required for cash payments"
+                            : "Transaction code or reference ID"
+                        }
+                        disabled={paymentMethod === 'cash'}
+                        {...register('paymentReference')}
+                      />
+                    </div>
+              
                   </div>
-                  <div className="space-y-2">
-                    <Label>Payment Reference</Label>
-                    <Input
-                      placeholder={
-                        paymentMethod === 'cash'
-                          ? "Not required for cash payments"
-                          : "e.g. MPESA code, bank ref, transaction ID"
-                      }
-                      disabled={paymentMethod === 'cash'}
-                      {...register('paymentReference')}
-                    />                  </div>
                 </div>
-                <Button type="submit" variant="hero" className="w-full h-11 rounded-xl text-sm font-semibold shadow-sm" disabled={isLoading}>
+              
+                {/* Submit */}
+                <Button
+                  type="submit"
+                  className="w-full h-11 rounded-xl text-sm font-semibold shadow-sm"
+                  disabled={isLoading}
+                >
                   {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
                 </Button>
+              
               </form>
+
+                  
             </CardContent>
           </Card>
         </motion.div>
