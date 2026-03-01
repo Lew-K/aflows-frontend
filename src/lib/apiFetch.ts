@@ -1,4 +1,3 @@
-let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
 const REFRESH_URL = "https://n8n.aflows.uk/webhook/refresh-token";
@@ -7,59 +6,61 @@ export const apiFetch = async (
   input: RequestInfo,
   init: RequestInit = {}
 ) => {
-  const accessToken = localStorage.getItem("access_token");
+  const makeRequest = async (token?: string | null) => {
+    const headers: Record<string, string> = {
+      ...(init.headers as Record<string, string> || {}),
+    };
 
-  const headers = {
-    ...(init.headers || {}),
-    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Only set Content-Type if NOT sending FormData
+    if (!(init.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return fetch(input, {
+      ...init,
+      headers,
+    });
   };
 
-   // Only set Content-Type if NOT sending FormData
-  if (!(init.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-  }
+  const accessToken = localStorage.getItem("access_token");
+  let response = await makeRequest(accessToken);
 
-  const response = await fetch(input, {
-    ...init,
-    headers,
-  });
-
+  // If NOT 401 → return normally
   if (response.status !== 401) {
     return response;
   }
 
-  // If access expired → try refresh
-  if (!isRefreshing) {
-    isRefreshing = true;
-
+  // If already refreshing → wait
+  if (!refreshPromise) {
     refreshPromise = refreshAccessToken();
   }
 
   const newAccessToken = await refreshPromise;
-  isRefreshing = false;
+
+  // Reset after fully resolved
+  refreshPromise = null;
 
   if (!newAccessToken) {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("aflows_user");
-  
-    window.location.assign("/login?reason=session-expired");  
-    
+    forceLogout();
     throw new Error("Session expired");
   }
 
-  // Retry original request with new token
-  const retryResponse = await fetch(input, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${newAccessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
+  // Retry original request
+  const retryResponse = await makeRequest(newAccessToken);
 
   return retryResponse;
 };
+
+function forceLogout() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("aflows_user");
+  window.location.assign("/login?reason=session-expired");
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = localStorage.getItem("refresh_token");
@@ -79,11 +80,15 @@ async function refreshAccessToken(): Promise<string | null> {
       }),
     });
 
-    if (response.status === 400) {
+    if (!response.ok) {
       return null;
     }
 
     const data = await response.json();
+
+    if (!data.access_token || !data.refresh_token) {
+      return null;
+    }
 
     // ROTATION: overwrite BOTH tokens
     localStorage.setItem("access_token", data.access_token);
