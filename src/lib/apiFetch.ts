@@ -12,8 +12,7 @@ export const apiFetch = async (
   const headers = {
     ...(init.headers || {}),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-    "Content-Type": "application/json",
-
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
 
   const response = await fetch(input, {
