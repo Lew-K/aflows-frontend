@@ -258,7 +258,7 @@ export const SalesPage = () => {
                     Customer
                   </Label>
                   <Input
-                    placeholder="Walk-in customer or full name"
+                    placeholder="Customer full name"
                     className="h-10"
                     {...register('customerName')}
                   />
@@ -302,7 +302,7 @@ export const SalesPage = () => {
                             {/* Item */}
                             <div className="col-span-4">
                               <Input
-                                placeholder="e.g. 13kg Refill or Cleaning"
+                                placeholder="Product or service"
                                 value={entry.item}
                                 className="h-8"
                                 onChange={(e) => {
