@@ -197,7 +197,7 @@ export const SalesPage = () => {
       </header>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-5">
         <Card className="bg-primary/5 border-none">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -228,7 +228,7 @@ export const SalesPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         {/* Entry Form */}
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-          <Card className="h-full flex flex-col">
+          <Card className="h-full flex flex-col border border-border/50 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-primary" />
@@ -240,14 +240,20 @@ export const SalesPage = () => {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Customer Name</Label>
-                    <Input placeholder="Enter customer name" {...register('customerName')} />
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Customer
+                    </Label>
+                    <Input
+                      placeholder="Walk-in customer or full name"
+                      className="h-10"
+                      {...register('customerName')}
+                    />
                   </div>
                   {/* Items Section */}
                   <div className="space-y-3">
                   
                     {/* Header Row */}
-                    <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-1">
+                    <div className="grid grid-cols-12 gap-2 text-[11px] uppercase tracking-wide font-medium text-muted-foreground px-2">
                       <div className="col-span-5">Item / Service</div>
                       <div className="col-span-2 text-center">Qty</div>
                       <div className="col-span-2 text-center">Price</div>
@@ -263,7 +269,7 @@ export const SalesPage = () => {
                         return (
                           <div
                             key={index}
-                            className="grid grid-cols-12 gap-2 items-center bg-muted/30 rounded-md p-2"
+                            className="grid grid-cols-12 gap-2 items-center bg-background/50 border border-border/30 rounded-lg px-2 py-2 hover:border-primary/40 transition"
                           >
                             <div className="col-span-5">
                               <Input
@@ -283,7 +289,7 @@ export const SalesPage = () => {
                                 type="number"
                                 min="1"
                                 value={entry.quantity}
-                                className="h-8 text-center"
+                                className="h-8 text-center rounded-md"
                                 onChange={(e) => {
                                   const updated = [...items];
                                   updated[index].quantity = Number(e.target.value);
@@ -297,7 +303,7 @@ export const SalesPage = () => {
                                 type="number"
                                 min="0"
                                 value={entry.unitCost}
-                                className="h-8 text-center"
+                                className="h-8 text-center rounded-md"
                                 onChange={(e) => {
                                   const updated = [...items];
                                   updated[index].unitCost = Number(e.target.value);
@@ -342,20 +348,22 @@ export const SalesPage = () => {
                       + Add Item
                     </Button>
                   </div>
+                  <div className="space-y-4 border border-border/40 rounded-xl p-4 bg-muted/20">
 
 
                   
-                  <div className="flex justify-between items-center border-t pt-3 mt-2">
+                  <div className="rounded-xl bg-primary/5 border border-primary/20 px-5 py-4 flex justify-between items-center">
                     <span className="text-sm font-medium text-muted-foreground">
-                      Total
+                      Total Amount
                     </span>
-                    <span className="text-lg font-bold text-primary">
+                    <span className="text-2xl font-bold text-primary tracking-tight">
                       KES {calculatedAmount.toLocaleString()}
                     </span>
                   </div>
-
                   
                 </div>
+                  
+                <div className="space-y-4 pt-2 border-t border-border/40">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Payment Method</Label>
@@ -381,7 +389,7 @@ export const SalesPage = () => {
                       {...register('paymentReference')}
                     />                  </div>
                 </div>
-                <Button type="submit" variant="hero" className="w-full mt-2" disabled={isLoading}>
+                <Button type="submit" variant="hero" className="w-full h-11 rounded-xl text-sm font-semibold shadow-sm" disabled={isLoading}>
                   {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
                 </Button>
               </form>
