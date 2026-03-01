@@ -146,6 +146,19 @@ export const SalesPage = () => {
   };
 
   const onSubmit = async (data: SaleFormData) => {
+
+    if (items.length === 0) {
+      toast.error("Add at least one item.");
+      return;
+    }
+  
+    for (const item of items) {
+      if (!item.item || item.quantity <= 0 || item.unitCost < 0) {
+        toast.error("Please complete all item fields correctly.");
+        return;
+      }
+    }
+    
     setIsLoading(true);
     try {
       const response = await apiFetch(
@@ -156,11 +169,7 @@ export const SalesPage = () => {
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
-             items: items.map(i => ({
-              item: i.item,
-              quantity: i.quantity,
-              unitCost: i.unitCost
-            })),
+            items,
             total_amount: calculatedAmount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
