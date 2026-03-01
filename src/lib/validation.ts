@@ -34,12 +34,15 @@ export const saleSchema = z
     customerName: z.string().optional(),
 
     // REQUIRED
-    itemSold: z.string().min(1, "Item sold is required"),
-    quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-    unitCost: z.coerce.number().min(0, "Unit cost cannot be negative"),
-    amount: z.coerce
-      .number()
-      .positive("Amount must be greater than zero"),
+    items: z
+      .array(
+        z.object({
+          item: z.string().min(1, "Item name is required"),
+          quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+          unitCost: z.coerce.number().min(0, "Unit cost cannot be negative"),
+        })
+      )
+      .min(1, "At least one item is required"),
 
     // OPTIONAL
     paymentMethod: z.string().optional(),
