@@ -12,8 +12,12 @@ export const apiFetch = async (
   const headers = {
     ...(init.headers || {}),
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-    ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
+
+   // Only set Content-Type if NOT sending FormData
+  if (!(init.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const response = await fetch(input, {
     ...init,
