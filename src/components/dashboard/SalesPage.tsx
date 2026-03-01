@@ -96,12 +96,9 @@ export const SalesPage = () => {
   } = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      quantity: 1,
-      unitCost: 0,
-      amount: 0,
-      paymentMethod: "cash",
       customerName: "",
-      itemSold: "",
+      items: [{ item: "", quantity: 1, unitCost: 0 }],
+      paymentMethod: "cash",
       paymentReference: "",
     },
   });
@@ -159,7 +156,11 @@ export const SalesPage = () => {
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
-            items: items,
+             items: items.map(i => ({
+              item: i.item,
+              quantity: i.quantity,
+              unitCost: i.unitCost
+            })),
             total_amount: calculatedAmount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
