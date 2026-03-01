@@ -35,6 +35,11 @@ export const SalesPage = () => {
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId;
 
+  const [items, setItems] = useState([
+    { item: "", quantity: 1, unitCost: 0 }
+  ]);
+
+
   const weeklySummary = React.useMemo(() => {
     if (!Array.isArray(allSales)) {
       return { totalSales: 0, totalValue: 0 };
@@ -94,21 +99,20 @@ export const SalesPage = () => {
       quantity: 1,
       unitCost: 0,
       amount: 0,
-      paymentMethod: undefined,
+      paymentMethod: "cash",
+      customerName: "",
+      itemSold: "",
+      paymentReference: "",
     },
   });
 
   const paymentMethod = watch("paymentMethod");
-  const quantityWatch = watch("quantity");
-  const unitCostWatch = watch("unitCost");
-  const calculatedAmount = (Number(quantityWatch) || 0) * (Number(unitCostWatch) || 0);
+  const calculatedAmount = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitCost,
+    0
+  );
 
-  useEffect(() => {
-    setValue('amount', calculatedAmount, {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
-  }, [calculatedAmount, setValue]);
+  
 
   const handleDownload = async (sale: any) => {
     try {
@@ -128,7 +132,7 @@ export const SalesPage = () => {
       }
 
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${sale.receipt_id}`
+        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${receiptId}`
       );
       
       if (!res.ok) throw new Error();
@@ -155,16 +159,15 @@ export const SalesPage = () => {
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
-            item_sold: data.itemSold,
-            quantity: data.quantity,
-            unit_cost: data.unitCost,
-            amount: data.amount,
+            items: items,
+            total_amount: calculatedAmount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
           }),
         }
       );
 
+    
       let result: any = {};
       const text = await response.text();
       if (text) {
@@ -174,6 +177,7 @@ export const SalesPage = () => {
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
+        setItems([{ item: "", quantity: 1, unitCost: 0 }]);
         fetchSales();
       } else {
         toast.error(result.message || 'Failed to record sale');
@@ -237,21 +241,75 @@ export const SalesPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Customer Name</Label>
-                    <Input placeholder="Optional" {...register('customerName')} />
+                    <Input placeholder="Enter customer name" {...register('customerName')} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Item Sold</Label>
-                    <Input placeholder="Item name" {...register('itemSold')} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Qty</Label>
-                    <Input type="number" {...register('quantity', { valueAsNumber: true })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Unit Price</Label>
-                    <Input type="number" {...register('unitCost', { valueAsNumber: true })} />
+                  <div className="space-y-4">
+                    {items.map((entry, index) => (
+                      <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                        
+                        <div className="col-span-5 space-y-1">
+                          <Label>Item / Service</Label>
+                          <Input
+                            placeholder="e.g. 13kg Refill, Cleaning Service"
+                            value={entry.item}
+                            onChange={(e) => {
+                              const updated = [...items];
+                              updated[index].item = e.target.value;
+                              setItems(updated);
+                            }}
+                          />
+                        </div>
+                  
+                        <div className="col-span-2 space-y-1">
+                          <Label>Qty</Label>
+                          <Input
+                            type="number"
+                            value={entry.quantity}
+                            onChange={(e) => {
+                              const updated = [...items];
+                              updated[index].quantity = Number(e.target.value);
+                              setItems(updated);
+                            }}
+                          />
+                        </div>
+                  
+                        <div className="col-span-3 space-y-1">
+                          <Label>Unit Price</Label>
+                          <Input
+                            type="number"
+                            value={entry.unitCost}
+                            onChange={(e) => {
+                              const updated = [...items];
+                              updated[index].unitCost = Number(e.target.value);
+                              setItems(updated);
+                            }}
+                          />
+                        </div>
+                  
+                        <div className="col-span-2">
+                          {items.length > 1 && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => {
+                                setItems(items.filter((_, i) => i !== index));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setItems([...items, { item: "", quantity: 1, unitCost: 0 }])
+                      }
+                    >
+                      + Add Another Item
+                    </Button>
                   </div>
                   <div className="space-y-2">
                     <Label>Total</Label>
@@ -261,7 +319,10 @@ export const SalesPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Payment Method</Label>
-                    <Select onValueChange={(v) => setValue('paymentMethod', v)}>
+                    <Select
+                      value={paymentMethod}
+                      onValueChange={(v) => setValue('paymentMethod', v)}
+                    >
                       <SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
                       <SelectContent>
                         {paymentMethods.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
@@ -269,9 +330,16 @@ export const SalesPage = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Reference</Label>
-                    <Input disabled={paymentMethod === 'cash'} {...register('paymentReference')} />
-                  </div>
+                    <Label>Payment Reference</Label>
+                    <Input
+                      placeholder={
+                        paymentMethod === 'cash'
+                          ? "Not required for cash payments"
+                          : "e.g. MPESA code, bank ref, transaction ID"
+                      }
+                      disabled={paymentMethod === 'cash'}
+                      {...register('paymentReference')}
+                    />                  </div>
                 </div>
                 <Button type="submit" variant="hero" className="w-full mt-2" disabled={isLoading}>
                   {isLoading ? <LoadingSpinner size="sm" /> : "Record Sale"}
