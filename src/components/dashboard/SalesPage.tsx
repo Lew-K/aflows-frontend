@@ -258,7 +258,7 @@ export const SalesPage = () => {
                     Customer
                   </Label>
                   <Input
-                    placeholder="Customer full name"
+                    placeholder="Customer name"
                     className="h-10"
                     {...register('customerName')}
                   />
