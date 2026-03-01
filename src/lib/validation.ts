@@ -33,18 +33,18 @@ export const saleSchema = z
   .object({
     customerName: z.string().optional(),
 
-    // REQUIRED
-    items: z
-      .array(
-        z.object({
-          item: z.string().min(1, "Item name is required"),
-          quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-          unitCost: z.coerce.number().min(0, "Unit cost cannot be negative"),
-        })
-      )
-      .min(1, "At least one item is required"),
+    // // REQUIRED
+    // items: z
+    //   .array(
+    //     z.object({
+    //       item: z.string().min(1, "Item name is required"),
+    //       quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+    //       unitCost: z.coerce.number().min(0, "Unit cost cannot be negative"),
+    //     })
+    //   )
+    //   .min(1, "At least one item is required"),
 
-    // OPTIONAL
+    // // OPTIONAL
     paymentMethod: z.string().optional(),
     paymentReference: z.string().optional(),
   })
