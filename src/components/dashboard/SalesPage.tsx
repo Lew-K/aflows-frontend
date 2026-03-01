@@ -197,7 +197,7 @@ export const SalesPage = () => {
       </header>
 
       {/* Stats Row */}
-      <div className="space-y-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-primary/5 border-none">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -434,6 +434,7 @@ export const SalesPage = () => {
                 {/* Submit */}
                 <Button
                   type="submit"
+                  variant="hero"
                   className="w-full h-11 rounded-xl text-sm font-semibold shadow-sm"
                   disabled={isLoading}
                 >
