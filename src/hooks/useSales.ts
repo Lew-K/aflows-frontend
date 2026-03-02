@@ -3,7 +3,7 @@ import { apiFetch } from '@/lib/apiFetch';
 
 type Sale = {
   id: string;
-  amount: number;
+  amount: number; // we keep this internally
   created_at: string;
   receipt_id?: string | null;
   receipt_number?: string | null;
@@ -39,10 +39,18 @@ export const useSales = (
         }
 
         const res = await apiFetch(url.toString());
-
         const data = await res.json();
 
-        setSales(data?.sales?.sales || []);
+        const rawSales = data?.sales?.sales || [];
+
+        // 🔥 Map total_amount → amount safely
+        const mappedSales: Sale[] = rawSales.map((sale: any) => ({
+          ...sale,
+          amount: Number(sale.total_amount ?? sale.amount ?? 0),
+        }));
+
+        setSales(mappedSales);
+
       } catch (err) {
         console.error('Sales fetch error:', err);
         setSales([]);
