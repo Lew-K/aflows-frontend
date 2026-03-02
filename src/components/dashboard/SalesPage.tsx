@@ -56,7 +56,7 @@ export const SalesPage = () => {
     return {
       totalSales: weeklySales.length,
       totalValue: weeklySales.reduce(
-        (sum, sale) => sum + Number(sale.amount || 0),
+        (sum, sale) => sum + Number(sale.total_amount || 0),
         0
       ),
     };
@@ -489,7 +489,7 @@ export const SalesPage = () => {
                           <p className="text-[10px] text-muted-foreground mt-1 uppercase">{sale.payment_method} • {new Date(sale.created_at).toLocaleDateString()}</p>
                         </div>
                         <div className="flex items-center gap-3 ml-4">
-                          <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.amount).toLocaleString()}</p>
+                          <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.total_amount || 0).toLocaleString()}</p>
 
                           {(sale.receipt_id || sale.receipt_number) && (
                             <Button
