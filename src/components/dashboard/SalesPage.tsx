@@ -265,127 +265,180 @@ export const SalesPage = () => {
                 </div>
               
                 {/* Items Section */}
-                <div className="space-y-4 border border-border/40 rounded-xl p-4 bg-muted/20">
-              
-                  {/* Header */}
-                  <div className="grid grid-cols-12 gap-2 text-[11px] uppercase tracking-wide font-medium text-muted-foreground px-2">
+                <div className="space-y-4 border border-border/40 rounded-xl p-3 md:p-4 bg-muted/20">
+                  {/* Header - Hidden on mobile */}
+                  <div className="hidden md:grid grid-cols-12 gap-3 text-[11px] uppercase tracking-wide font-bold text-muted-foreground px-2">
                     <div className="col-span-1 text-center">#</div>
-                    <div className="col-span-4">Item / Service</div>
+                    <div className="col-span-5">Item / Service</div>
                     <div className="col-span-2 text-center">Qty</div>
                     <div className="col-span-2 text-center">Price</div>
-                    <div className="col-span-2 text-right">Subtotal</div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-2 text-right pr-8">Subtotal</div>
                   </div>
-              
+                
                   {/* Scrollable Rows */}
-                  <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
-              
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
                     <AnimatePresence>
                       {items.map((entry, index) => {
                         const subtotal = entry.quantity * entry.unitCost;
-              
+                
                         return (
                           <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: -6 }}
+                            initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -6 }}
-                            transition={{ duration: 0.18 }}
-                            className="grid grid-cols-12 gap-2 items-center bg-background/60 border border-border/30 rounded-lg px-2 py-2 hover:border-primary/40 transition"
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative flex flex-col md:grid md:grid-cols-12 gap-3 bg-background border border-border/50 rounded-lg p-3 md:p-2 md:items-center hover:shadow-sm transition-all"
                           >
-              
-                            {/* Row Number */}
-                            <div className="col-span-1 text-center text-xs text-muted-foreground font-medium">
-                              {index + 1}
+                            {/* Mobile Row Header */}
+                            <div className="md:col-span-1 flex justify-between items-center mb-2 md:mb-0">
+                              <span className="md:w-full md:text-center text-xs font-bold bg-primary/10 text-primary rounded px-2 py-1">
+                                #{index + 1}
+                              </span>
+                
+                              {/* Mobile Delete */}
+                              <div className="md:hidden">
+                                {items.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 text-destructive"
+                                    onClick={() =>
+                                      setItems(prev => prev.filter((_, i) => i !== index))
+                                    }
+                                  >
+                                    ✕
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-              
-                            {/* Item */}
-                            <div className="col-span-4">
+                
+                            {/* Item Name */}
+                            <div className="md:col-span-5">
+                              <Label className="md:hidden text-[10px] uppercase mb-1 block">
+                                Product Name
+                              </Label>
                               <Input
                                 placeholder="Product or service"
                                 value={entry.item}
-                                className="h-8"
+                                className="h-9 focus-visible:ring-primary"
                                 onChange={(e) => {
-                                  const updated = [...items];
-                                  updated[index].item = e.target.value;
-                                  setItems(updated);
+                                  const value = e.target.value;
+                                  setItems(prev => {
+                                    const updated = [...prev];
+                                    updated[index] = { ...updated[index], item: value };
+                                    return updated;
+                                  });
                                 }}
                               />
                             </div>
-              
-                            {/* Quantity */}
-                            <div className="col-span-2">
-                              <Input
-                                type="number"
-                                min="1"
-                                value={entry.quantity}
-                                className="h-8 text-center rounded-md"
-                                onChange={(e) => {
-                                  const updated = [...items];
-                                  updated[index].quantity = Number(e.target.value);
-                                  setItems(updated);
-                                }}
-                              />
+                
+                            {/* Qty + Price */}
+                            <div className="grid grid-cols-2 md:contents gap-3">
+                              {/* Quantity */}
+                              <div className="md:col-span-2">
+                                <Label className="md:hidden text-[10px] uppercase mb-1 block">
+                                  Qty
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  inputMode="numeric"
+                                  value={entry.quantity}
+                                  className="h-9 text-center"
+                                  onChange={(e) => {
+                                    const value = Math.max(
+                                      1,
+                                      Number(e.target.value) || 1
+                                    );
+                
+                                    setItems(prev => {
+                                      const updated = [...prev];
+                                      updated[index] = { ...updated[index], quantity: value };
+                                      return updated;
+                                    });
+                                  }}
+                                />
+                              </div>
+                
+                              {/* Unit Price */}
+                              <div className="md:col-span-2">
+                                <Label className="md:hidden text-[10px] uppercase mb-1 block">
+                                  Unit Price
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  inputMode="numeric"
+                                  value={entry.unitCost}
+                                  className="h-9 text-center"
+                                  onChange={(e) => {
+                                    const value = Math.max(
+                                      0,
+                                      Number(e.target.value) || 0
+                                    );
+                
+                                    setItems(prev => {
+                                      const updated = [...prev];
+                                      updated[index] = { ...updated[index], unitCost: value };
+                                      return updated;
+                                    });
+                                  }}
+                                />
+                              </div>
                             </div>
-              
-                            {/* Unit Price */}
-                            <div className="col-span-2">
-                              <Input
-                                type="number"
-                                min="0"
-                                value={entry.unitCost}
-                                className="h-8 text-center rounded-md"
-                                onChange={(e) => {
-                                  const updated = [...items];
-                                  updated[index].unitCost = Number(e.target.value);
-                                  setItems(updated);
-                                }}
-                              />
+                
+                            {/* Subtotal + Desktop Delete */}
+                            <div className="md:col-span-2 flex items-center justify-between md:justify-end mt-2 md:mt-0">
+                              <div className="md:text-right">
+                                <Label className="md:hidden text-[10px] uppercase block">
+                                  Subtotal
+                                </Label>
+                                <span className="text-sm font-bold text-primary">
+                                  {subtotal > 0
+                                    ? `KES ${subtotal.toLocaleString()}`
+                                    : "-"}
+                                </span>
+                              </div>
+                
+                              {/* Desktop Delete */}
+                              <div className="hidden md:block ml-2">
+                                {items.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                                    onClick={() =>
+                                      setItems(prev => prev.filter((_, i) => i !== index))
+                                    }
+                                  >
+                                    ✕
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-              
-                            {/* Subtotal */}
-                            <div className="col-span-2 text-right text-sm font-semibold">
-                              {subtotal > 0
-                                ? `KES ${subtotal.toLocaleString()}`
-                                : "-"}
-                            </div>
-              
-                            {/* Remove */}
-                            <div className="col-span-1 text-right">
-                              {items.length > 1 && (
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7"
-                                  onClick={() =>
-                                    setItems(items.filter((_, i) => i !== index))
-                                  }
-                                >
-                                  ✕
-                                </Button>
-                              )}
-                            </div>
-              
                           </motion.div>
                         );
                       })}
                     </AnimatePresence>
-              
                   </div>
-              
-                  {/* Add Item */}
+                
+                  {/* Add Item Button */}
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="text-sm text-primary"
+                    variant="outline"
+                    size="sm"
+                    className="w-full md:w-auto border-dashed border-primary/40 text-primary hover:bg-primary/5"
                     onClick={() =>
-                      setItems([...items, { item: "", quantity: 1, unitCost: 0 }])
+                      setItems(prev => [
+                        ...prev,
+                        { item: "", quantity: 1, unitCost: 0 }
+                      ])
                     }
                   >
-                    + Add Item
+                    + Add Another Item
                   </Button>
-              
                 </div>
               
                 {/* Total */}
