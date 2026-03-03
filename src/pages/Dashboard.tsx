@@ -13,7 +13,7 @@ const Dashboard = () => {
       <Routes>
         <Route index element={<AnalyticsPage />} />
         <Route path="sales" element={<SalesPage />} />
-        <Route path="receipts" element={<ReceiptsPage />} />
+        <Route path="operations" element={<OperationsPage />} />
         <Route path="uploads" element={<UploadsPage />} />
         <Route path="contact" element={<DashboardContactPage />} />
       </Routes>
