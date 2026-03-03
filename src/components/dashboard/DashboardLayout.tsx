@@ -20,7 +20,7 @@ import { NotificationCenter } from '@/components/NotificationCenter';
 const navItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard' },
   { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales' },
-  { icon: Receipt, label: 'Receipts', path: '/dashboard/receipts' },
+  { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations' },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads' },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact' },
 ];
