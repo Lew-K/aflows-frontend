@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   BarChart3,
   FileUp,
-  Receipt,
+  ClipboardCheck,
   ShoppingCart,
   Mail,
   LogOut,
