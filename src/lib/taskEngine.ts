@@ -29,6 +29,9 @@ export interface RecurringTemplate {
 export const calculateNextDate = (currentDate: string, template: Partial<RecurringTemplate>): string => {
   const date = new Date(currentDate);
   switch (template.frequency) {
+    case "daily":
+      date.setDate(date.getDate() + 1);
+      break;  
     case "weekly":
       date.setDate(date.getDate() + 7);
       break;
