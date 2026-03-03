@@ -2,167 +2,72 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Bell, Plus, Search, CheckCircle2 } from "lucide-react"
 import {
   Task,
   RecurringTemplate,
   generateRecurringTasks,
 } from "@/lib/taskEngine"
+import { cn } from "@/lib/utils"
 
 export function OperationsPage() {
   const { toast } = useToast()
-
   const businessId = "default"
 
   const [tasks, setTasks] = useState<Task[]>([])
-  const [recurringTemplates, setRecurringTemplates] = useState<
-    RecurringTemplate[]
-  >([])
+  const [recurringTemplates, setRecurringTemplates] = useState<RecurringTemplate[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [showCompleted, setShowCompleted] = useState(false)
   const [showRecurringForm, setShowRecurringForm] = useState(false)
-
-  // Notification dropdown
   const [showNotifications, setShowNotifications] = useState(false)
 
-  // ----------------------------
-  // LOAD + RECURRING GENERATION
-  // ----------------------------
-
+  // --- INITIAL LOAD & ENGINE SYNC ---
   useEffect(() => {
     const savedTasks = localStorage.getItem(`aflows_tasks_${businessId}`)
-    const savedTemplates = localStorage.getItem(
-      `aflows_recurring_${businessId}`
-    )
+    const savedTemplates = localStorage.getItem(`aflows_recurring_${businessId}`)
 
     const parsedTasks = savedTasks ? JSON.parse(savedTasks) : []
-    const parsedTemplates = savedTemplates
-      ? JSON.parse(savedTemplates)
-      : []
+    const parsedTemplates = savedTemplates ? JSON.parse(savedTemplates) : []
 
-    const { newTasks, updatedTemplates } = generateRecurringTasks(
-      parsedTemplates,
-      parsedTasks
-    )
-
+    const { newTasks, updatedTemplates } = generateRecurringTasks(parsedTemplates, parsedTasks)
     const allTasks = [...parsedTasks, ...newTasks]
 
     setTasks(allTasks)
     setRecurringTemplates(updatedTemplates)
 
-    localStorage.setItem(
-      `aflows_tasks_${businessId}`,
-      JSON.stringify(allTasks)
-    )
-
-    localStorage.setItem(
-      `aflows_recurring_${businessId}`,
-      JSON.stringify(updatedTemplates)
-    )
+    localStorage.setItem(`aflows_tasks_${businessId}`, JSON.stringify(allTasks))
+    localStorage.setItem(`aflows_recurring_${businessId}`, JSON.stringify(updatedTemplates))
 
     if (newTasks.length > 0) {
       newTasks.forEach((task: Task) => {
-        toast({
-          title: `Recurring task created: ${task.title}`,
-        })
+        toast({ title: `Task generated: ${task.title}` })
       })
     }
   }, [])
 
-  // ----------------------------
-  // HELPERS
-  // ----------------------------
-
+  // --- HELPERS ---
   const getStatus = (dueDate: string) => {
-    const today = new Date()
-    const due = new Date(dueDate)
-
-    const todayOnly = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    )
-    const dueOnly = new Date(
-      due.getFullYear(),
-      due.getMonth(),
-      due.getDate()
-    )
-
-    if (dueOnly < todayOnly) return "overdue"
-    if (dueOnly.getTime() === todayOnly.getTime()) return "today"
+    const today = new Date().setHours(0, 0, 0, 0)
+    const due = new Date(dueDate).setHours(0, 0, 0, 0)
+    if (due < today) return "overdue"
+    if (due === today) return "today"
     return "upcoming"
   }
 
-  const saveTasks = (updated: Task[]) => {
-    setTasks(updated)
-    localStorage.setItem(
-      `aflows_tasks_${businessId}`,
-      JSON.stringify(updated)
-    )
-  }
-
-  const saveTemplates = (updated: RecurringTemplate[]) => {
-    setRecurringTemplates(updated)
-    localStorage.setItem(
-      `aflows_recurring_${businessId}`,
-      JSON.stringify(updated)
-    )
-  }
-
-  // ----------------------------
-  // COMPLETE TASK
-  // ----------------------------
-
   const completeTask = (task: Task) => {
     const updatedTasks = tasks.map((t) =>
-      t.id === task.id
-        ? { ...t, completed: true, completedAt: new Date().toISOString() }
-        : t
+      t.id === task.id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
     )
-
-    saveTasks(updatedTasks)
-
-    if (task.fromRecurring) {
-      const updatedTemplates = recurringTemplates.map((template) => {
-        if (template.title === task.title) {
-          const nextDate = new Date(template.nextDueDate)
-
-          if (template.frequency === "weekly") {
-            nextDate.setDate(nextDate.getDate() + 7)
-          }
-
-          if (template.frequency === "monthly") {
-            nextDate.setMonth(nextDate.getMonth() + 1)
-          }
-
-          if (template.frequency === "custom" && template.customDays) {
-            nextDate.setDate(
-              nextDate.getDate() + template.customDays
-            )
-          }
-
-          return {
-            ...template,
-            nextDueDate: nextDate.toISOString(),
-          }
-        }
-
-        return template
-      })
-
-      saveTemplates(updatedTemplates)
-    }
+    setTasks(updatedTasks)
+    localStorage.setItem(`aflows_tasks_${businessId}`, JSON.stringify(updatedTasks))
+    toast({ title: "Task marked as complete" })
   }
 
-  // ----------------------------
-  // CREATE RECURRING
-  // ----------------------------
-
-  const createRecurringTemplate = (
-    title: string,
-    frequency: "weekly" | "monthly" | "custom",
-    customDays: number | undefined,
-    priority: "low" | "medium" | "high"
-  ) => {
+  const createRecurringTemplate = (title: string, frequency: any, customDays: number | undefined, priority: any) => {
     const newTemplate: RecurringTemplate = {
       id: crypto.randomUUID(),
       title,
@@ -172,386 +77,202 @@ export function OperationsPage() {
       nextDueDate: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     }
-
     const updated = [...recurringTemplates, newTemplate]
-    saveTemplates(updated)
-
-    toast({
-      title: `Recurring task created: ${title}`,
-    })
+    setRecurringTemplates(updated)
+    localStorage.setItem(`aflows_recurring_${businessId}`, JSON.stringify(updated))
+    setShowRecurringForm(false)
+    toast({ title: "Template created" })
   }
 
-  // ----------------------------
-  // FILTERS
-  // ----------------------------
-
-  const activeTasks = useMemo(
-    () =>
-      tasks
-        .filter((t) => !t.completed)
-        .filter((t) =>
-          t.title.toLowerCase().includes(searchQuery.toLowerCase())
-        ),
+  // --- FILTERS ---
+  const activeTasks = useMemo(() => 
+    tasks.filter(t => !t.completed && t.title.toLowerCase().includes(searchQuery.toLowerCase())),
     [tasks, searchQuery]
   )
-
-  const completedTasks = tasks.filter((t) => t.completed)
-
-  const upcomingNotifications = tasks.filter((task) => {
-    const status = getStatus(task.dueDate)
-    return !task.completed && status === "upcoming"
-  })
-
-  // ----------------------------
-  // UI
-  // ----------------------------
+  const completedTasks = tasks.filter(t => t.completed)
+  const upcomingNotifications = tasks.filter(t => !t.completed && getStatus(t.dueDate) !== "upcoming")
 
   return (
-    <div className="p-6 space-y-8">
-
+    <div className="p-6 space-y-6 text-foreground">
       {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">
-          Business Operations
-        </h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Business Operations</h1>
+          <p className="text-muted-foreground">Manage your recurring tasks and daily workflows.</p>
+        </div>
 
-        {/* Notification Bell */}
         <div className="relative">
-          <button
-            onClick={() =>
-              setShowNotifications(!showNotifications)
-            }
-            className="relative"
-          >
-            🔔
+          <Button variant="outline" size="icon" onClick={() => setShowNotifications(!showNotifications)}>
+            <Bell className="h-5 w-5 text-yellow-500" />
             {upcomingNotifications.length > 0 && (
-              <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white rounded-full px-2">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">
                 {upcomingNotifications.length}
               </span>
             )}
-          </button>
+          </Button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-lg p-4 space-y-2 z-50">
-              {upcomingNotifications.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  No upcoming tasks.
-                </p>
-              )}
-
-              {upcomingNotifications.map((task) => (
-                <div
-                  key={task.id}
-                  className="text-xs border-b pb-2"
-                >
-                  <p className="font-medium">{task.title}</p>
-                  <p>
-                    Due{" "}
-                    {new Date(
-                      task.dueDate
-                    ).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <Card className="absolute right-0 mt-2 w-80 z-50 shadow-xl border-border">
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm">Alerts</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                {upcomingNotifications.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No urgent tasks.</p>
+                ) : (
+                  upcomingNotifications.map(task => (
+                    <div key={task.id} className="text-xs p-2 rounded-md bg-muted/50 border">
+                      <p className="font-bold">{task.title}</p>
+                      <p className={getStatus(task.dueDate) === 'overdue' ? 'text-destructive' : 'text-yellow-600'}>
+                        {getStatus(task.dueDate).toUpperCase()}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
 
-      {/* SEARCH */}
-      <input
-        type="text"
-        placeholder="Search tasks..."
-        value={searchQuery}
-        onChange={(e) =>
-          setSearchQuery(e.target.value)
-        }
-        className="w-full border rounded-lg px-4 py-2 text-sm"
-      />
-
-      {/* EMPTY STATE */}
-      {activeTasks.length === 0 && (
-        <div className="text-center py-16 border rounded-xl bg-muted/20">
-          <p className="text-sm text-muted-foreground">
-            Add tasks to stay on top of your business operations.
-          </p>
+      {/* CONTROLS */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search tasks..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Button onClick={() => setShowRecurringForm(!showRecurringForm)}>
+          <Plus className="mr-2 h-4 w-4" /> Create Recurring Task
+        </Button>
+      </div>
+
+      {showRecurringForm && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-6">
+            <RecurringForm onCreate={createRecurringTemplate} />
+          </CardContent>
+        </Card>
       )}
 
-      {/* ACTIVE TABLE */}
-      {activeTasks.length > 0 && (
-        <div className="border rounded-xl overflow-hidden">
+      {/* TASKS TABLE */}
+      <Card>
+        <div className="rounded-md border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-muted/30 text-xs uppercase">
+            <thead className="bg-muted/50 border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3">
-                  Task
-                </th>
-                <th className="text-left px-4 py-3">
-                  Priority
-                </th>
-                <th className="text-left px-4 py-3">
-                  Due
-                </th>
-                <th className="text-left px-4 py-3">
-                  Status
-                </th>
-                <th className="text-right px-4 py-3">
-                  Action
-                </th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Task</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Priority</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Due Date</th>
+                <th className="text-right p-4 font-medium text-muted-foreground">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {activeTasks.map((task) => {
-                const status = getStatus(
-                  task.dueDate
-                )
-
-                return (
-                  <tr
-                    key={task.id}
-                    className={`border-t ${
-                      task.priority ===
-                        "high" &&
-                      status === "today"
-                        ? "animate-pulse"
-                        : ""
-                    }`}
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {task.title}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs bg-gray-200">
+            <tbody className="divide-y divide-border">
+              {activeTasks.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                    No active tasks found.
+                  </td>
+                </tr>
+              ) : (
+                activeTasks.map((task) => (
+                  <tr key={task.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-4 font-medium">{task.title}</td>
+                    <td className="p-4">
+                      <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
                         {task.priority}
-                      </span>
+                      </Badge>
                     </td>
-                    <td className="px-4 py-3">
-                      {new Date(
-                        task.dueDate
-                      ).toLocaleDateString()}
+                    <td className="p-4 text-muted-foreground">
+                      {new Date(task.dueDate).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3">
-                      {status === "overdue" && (
-                        <span className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded-full">
-                          Overdue
-                        </span>
-                      )}
-                      {status === "today" && (
-                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
-                          Due Today
-                        </span>
-                      )}
-                      {status === "upcoming" && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded-full">
-                          Upcoming
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() =>
-                          completeTask(task)
-                        }
-                        className="text-xs px-3 py-1 bg-primary text-white rounded-md"
-                      >
+                    <td className="p-4 text-right">
+                      <Button size="sm" onClick={() => completeTask(task)}>
                         Complete
-                      </button>
+                      </Button>
                     </td>
                   </tr>
-                )
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
-      )}
+      </Card>
 
-      {/* COMPLETED */}
-      <div>
-        <button
-          onClick={() =>
-            setShowCompleted(!showCompleted)
-          }
-          className="text-sm font-medium"
-        >
-          Completed Tasks ({completedTasks.length})
-        </button>
-
+      {/* COMPLETED SECTION */}
+      <div className="space-y-4">
+        <Button variant="ghost" onClick={() => setShowCompleted(!showCompleted)}>
+          {showCompleted ? "Hide" : "Show"} Completed Tasks ({completedTasks.length})
+        </Button>
+        
         {showCompleted && (
-          <div className="mt-4 border rounded-xl overflow-hidden">
+          <Card>
             <table className="w-full text-sm">
-              <tbody>
-                {completedTasks.map((task) => (
-                  <tr
-                    key={task.id}
-                    className="border-t line-through text-muted-foreground"
-                  >
-                    <td className="px-4 py-3">
-                      {task.title}
+              <tbody className="divide-y divide-border">
+                {completedTasks.map(task => (
+                  <tr key={task.id} className="text-muted-foreground bg-muted/10">
+                    <td className="p-4 flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span className="line-through">{task.title}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      {new Date(
-                        task.completedAt || ""
-                      ).toLocaleDateString()}
+                    <td className="p-4 text-right italic text-xs">
+                      Completed {new Date(task.completedAt!).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         )}
-      </div>
-
-      {/* RECURRING SECTION */}
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <h2 className="text-lg font-medium">
-            Recurring Templates
-          </h2>
-          <button
-            onClick={() =>
-              setShowRecurringForm(!showRecurringForm)
-            }
-            className="text-sm bg-primary text-white px-3 py-1 rounded-md"
-          >
-            Create Recurring Task
-          </button>
-        </div>
-
-        {showRecurringForm && (
-          <RecurringForm
-            onCreate={createRecurringTemplate}
-          />
-        )}
-
-        <div className="border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <tbody>
-              {recurringTemplates.map((template) => (
-                <tr key={template.id} className="border-t">
-                  <td className="px-4 py-3">
-                    {template.title}
-                  </td>
-                  <td className="px-4 py-3">
-                    {template.frequency}
-                  </td>
-                  <td className="px-4 py-3">
-                    Next:{" "}
-                    {new Date(
-                      template.nextDueDate
-                    ).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
   )
 }
 
-// ----------------------------
-// RECURRING FORM COMPONENT
-// ----------------------------
-
-function RecurringForm({
-  onCreate,
-}: {
-  onCreate: (
-    title: string,
-    frequency: "weekly" | "monthly" | "custom",
-    customDays: number | undefined,
-    priority: "low" | "medium" | "high"
-  ) => void
-}) {
+function RecurringForm({ onCreate }: { onCreate: any }) {
   const [title, setTitle] = useState("")
-  const [frequency, setFrequency] =
-    useState<"weekly" | "monthly" | "custom">(
-      "monthly"
-    )
-  const [customDays, setCustomDays] =
-    useState<number>()
-  const [priority, setPriority] =
-    useState<"low" | "medium" | "high">(
-      "medium"
-    )
+  const [frequency, setFrequency] = useState<any>("monthly")
+  const [customDays, setCustomDays] = useState<number>()
+  const [priority, setPriority] = useState<any>("medium")
 
   return (
-    <div className="border rounded-xl p-4 space-y-3">
-      <input
-        placeholder="Task title"
-        value={title}
-        onChange={(e) =>
-          setTitle(e.target.value)
-        }
-        className="w-full border px-3 py-2 rounded-md text-sm"
-      />
-
-      <select
-        value={frequency}
-        onChange={(e) =>
-          setFrequency(
-            e.target.value as any
-          )
-        }
-        className="w-full border px-3 py-2 rounded-md text-sm"
-      >
-        <option value="weekly">
-          Weekly
-        </option>
-        <option value="monthly">
-          Monthly
-        </option>
-        <option value="custom">
-          Custom
-        </option>
-      </select>
-
-      {frequency === "custom" && (
-        <input
-          type="number"
-          placeholder="Every X days"
-          onChange={(e) =>
-            setCustomDays(
-              Number(e.target.value)
-            )
-          }
-          className="w-full border px-3 py-2 rounded-md text-sm"
-        />
-      )}
-
-      <select
-        value={priority}
-        onChange={(e) =>
-          setPriority(
-            e.target.value as any
-          )
-        }
-        className="w-full border px-3 py-2 rounded-md text-sm"
-      >
-        <option value="low">Low</option>
-        <option value="medium">
-          Medium
-        </option>
-        <option value="high">
-          High
-        </option>
-      </select>
-
-      <button
-        onClick={() =>
-          onCreate(
-            title,
-            frequency,
-            customDays,
-            priority
-          )
-        }
-        className="w-full bg-primary text-white py-2 rounded-md text-sm"
-      >
-        Create
-      </button>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div className="space-y-2">
+        <label className="text-xs font-bold uppercase">Task Name</label>
+        <Input placeholder="e.g. Monthly Tax Review" value={title} onChange={(e) => setTitle(e.target.value)} />
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-bold uppercase">Frequency</label>
+        <select 
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          value={frequency} 
+          onChange={(e) => setFrequency(e.target.value)}
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-bold uppercase">Priority</label>
+        <select 
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          value={priority} 
+          onChange={(e) => setPriority(e.target.value)}
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <Button onClick={() => onCreate(title, frequency, customDays, priority)}>
+        Save Template
+      </Button>
     </div>
   )
 }
