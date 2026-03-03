@@ -14,7 +14,7 @@ import {
 import { Task, RecurringTemplate, generateRecurringTasks } from "@/lib/taskEngine"
 import { cn } from "@/lib/utils"
 
-export default function OperationsPage() {
+export function OperationsPage() {
   const { toast } = useToast()
   const businessId = "default"
 
