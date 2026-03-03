@@ -13,7 +13,7 @@ import {
 
 const BUSINESS_ID = "default";
 
-export default function OperationsPage() {
+export function OperationsPage() {
   const { toast } = useToast()
   const [tasks, setTasks] = useState<Task[]>([])
   const [recurringTemplates, setRecurringTemplates] = useState<RecurringTemplate[]>([])
