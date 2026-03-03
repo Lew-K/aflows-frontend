@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { AnalyticsPage } from '@/components/dashboard/AnalyticsPage';
 import { SalesPage } from '@/components/dashboard/SalesPage';
-import { ReceiptsPage } from '@/components/dashboard/ReceiptsPage';
+import { OperationsPPage } from '@/components/dashboard/OperationsPPage';
 import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { DashboardContactPage } from '@/components/dashboard/DashboardContactPage';
 
