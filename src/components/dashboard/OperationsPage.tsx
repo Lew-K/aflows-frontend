@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Plus,
   Search,
   CheckCircle2,
   Trash2,
@@ -28,10 +27,9 @@ export function OperationsPage() {
   const [recurringTemplates, setRecurringTemplates] = useState<RecurringTemplate[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [editingTemplate, setEditingTemplate] = useState<RecurringTemplate | null>(null)
+  const [showAdvancedAdd, setShowAdvancedAdd] = useState(false)
 
-  // =============================
-  // ENGINE SYNC
-  // =============================
+  // ================= ENGINE SYNC =================
   useEffect(() => {
     const savedTasks = localStorage.getItem(`aflows_tasks_${businessId}`)
     const savedTemplates = localStorage.getItem(`aflows_recurring_${businessId}`)
@@ -54,9 +52,7 @@ export function OperationsPage() {
     localStorage.setItem(`aflows_recurring_${businessId}`, JSON.stringify(updatedTemplates))
   }
 
-  // =============================
-  // TASK ACTIONS
-  // =============================
+  // ================= TASK ACTIONS =================
 
   const addOneOffTask = (
     title: string,
@@ -79,7 +75,7 @@ export function OperationsPage() {
     syncStorage(updated, recurringTemplates)
 
     toast({
-      title: `Task created`,
+      title: "Task Created",
       description: title
     })
   }
@@ -90,15 +86,8 @@ export function OperationsPage() {
         ? { ...t, completed: true, completedAt: new Date().toISOString() }
         : t
     )
-
     setTasks(updated)
     syncStorage(updated, recurringTemplates)
-
-    const task = tasks.find(t => t.id === id)
-    toast({
-      title: "Task completed",
-      description: task?.title
-    })
   }
 
   const undoTask = (id: string) => {
@@ -109,66 +98,7 @@ export function OperationsPage() {
     syncStorage(updated, recurringTemplates)
   }
 
-  // =============================
-  // RECURRING
-  // =============================
-
-  const handleSaveTemplate = (
-    title: string,
-    frequency: any,
-    priority: any
-  ) => {
-    let updatedTemplates
-
-    if (editingTemplate) {
-      updatedTemplates = recurringTemplates.map(t =>
-        t.id === editingTemplate.id
-          ? { ...t, title, frequency, priority }
-          : t
-      )
-      setEditingTemplate(null)
-      toast({ title: "Template updated" })
-    } else {
-      const newTemplate: RecurringTemplate = {
-        id: crypto.randomUUID(),
-        title,
-        frequency,
-        priority,
-        nextDueDate: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      }
-
-      updatedTemplates = [...recurringTemplates, newTemplate]
-
-      toast({
-        title: `Recurring task created: ${title}`
-      })
-    }
-
-    const { newTasks, updatedTemplates: engineTemplates } =
-      generateRecurringTasks(updatedTemplates, tasks)
-
-    const updatedTasks = [...tasks, ...newTasks]
-
-    setRecurringTemplates(engineTemplates)
-    setTasks(updatedTasks)
-    syncStorage(updatedTasks, engineTemplates)
-  }
-
-  const deleteTemplate = (id: string) => {
-    const updated = recurringTemplates.filter(t => t.id !== id)
-    setRecurringTemplates(updated)
-    syncStorage(tasks, updated)
-
-    toast({
-      variant: "destructive",
-      title: "Template removed"
-    })
-  }
-
-  // =============================
-  // FILTERING
-  // =============================
+  // ================= FILTERING =================
 
   const filtered = useMemo(
     () =>
@@ -181,9 +111,7 @@ export function OperationsPage() {
   const activeTasks = filtered.filter(t => !t.completed)
   const completedTasks = filtered.filter(t => t.completed)
 
-  // =============================
-  // UI
-  // =============================
+  // ================= UI =================
 
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
@@ -194,88 +122,95 @@ export function OperationsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search tasks..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <QuickAddTask onAdd={addOneOffTask} />
-      </div>
+        {/* LEFT COLUMN */}
+        <div className="lg:col-span-2 space-y-6">
 
-      <Tabs defaultValue="active">
-        <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-        </TabsList>
+          {/* SEARCH */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search tasks..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
-        {/* ACTIVE */}
-        <TabsContent value="active">
+          {/* ADVANCED ADD */}
           <Card>
-            <div className="divide-y">
-              {activeTasks.length === 0 ? (
-                <div className="p-16 text-center opacity-50">
-                  Add tasks to stay on top of your business operations.
-                </div>
-              ) : (
-                activeTasks.map(task => (
-                  <div
-                    key={task.id}
-                    className={cn(
-                      "p-4 flex justify-between items-center",
-                      task.priority === "high" &&
-                        "border-l-4 border-l-destructive"
-                    )}
-                  >
-                    <div>
-                      <p className="font-semibold">{task.title}</p>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                        <Badge>{task.priority}</Badge>
-                        <span className="flex items-center gap-1">
-                          <CalendarIcon className="h-3 w-3" />
-                          {new Date(task.dueDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+            <CardHeader className="flex flex-row justify-between items-center">
+              <CardTitle>Add Task</CardTitle>
+              <Button
+                variant="ghost"
+                onClick={() => setShowAdvancedAdd(!showAdvancedAdd)}
+              >
+                {showAdvancedAdd ? "Close" : "Advanced"}
+              </Button>
+            </CardHeader>
 
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => completeTask(task.id)}
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
+            {showAdvancedAdd && (
+              <CardContent>
+                <AdvancedAdd onAdd={addOneOffTask} />
+              </CardContent>
+            )}
           </Card>
-        </TabsContent>
 
-        {/* COMPLETED */}
-        <TabsContent value="completed">
-          <Card>
-            <div className="divide-y">
-              {completedTasks.length === 0 ? (
-                <div className="p-16 text-center opacity-40">
-                  No completed tasks yet.
-                </div>
-              ) : (
-                completedTasks.map(task => (
-                  <div key={task.id} className="p-4 flex justify-between">
+          {/* TABS */}
+          <Tabs defaultValue="active">
+            <TabsList>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active">
+              <Card>
+                {activeTasks.length === 0 ? (
+                  <div className="p-16 text-center opacity-50">
+                    Add tasks to stay on top of your business operations.
+                  </div>
+                ) : (
+                  activeTasks.map(task => (
+                    <div
+                      key={task.id}
+                      className={cn(
+                        "p-4 flex justify-between items-center border-b",
+                        task.priority === "high" &&
+                          "border-l-4 border-l-destructive"
+                      )}
+                    >
+                      <div>
+                        <p className="font-semibold">{task.title}</p>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Badge>{task.priority}</Badge>
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="h-3 w-3" />
+                            {new Date(task.dueDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => completeTask(task.id)}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="completed">
+              <Card>
+                {completedTasks.map(task => (
+                  <div key={task.id} className="p-4 flex justify-between border-b">
                     <div>
                       <p className="line-through opacity-60">
                         {task.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Completed{" "}
-                        {task.completedAt &&
-                          new Date(task.completedAt).toLocaleString()}
                       </p>
                     </div>
 
@@ -287,21 +222,58 @@ export function OperationsPage() {
                       <RotateCcw className="h-4 w-4" />
                     </Button>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* RIGHT SIDEBAR (RESTORED) */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Repeat className="h-4 w-4" />
+                Recurring Automations
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {recurringTemplates.map(template => (
+                <div
+                  key={template.id}
+                  className="p-3 border rounded-md flex justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-sm">{template.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {template.frequency}
+                    </p>
+                  </div>
+
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() =>
+                      setRecurringTemplates(
+                        recurringTemplates.filter(t => t.id !== template.id)
+                      )
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   )
 }
 
-// =================================
-// QUICK ADD
-// =================================
+// ================= ADVANCED ADD =================
 
-function QuickAddTask({ onAdd }: { onAdd: any }) {
+function AdvancedAdd({ onAdd }: { onAdd: any }) {
   const [title, setTitle] = useState("")
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium")
   const [date, setDate] = useState("")
@@ -314,36 +286,35 @@ function QuickAddTask({ onAdd }: { onAdd: any }) {
   }
 
   return (
-    <div className="flex gap-2 items-center border p-2 rounded-md">
+    <div className="grid gap-4">
       <Input
-        placeholder="New task..."
+        placeholder="Task title..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleAdd()}
       />
 
-      <select
-        className="border rounded px-2 py-1 text-sm"
-        value={priority}
-        onChange={(e) =>
-          setPriority(e.target.value as "low" | "medium" | "high")
-        }
-      >
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
+      <div className="grid grid-cols-2 gap-4">
+        <select
+          className="bg-background text-foreground border border-border rounded-md p-2"
+          value={priority}
+          onChange={(e) =>
+            setPriority(e.target.value as "low" | "medium" | "high")
+          }
+        >
+          <option value="low">Low Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="high">High Priority</option>
+        </select>
 
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        className="border rounded px-2 py-1 text-sm"
-      />
+        <input
+          type="date"
+          className="bg-background text-foreground border border-border rounded-md p-2"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
 
-      <Button size="icon" onClick={handleAdd}>
-        <Plus className="h-4 w-4" />
-      </Button>
+      <Button onClick={handleAdd}>Create Task</Button>
     </div>
   )
 }
