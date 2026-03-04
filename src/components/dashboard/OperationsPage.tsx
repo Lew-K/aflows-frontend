@@ -228,44 +228,200 @@ export function OperationsPage() {
           </Tabs>
         </div>
 
-        {/* RIGHT SIDEBAR (RESTORED) */}
+        {/* RIGHT SIDEBAR */}
         <div className="space-y-6">
+        
+          {/* RECURRING CREATION CARD */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Repeat className="h-4 w-4" />
-                Recurring Automations
+                {editingTemplate ? "Edit Recurring Rule" : "New Recurring Rule"}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {recurringTemplates.map(template => (
-                <div
-                  key={template.id}
-                  className="p-3 border rounded-md flex justify-between"
-                >
-                  <div>
-                    <p className="font-semibold text-sm">{template.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {template.frequency}
-                    </p>
-                  </div>
-
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() =>
-                      setRecurringTemplates(
-                        recurringTemplates.filter(t => t.id !== template.id)
-                      )
+        
+            <CardContent>
+              <RecurringFormView
+                onSave={(title: string, frequency: any, priority: any) => {
+                  let updatedTemplates
+        
+                  if (editingTemplate) {
+                    updatedTemplates = recurringTemplates.map(t =>
+                      t.id === editingTemplate.id
+                        ? { ...t, title, frequency, priority }
+                        : t
+                    )
+                    setEditingTemplate(null)
+                  } else {
+                    const newTemplate: RecurringTemplate = {
+                      id: crypto.randomUUID(),
+                      title,
+                      frequency,
+                      priority,
+                      nextDueDate: new Date().toISOString(),
+                      createdAt: new Date().toISOString()
                     }
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+        
+                    updatedTemplates = [...recurringTemplates, newTemplate]
+        
+                    toast({
+                      title: `Recurring task created: ${title}`
+                    })
+                  }
+        
+                  const { newTasks, updatedTemplates: engineTemplates } =
+                    generateRecurringTasks(updatedTemplates, tasks)
+        
+                  const updatedTasks = [...tasks, ...newTasks]
+        
+                  setRecurringTemplates(engineTemplates)
+                  setTasks(updatedTasks)
+                  syncStorage(updatedTasks, engineTemplates)
+                }}
+                initialData={editingTemplate}
+                onCancel={() => setEditingTemplate(null)}
+              />
+            </CardContent>
+          </Card>
+        
+          {/* ACTIVE RECURRING RULES */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Automations</CardTitle>
+            </CardHeader>
+        
+            <CardContent className="space-y-3">
+              {recurringTemplates.length === 0 ? (
+                <div className="text-sm text-muted-foreground">
+                  No recurring automations yet.
                 </div>
-              ))}
+              ) : (
+                recurringTemplates.map(template => (
+                  <div
+                    key={template.id}
+                    className="p-3 border rounded-md flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="font-semibold text-sm">{template.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {template.frequency} • Next:{" "}
+                        {new Date(template.nextDueDate).toLocaleDateString()}
+                      </p>
+                    </div>
+        
+                    <div className="flex gap-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setEditingTemplate(template)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+        
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-destructive"
+                        onClick={() => {
+                          const updated = recurringTemplates.filter(
+                            t => t.id !== template.id
+                          )
+                          setRecurringTemplates(updated)
+                          syncStorage(tasks, updated)
+        
+                          toast({
+                            variant: "destructive",
+                            title: "Recurring rule deleted"
+                          })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
+
+        
+      </div>
+    </div>
+  )
+}
+
+function RecurringFormView({
+  onSave,
+  initialData,
+  onCancel
+}: {
+  onSave: any
+  initialData?: any
+  onCancel: any
+}) {
+  const [title, setTitle] = useState("")
+  const [freq, setFreq] = useState("weekly")
+  const [prio, setPrio] = useState("medium")
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title)
+      setFreq(initialData.frequency)
+      setPrio(initialData.priority)
+    } else {
+      setTitle("")
+      setFreq("weekly")
+      setPrio("medium")
+    }
+  }, [initialData])
+
+  return (
+    <div className="space-y-4">
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Rule name..."
+      />
+
+      <div className="grid grid-cols-2 gap-2">
+        <select
+          className="bg-background text-foreground border border-border rounded-md p-2"
+          value={freq}
+          onChange={(e) => setFreq(e.target.value)}
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+
+        <select
+          className="bg-background text-foreground border border-border rounded-md p-2"
+          value={prio}
+          onChange={(e) => setPrio(e.target.value)}
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          className="flex-1"
+          onClick={() => {
+            if (!title.trim()) return
+            onSave(title, freq, prio)
+          }}
+        >
+          {initialData ? "Update Rule" : "Create Rule"}
+        </Button>
+
+        {initialData && (
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
       </div>
     </div>
   )
