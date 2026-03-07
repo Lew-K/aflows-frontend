@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { initAuthGuard } from "@/lib/authGuard";
+
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -14,31 +17,37 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <NotificationProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                
-                <Route path="/" element={<Index />} />
+  useEffect(() => {
+    initAuthGuard();
+  }, []);
 
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/dashboard/*" element={<Dashboard />} />
-                </Route>
-            
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  
+                  <Route path="/" element={<Index />} />
+  
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard/*" element={<Dashboard />} />
+                  </Route>
               
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </NotificationProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                
+              </BrowserRouter>
+            </TooltipProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
