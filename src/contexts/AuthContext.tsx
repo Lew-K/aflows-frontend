@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, 60000); // check every minute ( return to 60000 once done with test)
   
-    const events = ["mousemove", "keydown", "click", "scroll"];
+    const events = ["mousemove", "keydown", "click", "touchstart", "scroll", "visibilitychange"];
   
     events.forEach(event =>
       window.addEventListener(event, updateActivity)
