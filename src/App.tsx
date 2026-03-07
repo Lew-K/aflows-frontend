@@ -16,7 +16,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+
   useEffect(() => {
     initAuthGuard();
   }, []);
@@ -29,19 +30,21 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
+
               <BrowserRouter>
                 <Routes>
-                  
+
                   <Route path="/" element={<Index />} />
-  
+
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
                   </Route>
-              
+
                   <Route path="*" element={<NotFound />} />
+
                 </Routes>
-                
               </BrowserRouter>
+
             </TooltipProvider>
           </AuthProvider>
         </NotificationProvider>
