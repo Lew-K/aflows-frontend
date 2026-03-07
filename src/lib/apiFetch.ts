@@ -82,7 +82,7 @@ async function refreshAccessToken(): Promise<string | null> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         refresh_token: refreshToken,
-        email: user.email,
+        // email: user.email,
       }),
     });
 
@@ -92,6 +92,10 @@ async function refreshAccessToken(): Promise<string | null> {
     }
 
     const data = await response.json();
+
+    if (!data.success) {
+      return null;
+    }
 
     if (!data.access_token || !data.refresh_token) {
       return null;
