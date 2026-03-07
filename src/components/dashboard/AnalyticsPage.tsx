@@ -540,6 +540,12 @@ export const AnalyticsPage = () => {
   const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
   const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
 
+  useEffect(() => {
+    if (businessId) {
+      setFetchKey(prev => prev + 1);
+    }
+  }, [businessId, period]);
+
   const { sales, loading } = useSales(
     businessId,
     period,
@@ -562,16 +568,16 @@ export const AnalyticsPage = () => {
     fetchKey
   );
 
-  const {
-    paymentMethods: currentMonthPayments,
-    revenueSummary: currentMonthSummary,
-  } = useRevenueAnalytics(
-    businessId,
-    'this_month',
-    '',
-    '',
-    fetchKey
-  );
+  // const {
+  //   paymentMethods: currentMonthPayments,
+  //   revenueSummary: currentMonthSummary,
+  // } = useRevenueAnalytics(
+  //   businessId,
+  //   'this_month',
+  //   '',
+  //   '',
+  //   fetchKey
+  // );
 
   const totalSales = sales?.length ?? 0;
 
@@ -589,7 +595,7 @@ export const AnalyticsPage = () => {
     revenue: Number(method.metrics?.revenue) || 0,
   }));
 
-  const currentMonthReceipts = currentMonthSummary?.salesCount ?? 0;
+  const currentMonthReceipts = revenueSummary?.salesCount ?? 0;
   const receiptsGrowth = 12;
 
   // Mock data
