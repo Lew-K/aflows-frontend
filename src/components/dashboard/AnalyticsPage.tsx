@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react';
+
 import {
   AreaChart,
   Area,
@@ -26,6 +27,12 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LineChart,
+  Line
 } from 'recharts';
 
 // Constants
@@ -301,12 +308,15 @@ const RevenueTrend = ({
   revenueView,
   onRevenueViewChange,
   isLoading,
+  hasMultipleMonths
 }: {
   revenueData: any[];
   dailyRevenue: any[];
   revenueView: 'monthly' | 'daily';
   onRevenueViewChange: (view: 'monthly' | 'daily') => void;
   isLoading: boolean;
+  hasMultipleMonths: boolean;
+
 }) => (
   <motion.div
     initial={ANIMATION_VARIANTS.card.initial}
@@ -338,48 +348,79 @@ const RevenueTrend = ({
         </div>
 
         <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={revenueView === 'monthly' ? revenueData : dailyRevenue ?? []}
-            >
-              <defs>
-                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey={revenueView === 'monthly' ? 'month' : 'date'}
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                tickFormatter={(value) => {
-                  if (revenueView === 'monthly') return value;
-                  const date = new Date(value);
-                  return date.toLocaleDateString(undefined, {
-                    day: 'numeric',
-                    month: 'short',
-                  });
-                }}
-              />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="revenue"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorRevenue)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+
+          {revenueView === "monthly" && !hasMultipleMonths ? (
+        
+            <div className="flex flex-col items-center justify-center h-full space-y-6">
+        
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Revenue This Month
+                </p>
+        
+                <p className="text-3xl font-bold">
+                  KES {revenueData?.[0]?.revenue?.toLocaleString() ?? 0}
+                </p>
+              </div>
+        
+              <div className="w-full h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dailyRevenue}>
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      dot={false}
+                    />
+                    <Tooltip />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+        
+              <p className="text-xs text-muted-foreground">
+                Daily revenue trend
+              </p>
+        
+            </div>
+        
+          ) : (
+        
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={revenueView === "monthly" ? revenueData : dailyRevenue}
+              >
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+        
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        
+                <XAxis
+                  dataKey={revenueView === "monthly" ? "month" : "date"}
+                  fontSize={12}
+                />
+        
+                <YAxis fontSize={12} />
+        
+                <Tooltip />
+        
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="hsl(var(--primary))"
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                />
+        
+              </AreaChart>
+            </ResponsiveContainer>
+        
+          )}
+        
         </div>
       </CardContent>
     </Card>
@@ -391,11 +432,15 @@ const TopSellingItems = ({
   chartTopItems,
   chartMetric,
   onChartMetricChange,
+  chartType,
+  onChartTypeChange,
   isLoading,
 }: {
   chartTopItems: any[];
   chartMetric: 'quantity' | 'revenue';
   onChartMetricChange: (metric: 'quantity' | 'revenue') => void;
+  chartType: 'bar' | 'pie';
+  onChartTypeChange: (type: 'bar' | 'pie') => void;
   isLoading: boolean;
 }) => (
   <motion.div
@@ -427,6 +472,24 @@ const TopSellingItems = ({
           ))}
         </div>
 
+        <div className="flex justify-center gap-2 mb-4">
+
+          {(['bar','pie'] as const).map(type => (
+            <button
+              key={type}
+              className={`px-3 py-1 rounded-xl text-sm ${
+                chartType === type
+                  ? 'bg-primary text-white'
+                  : 'bg-card hover:bg-muted'
+              }`}
+              onClick={() => onChartTypeChange(type)}
+            >
+              {type === 'bar' ? 'Bar Chart' : 'Pie Chart'}
+            </button>
+          ))}
+        
+        </div>
+
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
         ) : chartTopItems.length === 0 ? (
@@ -436,41 +499,80 @@ const TopSellingItems = ({
           </div>
         ) : (
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartTopItems}
-                margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                  interval={0}
-                  angle={-25}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Bar
-                  dataKey="total"
-                  fill="hsl(var(--primary))"
-                  radius={[6, 6, 0, 0]}
-                  isAnimationActive
-                  animationDuration={900}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+
+            {chartType === "bar" ? (
+          
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartTopItems}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          
+                  <XAxis
+                    dataKey="name"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={11}
+                    interval={0}
+                    angle={-25}
+                    textAnchor="end"
+                    height={60}
+                  />
+          
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+          
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+          
+                  <Bar
+                    dataKey="total"
+                    fill="hsl(var(--primary))"
+                    radius={[6, 6, 0, 0]}
+                    isAnimationActive
+                    animationDuration={900}
+                  />
+          
+                </BarChart>
+              </ResponsiveContainer>
+          
+            ) : (
+          
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+          
+                  <Pie
+                    data={chartTopItems}
+                    dataKey="total"
+                    nameKey="name"
+                    outerRadius={100}
+                    label={({name, percent}) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {chartTopItems.map((entry, index) => (
+                      <Cell
+                        key={index}
+                        fill={`hsl(var(--primary) / ${1 - index * 0.15})`}
+                      />
+                    ))}
+                  </Pie>
+          
+                  <Tooltip />
+                  <Legend />
+          
+                </PieChart>
+              </ResponsiveContainer>
+          
+            )}
+          
           </div>
         )}
       </CardContent>
@@ -539,6 +641,7 @@ export const AnalyticsPage = () => {
   const [fetchKey, setFetchKey] = useState(0);
   const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
   const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
 
   useEffect(() => {
     if (businessId) {
@@ -557,6 +660,7 @@ export const AnalyticsPage = () => {
   const {
     revenueSummary,
     dailyRevenue,
+    monthlyRevenue,
     topSellingItems,
     paymentMethods,
     loading: revenueLoading,
@@ -583,7 +687,9 @@ export const AnalyticsPage = () => {
 
   const chartTopItems = useMemo(() => {
     if (!topSellingItems) return [];
-    return topSellingItems.map(item => ({
+    return [...topSellingItems]
+      .sort((a,b) => b.revenue - a.revenue)
+      .map(item => ({
       name: item.item?.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase()),
       total: chartMetric === 'quantity' ? item.quantity : item.revenue
     }));
@@ -591,7 +697,7 @@ export const AnalyticsPage = () => {
 
   const paymentChartData = paymentMethods.map(method => ({
     name: method.method,
-    percentage: Number(method.percentageOfTransactions) || 0,
+    percentage: Number(method.percentageOfRevenue) || 0,
     revenue: Number(method.metrics?.revenue) || 0,
   }));
 
@@ -599,15 +705,11 @@ export const AnalyticsPage = () => {
   const receiptsGrowth = 12;
 
   // Mock data
-  const revenueData = [
-    { month: 'Jan', revenue: 85000 },
-    { month: 'Feb', revenue: 92000 },
-    { month: 'Mar', revenue: 108000 },
-    { month: 'Apr', revenue: 95000 },
-    { month: 'May', revenue: 125000 },
-    { month: 'Jun', revenue: 145000 },
-    { month: 'Jul', revenue: 168000 },
-  ];
+  const revenueData = (monthlyRevenue ?? []).filter(
+    (m) => m.revenue > 0
+  );
+
+  const hasMultipleMonths = revenueData.length > 1;
 
   const recentActivity = [
     { id: 1, action: 'New sale recorded', amount: 'KES 12,500', time: '2 min ago' },
@@ -685,12 +787,15 @@ export const AnalyticsPage = () => {
           revenueView={revenueView}
           onRevenueViewChange={setRevenueView}
           isLoading={revenueLoading}
+          hasMultipleMonths={hasMultipleMonths}
         />
 
         <TopSellingItems
           chartTopItems={chartTopItems}
           chartMetric={chartMetric}
           onChartMetricChange={setChartMetric}
+          chartType={chartType}
+          onChartTypeChange={setChartType}
           isLoading={loading}
         />
       </div>
