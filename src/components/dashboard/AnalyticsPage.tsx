@@ -328,21 +328,22 @@ const RevenueTrend = ({
     transition={{ duration: 0.4, delay: 0.4 }}
   >
     <Card>
-      <CardHeader>
+
+      <CardHeader className="flex flex-row items-center justify-between">
+    
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
           Revenue Trend
         </CardTitle>
-      <CardHeader className="flex flex-row items-center justify-between">
-      <CardContent>
-        <div className="flex justify-center gap-2 mb-4">
+    
+        <div className="flex gap-2">
           {(['monthly', 'daily'] as const).map(view => (
             <button
               key={view}
-              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
+              className={`px-2 py-1 text-xs rounded-md ${
                 revenueView === view
                   ? 'bg-primary text-white'
-                  : 'bg-card text-foreground hover:bg-muted'
+                  : 'bg-muted'
               }`}
               onClick={() => onRevenueViewChange(view)}
             >
@@ -350,6 +351,10 @@ const RevenueTrend = ({
             </button>
           ))}
         </div>
+    
+      </CardHeader>
+
+      
 
         <div className="h-72">
 
@@ -463,12 +468,12 @@ const TopSellingItems = ({
     transition={{ duration: 0.4, delay: 0.5 }}
   >
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-
+      <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          Revenue Trend
+          <BarChart3 className="w-5 h-5 text-primary" />
+          Top Selling Items
         </CardTitle>
+      </CardHeader>
       
         <div className="flex gap-2">
           {(['monthly', 'daily'] as const).map(view => (
@@ -489,40 +494,7 @@ const TopSellingItems = ({
       </CardHeader>
       
       <CardContent>
-      {/* <CardContent>
-        <div className="flex justify-center gap-2 mb-4">
-          {(['quantity', 'revenue'] as const).map(metric => (
-            <button
-              key={metric}
-              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
-                chartMetric === metric
-                  ? 'bg-primary text-white'
-                  : 'bg-card text-foreground hover:bg-muted'
-              }`}
-              onClick={() => onChartMetricChange(metric)}
-            >
-              {metric === 'quantity' ? 'Items Sold' : 'Revenue'}
-            </button>
-          ))}
-        </div> */}
-
-        {/* <div className="flex justify-center gap-2 mb-4">
-
-          {(['bar','pie'] as const).map(type => (
-            <button
-              key={type}
-              className={`px-3 py-1 rounded-xl text-sm ${
-                chartType === type
-                  ? 'bg-primary text-white'
-                  : 'bg-card hover:bg-muted'
-              }`}
-              onClick={() => onChartTypeChange(type)}
-            >
-              {type === 'bar' ? 'Bar Chart' : 'Pie Chart'}
-            </button>
-          ))} */}
-        
-    
+       
 
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
