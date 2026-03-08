@@ -308,9 +308,7 @@ const RevenueTrend = ({
   revenueView,
   onRevenueViewChange,
   isLoading,
-  hasMultipleMonths,
-  currentMonthRevenue
-
+  hasMultipleMonths
 }: {
   revenueData: any[];
   dailyRevenue: any[];
@@ -318,8 +316,6 @@ const RevenueTrend = ({
   onRevenueViewChange: (view: 'monthly' | 'daily') => void;
   isLoading: boolean;
   hasMultipleMonths: boolean;
-  currentMonthRevenue: number;
-
 
 }) => (
   <motion.div
@@ -328,22 +324,21 @@ const RevenueTrend = ({
     transition={{ duration: 0.4, delay: 0.4 }}
   >
     <Card>
-
-      <CardHeader className="flex flex-row items-center justify-between">
-    
+      <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
           Revenue Trend
         </CardTitle>
-    
-        <div className="flex gap-2">
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-center gap-2 mb-4">
           {(['monthly', 'daily'] as const).map(view => (
             <button
               key={view}
-              className={`px-2 py-1 text-xs rounded-md ${
+              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
                 revenueView === view
                   ? 'bg-primary text-white'
-                  : 'bg-muted'
+                  : 'bg-card text-foreground hover:bg-muted'
               }`}
               onClick={() => onRevenueViewChange(view)}
             >
@@ -351,10 +346,6 @@ const RevenueTrend = ({
             </button>
           ))}
         </div>
-    
-      </CardHeader>
-
-      
 
         <div className="h-72">
 
@@ -368,7 +359,7 @@ const RevenueTrend = ({
                 </p>
         
                 <p className="text-3xl font-bold">
-                  KES {currentMonthRevenue.toLocaleString()}
+                  KES {revenueData?.[0]?.revenue?.toLocaleString() ?? 0}
                 </p>
               </div>
         
@@ -410,7 +401,6 @@ const RevenueTrend = ({
         
                 <XAxis
                   dataKey={revenueView === "monthly" ? "month" : "date"}
-                  interval={0}
                   fontSize={12}
                   tickFormatter={(value) =>
                     revenueView === "daily"
@@ -421,11 +411,7 @@ const RevenueTrend = ({
         
                 <YAxis fontSize={12} />
         
-                <Tooltip
-                  formatter={(value: number) =>
-                    [`KES ${value.toLocaleString()}`, "Revenue"]
-                  }
-                />
+                <Tooltip />
         
                 <Area
                   type="monotone"
@@ -474,27 +460,40 @@ const TopSellingItems = ({
           Top Selling Items
         </CardTitle>
       </CardHeader>
-      
-        <div className="flex gap-2">
-          {(['monthly', 'daily'] as const).map(view => (
+      <CardContent>
+        <div className="flex justify-center gap-2 mb-4">
+          {(['quantity', 'revenue'] as const).map(metric => (
             <button
-              key={view}
-              className={`px-2 py-1 text-xs rounded-md ${
-                revenueView === view
+              key={metric}
+              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
+                chartMetric === metric
                   ? 'bg-primary text-white'
-                  : 'bg-muted'
+                  : 'bg-card text-foreground hover:bg-muted'
               }`}
-              onClick={() => onRevenueViewChange(view)}
+              onClick={() => onChartMetricChange(metric)}
             >
-              {view === 'monthly' ? 'Monthly' : 'Daily'}
+              {metric === 'quantity' ? 'Items Sold' : 'Revenue'}
             </button>
           ))}
         </div>
-      
-      </CardHeader>
-      
-      <CardContent>
-       
+
+        <div className="flex justify-center gap-2 mb-4">
+
+          {(['bar','pie'] as const).map(type => (
+            <button
+              key={type}
+              className={`px-3 py-1 rounded-xl text-sm ${
+                chartType === type
+                  ? 'bg-primary text-white'
+                  : 'bg-card hover:bg-muted'
+              }`}
+              onClick={() => onChartTypeChange(type)}
+            >
+              {type === 'bar' ? 'Bar Chart' : 'Pie Chart'}
+            </button>
+          ))}
+        
+        </div>
 
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
@@ -531,12 +530,11 @@ const TopSellingItems = ({
                   />
           
                   <Tooltip
-                    formatter={(value: number) => [
-                      chartMetric === "revenue"
-                        ? `KES ${value.toLocaleString()}`
-                        : value,
-                      chartMetric === "revenue" ? "Revenue" : "Items Sold"
-                    ]}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
                   />
           
                   <Bar
@@ -560,21 +558,20 @@ const TopSellingItems = ({
                     dataKey="total"
                     nameKey="name"
                     outerRadius={100}
+                    label={({name, percent}) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                   >
                     {chartTopItems.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={`hsl(var(--primary) / ${0.9 - index * 0.12})`}
+                        fill={`hsl(var(--primary) / ${1 - index * 0.15})`}
                       />
                     ))}
                   </Pie>
           
                   <Tooltip />
-                  <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                  />
+                  <Legend />
           
                 </PieChart>
               </ResponsiveContainer>
@@ -680,8 +677,6 @@ export const AnalyticsPage = () => {
     fetchKey
   );
 
-  const revenueData = monthlyRevenue ?? [];
-
   // const {
   //   paymentMethods: currentMonthPayments,
   //   revenueSummary: currentMonthSummary,
@@ -715,8 +710,7 @@ export const AnalyticsPage = () => {
   const receiptsGrowth = 12;
 
   // Mock data
-  const currentMonthRevenue =
-    revenueData[revenueData.length - 1]?.revenue ?? 0;
+  const revenueData = monthlyRevenue ?? [];
 
   const hasMultipleMonths =
     revenueData.filter(m => m.revenue > 0).length > 1;
@@ -793,7 +787,6 @@ export const AnalyticsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueTrend
           revenueData={revenueData}
-          currentMonthRevenue={currentMonthRevenue}
           dailyRevenue={dailyRevenue ?? []}
           revenueView={revenueView}
           onRevenueViewChange={setRevenueView}
