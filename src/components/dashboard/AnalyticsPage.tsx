@@ -402,6 +402,11 @@ const RevenueTrend = ({
                 <XAxis
                   dataKey={revenueView === "monthly" ? "month" : "date"}
                   fontSize={12}
+                  tickFormatter={(value) =>
+                    revenueView === "daily"
+                      ? new Date(value).toLocaleDateString("en-KE", { day: "numeric", month: "short" })
+                      : value
+                  }
                 />
         
                 <YAxis fontSize={12} />
@@ -705,11 +710,10 @@ export const AnalyticsPage = () => {
   const receiptsGrowth = 12;
 
   // Mock data
-  const revenueData = (monthlyRevenue ?? []).filter(
-    (m) => m.revenue > 0
-  );
+  const revenueData = monthlyRevenue ?? [];
 
-  const hasMultipleMonths = revenueData.length > 1;
+  const hasMultipleMonths =
+    revenueData.filter(m => m.revenue > 0).length > 1;
 
   const recentActivity = [
     { id: 1, action: 'New sale recorded', amount: 'KES 12,500', time: '2 min ago' },
