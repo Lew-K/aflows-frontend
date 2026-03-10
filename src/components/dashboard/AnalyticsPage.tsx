@@ -586,6 +586,16 @@ const TopSellingItems = ({
 );
 
 // Today Snapshot and Monthly projection Component
+// Helper for consistent row styling
+const StatRow = ({ label, value, isLoading }: { label: string; value: React.ReactNode; isLoading: boolean }) => (
+  <div className="flex justify-between items-center py-1 border-b border-muted last:border-0">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className="font-semibold text-foreground">
+      {isLoading ? <div className="h-4 w-16 animate-pulse bg-muted rounded" /> : value}
+    </span>
+  </div>
+);
+
 const TodaySnapshotCard = ({
   todayRevenue,
   todayTransactions,
@@ -607,20 +617,31 @@ const TodaySnapshotCard = ({
       animate={ANIMATION_VARIANTS.card.animate}
       transition={{ duration: 0.4 }}
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>Today Snapshot</CardTitle>
+      <Card className="h-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium">Today's Snapshot</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <p>Revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(todayRevenue)}</span></p>
-          <p>Transactions: <span className="font-bold">{isLoading ? '...' : todayTransactions}</span></p>
-          <p>Average Sale: <span className="font-bold">{isLoading ? '...' : formatCurrency(avgSale)}</span></p>
-          {salesPace !== null && todayTransactions > 0 && (
-            <p className={`font-medium ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'}`}>
-              Sales Pace: {formatPercentage(salesPace)} {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
-            </p>
-          )}
-          {todayTransactions === 0 && <p className="text-sm text-muted-foreground">No sales recorded today yet</p>}
+        <CardContent className="space-y-1">
+          <StatRow label="Revenue" value={formatCurrency(todayRevenue)} isLoading={isLoading} />
+          <StatRow label="Transactions" value={todayTransactions} isLoading={isLoading} />
+          <StatRow label="Average Sale" value={formatCurrency(avgSale)} isLoading={isLoading} />
+          
+          <div className="mt-4 pt-2">
+            {salesPace !== null && todayTransactions > 0 ? (
+              <div className={`flex items-center gap-2 p-2 rounded-md bg-opacity-10 ${
+                trend === 'up' ? 'bg-success text-success' : 'bg-destructive text-destructive'
+              }`}>
+                <span className="text-xs font-bold uppercase tracking-wider">Sales Pace</span>
+                <span className="text-sm font-bold ml-auto">
+                  {formatPercentage(salesPace)} {trend === 'up' ? '↑' : '↓'}
+                </span>
+              </div>
+            ) : !isLoading && (
+              <p className="text-xs text-muted-foreground italic mt-2 text-center">
+                No activity recorded yet today.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>
@@ -639,30 +660,51 @@ const MonthlyProjectionCard = ({
   daysElapsed: number;
   daysInMonth: number;
   isLoading?: boolean;
-}) => (
-  <motion.div
-    initial={ANIMATION_VARIANTS.card.initial}
-    animate={ANIMATION_VARIANTS.card.animate}
-    transition={{ duration: 0.4 }}
-  >
-    <Card>
-      <CardHeader>
-        <CardTitle>Monthly Projection</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {monthRevenue === 0 ? (
-          <p className="text-sm text-muted-foreground">No sales recorded this month yet</p>
-        ) : (
-          <>
-            <p>Revenue so far: <span className="font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</span></p>
-            <p>Projected revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(projectedRevenue)}</span></p>
-            <p className="text-sm text-muted-foreground">Based on {daysElapsed} / {daysInMonth} days</p>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  </motion.div>
-);
+}) => {
+  const progressPercent = (daysElapsed / daysInMonth) * 100;
+
+  return (
+    <motion.div
+      initial={ANIMATION_VARIANTS.card.initial}
+      animate={ANIMATION_VARIANTS.card.animate}
+      transition={{ duration: 0.4 }}
+    >
+      <Card className="h-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium">Monthly Projection</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {monthRevenue === 0 && !isLoading ? (
+            <div className="h-24 flex items-center justify-center border-2 border-dashed rounded-lg">
+              <p className="text-sm text-muted-foreground">No sales recorded this month</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <StatRow label="Revenue so far" value={formatCurrency(monthRevenue)} isLoading={isLoading} />
+                <StatRow label="Projected" value={formatCurrency(projectedRevenue)} isLoading={isLoading} />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Month Progress</span>
+                  <span>{daysElapsed} / {daysInMonth} Days</span>
+                </div>
+                {/* Visual Progress Bar */}
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-500" 
+                    style={{ width: `${progressPercent}%` }} 
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
 
 // Main Component
