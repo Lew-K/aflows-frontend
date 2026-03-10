@@ -607,31 +607,19 @@ const TodaySnapshotCard = ({
       animate={ANIMATION_VARIANTS.card.animate}
       transition={{ duration: 0.4 }}
     >
-      <Card className="hover:shadow-soft transition-shadow">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-primary" />
-            Today Snapshot
-          </CardTitle>
+          <CardTitle>Today Snapshot</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <p>Revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(todayRevenue)}</span></p>
           <p>Transactions: <span className="font-bold">{isLoading ? '...' : todayTransactions}</span></p>
           <p>Average Sale: <span className="font-bold">{isLoading ? '...' : formatCurrency(avgSale)}</span></p>
-
           {salesPace !== null && todayTransactions > 0 && (
             <p className={`font-medium ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'}`}>
               Sales Pace: {formatPercentage(salesPace)} {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
             </p>
           )}
-
-          {/* Smart Metric */}
-          {salesPace !== null && todayTransactions > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Today is {salesPace >= 0 ? formatPercentage(salesPace) + ' faster' : formatPercentage(-salesPace) + ' slower'} than the monthly average
-            </p>
-          )}
-
           {todayTransactions === 0 && <p className="text-sm text-muted-foreground">No sales recorded today yet</p>}
         </CardContent>
       </Card>
@@ -657,12 +645,9 @@ const MonthlyProjectionCard = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
   >
-    <Card className="hover:shadow-soft transition-shadow">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          Monthly Projection
-        </CardTitle>
+        <CardTitle>Monthly Projection</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {monthRevenue === 0 ? (
@@ -875,7 +860,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
       {/* Recent Activity */}
       {/* Today Snapshot & Monthly Projection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TodaySnapshotStat
+        <TodaySnapshotCard
           todayRevenue={todayRevenue}
           todayTransactions={todayTransactions}
           avgSale={avgSale}
@@ -883,7 +868,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
           isLoading={loading}
         />
       
-        <MonthlyProjectionStat
+        <MonthlyProjectionCard
           monthRevenue={monthRevenue}
           projectedRevenue={projectedRevenue}
           daysElapsed={daysElapsed}
