@@ -9,12 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart3,
   TrendingUp,
+  TrendingDown,
   FileUp,
   Receipt,
   DollarSign,
   ShoppingCart,
   ArrowUpRight,
   ArrowDownRight,
+  Target,
+  Activity,
 } from 'lucide-react';
 
 import {
@@ -587,15 +590,6 @@ const TopSellingItems = ({
 
 // Today Snapshot and Monthly projection Component
 // Helper for consistent row styling
-const StatRow = ({ label, value, isLoading }: { label: string; value: React.ReactNode; isLoading: boolean }) => (
-  <div className="flex justify-between items-center py-1 border-b border-muted last:border-0">
-    <span className="text-sm text-muted-foreground">{label}</span>
-    <span className="font-semibold text-foreground">
-      {isLoading ? <div className="h-4 w-16 animate-pulse bg-muted rounded" /> : value}
-    </span>
-  </div>
-);
-
 const TodaySnapshotCard = ({
   todayRevenue,
   todayTransactions,
@@ -613,40 +607,67 @@ const TodaySnapshotCard = ({
 
   return (
     <motion.div
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
       initial={ANIMATION_VARIANTS.card.initial}
       animate={ANIMATION_VARIANTS.card.animate}
-      transition={{ duration: 0.4 }}
     >
-      <Card className="h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">Today's Snapshot</CardTitle>
+      <Card className="overflow-hidden border-t-4 border-t-primary shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Today's Snapshot
+          </CardTitle>
+          <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="space-y-1">
-          <StatRow label="Revenue" value={formatCurrency(todayRevenue)} isLoading={isLoading} />
-          <StatRow label="Transactions" value={todayTransactions} isLoading={isLoading} />
-          <StatRow label="Average Sale" value={formatCurrency(avgSale)} isLoading={isLoading} />
-          
-          <div className="mt-4 pt-2">
-            {salesPace !== null && todayTransactions > 0 ? (
-              <div className={`flex items-center gap-2 p-2 rounded-md bg-opacity-10 ${
-                trend === 'up' ? 'bg-success text-success' : 'bg-destructive text-destructive'
-              }`}>
-                <span className="text-xs font-bold uppercase tracking-wider">Sales Pace</span>
-                <span className="text-sm font-bold ml-auto">
-                  {formatPercentage(salesPace)} {trend === 'up' ? '↑' : '↓'}
-                </span>
-              </div>
-            ) : !isLoading && (
-              <p className="text-xs text-muted-foreground italic mt-2 text-center">
-                No activity recorded yet today.
-              </p>
-            )}
+        
+        <CardContent>
+          {/* Main Hero Metric */}
+          <div className="mb-6">
+            <div className="text-3xl font-bold tracking-tight">
+              {isLoading ? <div className="h-9 w-32 animate-pulse bg-muted rounded" /> : formatCurrency(todayRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Total revenue collected today</p>
           </div>
+
+          {/* Secondary Stats Grid */}
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground gap-1.5">
+                <ShoppingCart className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Sales</span>
+              </div>
+              <p className="text-lg font-semibold">{isLoading ? '...' : todayTransactions}</p>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center text-muted-foreground gap-1.5">
+                <Target className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Avg. Ticket</span>
+              </div>
+              <p className="text-lg font-semibold">{isLoading ? '...' : formatCurrency(avgSale)}</p>
+            </div>
+          </div>
+
+          {/* Sales Pace Footer */}
+          {salesPace !== null && todayTransactions > 0 && (
+            <div className={`mt-6 flex items-center justify-between p-2.5 rounded-xl border ${
+              trend === 'up' 
+                ? 'bg-success/10 border-success/20 text-success' 
+                : 'bg-destructive/10 border-destructive/20 text-destructive'
+            }`}>
+              <div className="flex items-center gap-2">
+                {trend === 'up' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                <span className="text-xs font-bold uppercase">Pace</span>
+              </div>
+              <span className="text-sm font-black">{formatPercentage(salesPace)}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
   );
 };
+
+import { CalendarDays, BarChart3 } from "lucide-react";
 
 const MonthlyProjectionCard = ({
   monthRevenue,
@@ -665,37 +686,54 @@ const MonthlyProjectionCard = ({
 
   return (
     <motion.div
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
       initial={ANIMATION_VARIANTS.card.initial}
       animate={ANIMATION_VARIANTS.card.animate}
-      transition={{ duration: 0.4 }}
     >
-      <Card className="h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">Monthly Projection</CardTitle>
+      <Card className="h-full shadow-sm hover:shadow-md transition-shadow border-t-4 border-t-blue-500">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Monthly Projection
+          </CardTitle>
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="space-y-4">
+
+        <CardContent className="space-y-6">
           {monthRevenue === 0 && !isLoading ? (
-            <div className="h-24 flex items-center justify-center border-2 border-dashed rounded-lg">
-              <p className="text-sm text-muted-foreground">No sales recorded this month</p>
+            <div className="h-32 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl bg-muted/30">
+              <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-2" />
+              <p className="text-xs font-medium text-muted-foreground">Waiting for first sale...</p>
             </div>
           ) : (
             <>
-              <div className="space-y-1">
-                <StatRow label="Revenue so far" value={formatCurrency(monthRevenue)} isLoading={isLoading} />
-                <StatRow label="Projected" value={formatCurrency(projectedRevenue)} isLoading={isLoading} />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Month Progress</span>
-                  <span>{daysElapsed} / {daysInMonth} Days</span>
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Current Revenue</p>
+                    <p className="text-2xl font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground mb-1">Estimated End</p>
+                    <p className="text-xl font-semibold text-blue-600">
+                      {isLoading ? '...' : formatCurrency(projectedRevenue)}
+                    </p>
+                  </div>
                 </div>
-                {/* Visual Progress Bar */}
-                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary transition-all duration-500" 
-                    style={{ width: `${progressPercent}%` }} 
-                  />
+
+                {/* Visual Progress Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
+                    <span>Month Progress</span>
+                    <span>{daysElapsed} / {daysInMonth} Days</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden p-0.5 border border-border">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercent}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                    />
+                  </div>
                 </div>
               </div>
             </>
