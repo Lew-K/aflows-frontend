@@ -6,6 +6,7 @@ import { useRevenueAnalytics } from "@/hooks/useRevenueAnalytics";
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   BarChart3,
   TrendingUp,
@@ -18,6 +19,7 @@ import {
   ArrowDownRight,
   Target,
   Activity,
+  Info,
 } from 'lucide-react';
 
 import {
@@ -607,67 +609,70 @@ const TodaySnapshotCard = ({
 
   return (
     <motion.div
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileHover={{ y: -4 }}
       initial={ANIMATION_VARIANTS.card.initial}
       animate={ANIMATION_VARIANTS.card.animate}
     >
-      <Card className="overflow-hidden border-t-4 border-t-primary shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+      <Card className="h-full shadow-sm hover:shadow-md transition-all border-l-4 border-l-primary">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Today's Snapshot
+            Today Snapshot
           </CardTitle>
           <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         
         <CardContent>
-          {/* Main Hero Metric */}
           <div className="mb-6">
             <div className="text-3xl font-bold tracking-tight">
-              {isLoading ? <div className="h-9 w-32 animate-pulse bg-muted rounded" /> : formatCurrency(todayRevenue)}
+              {isLoading ? '...' : formatCurrency(todayRevenue)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Total revenue collected today</p>
+            <p className="text-xs text-muted-foreground mt-1">Total revenue today</p>
           </div>
 
-          {/* Secondary Stats Grid */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+          <div className="grid grid-cols-2 gap-4 py-4 border-y border-border/50">
             <div className="space-y-1">
-              <div className="flex items-center text-muted-foreground gap-1.5">
-                <ShoppingCart className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Sales</span>
-              </div>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                <ShoppingCart className="h-3 w-3" /> Transactions
+              </span>
               <p className="text-lg font-semibold">{isLoading ? '...' : todayTransactions}</p>
             </div>
-            
             <div className="space-y-1">
-              <div className="flex items-center text-muted-foreground gap-1.5">
-                <Target className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">Avg. Ticket</span>
-              </div>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                <DollarSign className="h-3 w-3" /> Avg. Sale
+              </span>
               <p className="text-lg font-semibold">{isLoading ? '...' : formatCurrency(avgSale)}</p>
             </div>
           </div>
 
-          {/* Sales Pace Footer */}
-          {salesPace !== null && todayTransactions > 0 && (
-            <div className={`mt-6 flex items-center justify-between p-2.5 rounded-xl border ${
-              trend === 'up' 
-                ? 'bg-success/10 border-success/20 text-success' 
-                : 'bg-destructive/10 border-destructive/20 text-destructive'
-            }`}>
-              <div className="flex items-center gap-2">
-                {trend === 'up' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                <span className="text-xs font-bold uppercase">Pace</span>
-              </div>
-              <span className="text-sm font-black">{formatPercentage(salesPace)}</span>
-            </div>
-          )}
+          <div className="mt-4 flex items-center justify-between">
+            {salesPace !== null && todayTransactions > 0 ? (
+              <>
+                <div className={`flex items-center gap-1.5 text-sm font-bold ${
+                  trend === 'up' ? 'text-success' : 'text-destructive'
+                }`}>
+                  {trend === 'up' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  <span>{formatPercentage(salesPace)} Sales Pace</span>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger><Info className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" /></TooltipTrigger>
+                    <TooltipContent className="max-w-[200px] text-xs">
+                      Today vs. your daily average this month.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">No sales recorded today yet</p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>
   );
 };
 
-import { CalendarDays, BarChart3 } from "lucide-react";
+import { CalendarDays, BarChart3, Info } from "lucide-react";
 
 const MonthlyProjectionCard = ({
   monthRevenue,
@@ -686,12 +691,12 @@ const MonthlyProjectionCard = ({
 
   return (
     <motion.div
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileHover={{ y: -4 }}
       initial={ANIMATION_VARIANTS.card.initial}
       animate={ANIMATION_VARIANTS.card.animate}
     >
-      <Card className="h-full shadow-sm hover:shadow-md transition-shadow border-t-4 border-t-blue-500">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+      <Card className="h-full shadow-sm hover:shadow-md transition-all border-l-4 border-l-muted-foreground">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Monthly Projection
           </CardTitle>
@@ -700,40 +705,46 @@ const MonthlyProjectionCard = ({
 
         <CardContent className="space-y-6">
           {monthRevenue === 0 && !isLoading ? (
-            <div className="h-32 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl bg-muted/30">
-              <CalendarDays className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-xs font-medium text-muted-foreground">Waiting for first sale...</p>
+            <div className="h-[120px] flex flex-col items-center justify-center border-2 border-dashed rounded-lg bg-muted/20">
+              <p className="text-sm font-medium text-muted-foreground">No sales this month yet</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">Projection appears after first sale</p>
             </div>
           ) : (
             <>
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Current Revenue</p>
-                    <p className="text-2xl font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground mb-1">Estimated End</p>
-                    <p className="text-xl font-semibold text-blue-600">
-                      {isLoading ? '...' : formatCurrency(projectedRevenue)}
-                    </p>
-                  </div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Revenue So Far</p>
+                  <p className="text-xl font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
                 </div>
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-1 mb-1">
+                    <p className="text-xs font-bold text-primary uppercase tracking-tighter">Projected</p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent className="text-xs">
+                          (Current Revenue / Days Elapsed) × Total Days in Month
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <p className="text-2xl font-black text-primary">
+                    {isLoading ? '...' : formatCurrency(projectedRevenue)}
+                  </p>
+                </div>
+              </div>
 
-                {/* Visual Progress Section */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
-                    <span>Month Progress</span>
-                    <span>{daysElapsed} / {daysInMonth} Days</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden p-0.5 border border-border">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercent}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                    />
-                  </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Month Progress</span>
+                  <span>{daysElapsed} / {daysInMonth} Days</span>
+                </div>
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    className="h-full bg-primary"
+                  />
                 </div>
               </div>
             </>
