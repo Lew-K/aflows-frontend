@@ -585,46 +585,85 @@ const TopSellingItems = ({
   </motion.div>
 );
 
-// Recent Activity Component
-const RecentActivity = ({
-  recentActivity,
+// Today Snapshot and Monthly projection Component
+const TodaySnapshotCard = ({
+  todayRevenue,
+  todayTransactions,
+  avgSale,
+  salesPace,
+  isLoading = false,
 }: {
-  recentActivity: any[];
+  todayRevenue: number;
+  todayTransactions: number;
+  avgSale: number;
+  salesPace: number | null;
+  isLoading?: boolean;
+}) => {
+  const trend = salesPace !== null ? (salesPace >= 0 ? 'up' : 'down') : 'neutral';
+
+  return (
+    <motion.div
+      initial={ANIMATION_VARIANTS.card.initial}
+      animate={ANIMATION_VARIANTS.card.animate}
+      transition={{ duration: 0.4 }}
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Today Snapshot</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p>Revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(todayRevenue)}</span></p>
+          <p>Transactions: <span className="font-bold">{isLoading ? '...' : todayTransactions}</span></p>
+          <p>Average Sale: <span className="font-bold">{isLoading ? '...' : formatCurrency(avgSale)}</span></p>
+          {salesPace !== null && todayTransactions > 0 && (
+            <p className={`font-medium ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'}`}>
+              Sales Pace: {formatPercentage(salesPace)} {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
+            </p>
+          )}
+          {todayTransactions === 0 && <p className="text-sm text-muted-foreground">No sales recorded today yet</p>}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+const MonthlyProjectionCard = ({
+  monthRevenue,
+  projectedRevenue,
+  daysElapsed,
+  daysInMonth,
+  isLoading = false,
+}: {
+  monthRevenue: number;
+  projectedRevenue: number;
+  daysElapsed: number;
+  daysInMonth: number;
+  isLoading?: boolean;
 }) => (
   <motion.div
     initial={ANIMATION_VARIANTS.card.initial}
     animate={ANIMATION_VARIANTS.card.animate}
-    transition={{ duration: 0.4, delay: 0.6 }}
+    transition={{ duration: 0.4 }}
   >
     <Card>
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle>Monthly Projection</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {recentActivity.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No recent activity
-            </p>
-          ) : (
-            recentActivity.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center justify-between py-3 border-b border-border last:border-0"
-              >
-                <div>
-                  <p className="font-medium text-foreground">{activity.action}</p>
-                  <p className="text-sm text-muted-foreground">{activity.amount}</p>
-                </div>
-                <span className="text-sm text-muted-foreground">{activity.time}</span>
-              </div>
-            ))
-          )}
-        </div>
+      <CardContent className="space-y-2">
+        {monthRevenue === 0 ? (
+          <p className="text-sm text-muted-foreground">No sales recorded this month yet</p>
+        ) : (
+          <>
+            <p>Revenue so far: <span className="font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</span></p>
+            <p>Projected revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(projectedRevenue)}</span></p>
+            <p className="text-sm text-muted-foreground">Based on {daysElapsed} / {daysInMonth} days</p>
+          </>
+        )}
       </CardContent>
     </Card>
   </motion.div>
 );
+
 
 // Main Component
 export const AnalyticsPage = () => {
@@ -715,13 +754,27 @@ export const AnalyticsPage = () => {
   const hasMultipleMonths =
     revenueData.filter(m => m.revenue > 0).length > 1;
 
-  const recentActivity = [
-    { id: 1, action: 'New sale recorded', amount: 'KES 12,500', time: '2 min ago' },
-    { id: 2, action: 'Receipt generated', amount: '#RC-2024-0842', time: '5 min ago' },
-    { id: 3, action: 'File uploaded', amount: 'Invoice_March.pdf', time: '12 min ago' },
-    { id: 4, action: 'New sale recorded', amount: 'KES 8,750', time: '25 min ago' },
-    { id: 5, action: 'M-Pesa statement uploaded', amount: 'Statement_Q1.pdf', time: '1 hour ago' },
-  ];
+  // Get today's date
+const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+// Filter sales for today
+const todaySales = useMemo(() => sales?.filter(s => s.created_at.startsWith(today)) ?? [], [sales, today]);
+
+// Today Snapshot
+const todayRevenue = todaySales.reduce((sum, s) => sum + (s.amount ?? 0), 0);
+const todayTransactions = todaySales.length;
+const avgSale = todayTransactions ? todayRevenue / todayTransactions : 0;
+
+// Monthly Projection
+const monthRevenue = revenueSummary?.totalRevenue ?? 0;
+const now = new Date();
+const daysElapsed = now.getDate();
+const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+const averageDailyRevenue = daysElapsed ? monthRevenue / daysElapsed : 0;
+const projectedRevenue = averageDailyRevenue * daysInMonth;
+
+// Sales pace = compare today's revenue vs avg day
+const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -805,7 +858,24 @@ export const AnalyticsPage = () => {
       </div>
 
       {/* Recent Activity */}
-      <RecentActivity recentActivity={recentActivity} />
+      {/* Today Snapshot & Monthly Projection */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TodaySnapshotCard
+          todayRevenue={todayRevenue}
+          todayTransactions={todayTransactions}
+          avgSale={avgSale}
+          salesPace={salesPace}
+          isLoading={loading}
+        />
+      
+        <MonthlyProjectionCard
+          monthRevenue={monthRevenue}
+          projectedRevenue={projectedRevenue}
+          daysElapsed={daysElapsed}
+          daysInMonth={daysInMonth}
+          isLoading={loading}
+        />
+      </div>
     </div>
   );
 };
