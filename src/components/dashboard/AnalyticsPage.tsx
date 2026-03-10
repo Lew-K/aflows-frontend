@@ -586,7 +586,7 @@ const TopSellingItems = ({
 );
 
 // Today Snapshot and Monthly projection Component
-const TodaySnapshotStat = ({
+const TodaySnapshotCard = ({
   todayRevenue,
   todayTransactions,
   avgSale,
@@ -608,45 +608,38 @@ const TodaySnapshotStat = ({
       transition={{ duration: 0.4 }}
     >
       <Card className="hover:shadow-soft transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-primary" />
-            </div>
-          </div>
-
-          <p className="text-2xl font-bold text-foreground">
-            {isLoading ? '...' : formatCurrency(todayRevenue)}
-          </p>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-primary" />
+            Today Snapshot
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p>Revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(todayRevenue)}</span></p>
+          <p>Transactions: <span className="font-bold">{isLoading ? '...' : todayTransactions}</span></p>
+          <p>Average Sale: <span className="font-bold">{isLoading ? '...' : formatCurrency(avgSale)}</span></p>
 
           {salesPace !== null && todayTransactions > 0 && (
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${
-                trend === 'up'
-                  ? 'text-success'
-                  : trend === 'down'
-                  ? 'text-destructive'
-                  : 'text-muted-foreground'
-              }`}
-            >
-              {formatPercentage(salesPace)}
-              {trend === 'up' && <ArrowUpRight className="w-4 h-4" />}
-              {trend === 'down' && <ArrowDownRight className="w-4 h-4" />}
-            </div>
+            <p className={`font-medium ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'}`}>
+              Sales Pace: {formatPercentage(salesPace)} {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
+            </p>
           )}
 
-          <p className="text-sm text-muted-foreground mt-2">
-            {todayTransactions === 0
-              ? 'No sales recorded today yet'
-              : `Transactions: ${todayTransactions} • Avg Sale: ${formatCurrency(avgSale)}`}
-          </p>
+          {/* Smart Metric */}
+          {salesPace !== null && todayTransactions > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Today is {salesPace >= 0 ? formatPercentage(salesPace) + ' faster' : formatPercentage(-salesPace) + ' slower'} than the monthly average
+            </p>
+          )}
+
+          {todayTransactions === 0 && <p className="text-sm text-muted-foreground">No sales recorded today yet</p>}
         </CardContent>
       </Card>
     </motion.div>
   );
 };
 
-const MonthlyProjectionStat = ({
+const MonthlyProjectionCard = ({
   monthRevenue,
   projectedRevenue,
   daysElapsed,
@@ -665,30 +658,20 @@ const MonthlyProjectionStat = ({
     transition={{ duration: 0.4 }}
   >
     <Card className="hover:shadow-soft transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-primary" />
-          </div>
-        </div>
-
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          Monthly Projection
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
         {monthRevenue === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No sales recorded this month yet
-          </p>
+          <p className="text-sm text-muted-foreground">No sales recorded this month yet</p>
         ) : (
           <>
-            <p className="text-2xl font-bold text-foreground">
-              {isLoading ? '...' : formatCurrency(projectedRevenue)}
-            </p>
-
-            <p className="text-sm text-muted-foreground mt-1">
-              Revenue so far: {isLoading ? '...' : formatCurrency(monthRevenue)}
-            </p>
-
-            <p className="text-xs text-muted-foreground mt-2">
-              Based on {daysElapsed} / {daysInMonth} days
-            </p>
+            <p>Revenue so far: <span className="font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</span></p>
+            <p>Projected revenue: <span className="font-bold">{isLoading ? '...' : formatCurrency(projectedRevenue)}</span></p>
+            <p className="text-sm text-muted-foreground">Based on {daysElapsed} / {daysInMonth} days</p>
           </>
         )}
       </CardContent>
