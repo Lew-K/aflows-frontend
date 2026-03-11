@@ -12,6 +12,8 @@ import {
   Zap,
   Menu,
   X,
+  Package,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -20,6 +22,8 @@ import { NotificationCenter } from '@/components/NotificationCenter';
 const navItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard' },
   { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales' },
+  { icon: Package, label: 'Inventory', path: '/dashboard/inventory' },
+  { icon: Users, label: 'Customers', path: '/dashboard/customers' },
   { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations' },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads' },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact' },
