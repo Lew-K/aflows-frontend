@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useSales } from "@/hooks/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users } from "lucide-react";
 
 export const CustomersPage = () => {
@@ -12,6 +13,10 @@ export const CustomersPage = () => {
     "all"
   );
 
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("total_spent");
+  const [visibleCount, setVisibleCount] = useState(20);
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -20,6 +25,13 @@ export const CustomersPage = () => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  /*
+  =============================
+  EXISTING CUSTOMER AGGREGATION
+  =============================
+  (Not modified)
+  */
 
   const customers = useMemo(() => {
     const map = new Map();
@@ -51,7 +63,11 @@ export const CustomersPage = () => {
     );
   }, [sales]);
 
-  const topCustomers = customers.slice(0, 3);
+  /*
+  =============================
+  KPI CALCULATIONS
+  =============================
+  */
 
   const totalCustomers = customers.length;
 
@@ -65,17 +81,94 @@ export const CustomersPage = () => {
   }).length;
 
   const topCustomer = customers[0];
+  const topCustomers = customers.slice(0, 3);
+
+  /*
+  =============================
+  SEARCH FILTER
+  =============================
+  */
+
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) =>
+      c.customer_name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [customers, search]);
+
+  /*
+  =============================
+  SORTING
+  =============================
+  */
+
+  const sortedCustomers = useMemo(() => {
+    const sorted = [...filteredCustomers];
+
+    if (sortBy === "transactions") {
+      sorted.sort((a, b) => b.transactions - a.transactions);
+    }
+
+    if (sortBy === "last_purchase") {
+      sorted.sort(
+        (a, b) =>
+          new Date(b.last_purchase).getTime() -
+          new Date(a.last_purchase).getTime()
+      );
+    }
+
+    if (sortBy === "total_spent") {
+      sorted.sort((a, b) => b.total_spent - a.total_spent);
+    }
+
+    return sorted;
+  }, [filteredCustomers, sortBy]);
+
+  /*
+  =============================
+  PAGINATION
+  =============================
+  */
+
+  const paginatedCustomers = sortedCustomers.slice(0, visibleCount);
+
+  /*
+  =============================
+  SKELETON LOADING
+  =============================
+  */
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading customers...</p>;
+    return (
+      <div className="space-y-6">
+
+        <Skeleton className="h-8 w-40" />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Skeleton className="h-20 w-full"/>
+          <Skeleton className="h-20 w-full"/>
+          <Skeleton className="h-20 w-full"/>
+          <Skeleton className="h-20 w-full"/>
+        </div>
+
+        <Skeleton className="h-10 w-full"/>
+
+        <div className="space-y-3">
+          {[...Array(6)].map((_,i)=>(
+            <Skeleton key={i} className="h-16 w-full"/>
+          ))}
+        </div>
+
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8">
 
-      {/* Page Title */}
+      {/* PAGE HEADER */}
+
       <div className="flex items-center gap-2">
-        <Users className="w-6 h-6 text-primary" />
+        <Users className="w-6 h-6 text-primary"/>
         <h1 className="text-2xl font-bold">Customers</h1>
       </div>
 
@@ -85,21 +178,31 @@ export const CustomersPage = () => {
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total Customers</p>
-            <p className="text-2xl font-bold">{totalCustomers}</p>
+            <p className="text-sm text-muted-foreground">
+              Total Customers
+            </p>
+            <p className="text-2xl font-bold">
+              {totalCustomers}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Active This Month</p>
-            <p className="text-2xl font-bold">{activeThisMonth}</p>
+            <p className="text-sm text-muted-foreground">
+              Active This Month
+            </p>
+            <p className="text-2xl font-bold">
+              {activeThisMonth}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Top Customer</p>
+            <p className="text-sm text-muted-foreground">
+              Top Customer
+            </p>
             <p className="text-lg font-semibold">
               {topCustomer?.customer_name || "-"}
             </p>
@@ -108,7 +211,9 @@ export const CustomersPage = () => {
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Revenue From Top</p>
+            <p className="text-sm text-muted-foreground">
+              Revenue From Top
+            </p>
             <p className="text-lg font-semibold">
               KES {topCustomer?.total_spent?.toLocaleString() || "0"}
             </p>
@@ -126,9 +231,10 @@ export const CustomersPage = () => {
             Top Customers
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
 
             {topCustomers.map((c) => (
+
               <Card key={c.customer_name}>
                 <CardContent className="p-4">
 
@@ -142,7 +248,6 @@ export const CustomersPage = () => {
                       <p className="font-medium">
                         {c.customer_name}
                       </p>
-
                       <p className="text-xs text-muted-foreground">
                         {c.transactions} purchases
                       </p>
@@ -156,12 +261,43 @@ export const CustomersPage = () => {
 
                 </CardContent>
               </Card>
+
             ))}
 
           </div>
 
         </div>
       )}
+
+      {/* SEARCH + SORT */}
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+        <input
+          type="text"
+          placeholder="Search customers..."
+          value={search}
+          onChange={(e)=>setSearch(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm w-full md:w-72"
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e)=>setSortBy(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
+        >
+          <option value="total_spent">Sort by Total Spent</option>
+          <option value="transactions">Sort by Transactions</option>
+          <option value="last_purchase">Sort by Last Purchase</option>
+        </select>
+
+      </div>
+
+      {/* RESULT COUNTER */}
+
+      <p className="text-xs text-muted-foreground">
+        Showing {paginatedCustomers.length} of {sortedCustomers.length} customers
+      </p>
 
       {/* CUSTOMER LIST */}
 
@@ -175,17 +311,11 @@ export const CustomersPage = () => {
 
           <div className="divide-y">
 
-            {customers.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No customers recorded yet
-              </p>
-            )}
-
-            {customers.map((customer) => (
-
+            {paginatedCustomers.map((customer)=>(
+              
               <div
                 key={customer.customer_name}
-                className="flex items-center justify-between py-4 hover:bg-muted/30 px-3 rounded-lg transition"
+                className="flex items-center justify-between py-4 px-3 hover:bg-muted/30 rounded-lg transition"
               >
 
                 <div className="flex items-center gap-3">
@@ -198,7 +328,6 @@ export const CustomersPage = () => {
                     <p className="font-medium">
                       {customer.customer_name}
                     </p>
-
                     <p className="text-xs text-muted-foreground">
                       Last purchase{" "}
                       {new Date(customer.last_purchase).toLocaleDateString()}
@@ -224,6 +353,23 @@ export const CustomersPage = () => {
             ))}
 
           </div>
+
+          {/* LOAD MORE */}
+
+          {visibleCount < sortedCustomers.length && (
+
+            <div className="flex justify-center pt-6">
+
+              <button
+                onClick={()=>setVisibleCount(prev=>prev+20)}
+                className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition"
+              >
+                Load More
+              </button>
+
+            </div>
+
+          )}
 
         </CardContent>
 
