@@ -1,10 +1,46 @@
-import React from "react";
-import { useCustomers } from "@/hooks/useCustomers";
+import React, { useMemo } from "react";
+import { useSales } from "@/hooks/useSales";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 
 export const CustomersPage = () => {
-  const { customers, loading } = useCustomers();
+  const { user } = useAuth();
+
+  const { sales, loading } = useSales(
+    user?.businessId || "",
+    "all"
+  );
+
+  const customers = useMemo(() => {
+    const map = new Map();
+
+    sales.forEach((sale: any) => {
+      if (!sale.customer_name) return;
+
+      if (!map.has(sale.customer_name)) {
+        map.set(sale.customer_name, {
+          customer_name: sale.customer_name,
+          total_spent: 0,
+          transactions: 0,
+          last_purchase: sale.created_at,
+        });
+      }
+
+      const c = map.get(sale.customer_name);
+
+      c.total_spent += Number(sale.amount);
+      c.transactions += 1;
+
+      if (new Date(sale.created_at) > new Date(c.last_purchase)) {
+        c.last_purchase = sale.created_at;
+      }
+    });
+
+    return Array.from(map.values()).sort(
+      (a, b) => b.total_spent - a.total_spent
+    );
+  }, [sales]);
 
   if (loading) {
     return <p className="text-muted-foreground">Loading customers...</p>;
@@ -24,12 +60,11 @@ export const CustomersPage = () => {
         </CardHeader>
 
         <CardContent>
-
           <div className="divide-y">
 
             {customers.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                No customers yet
+                No customers recorded yet
               </p>
             )}
 
@@ -48,7 +83,7 @@ export const CustomersPage = () => {
 
                 <div className="text-right">
                   <p className="font-semibold">
-                    KES {Number(customer.total_spent).toLocaleString()}
+                    KES {customer.total_spent.toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {customer.transactions} purchases
@@ -58,7 +93,6 @@ export const CustomersPage = () => {
             ))}
 
           </div>
-
         </CardContent>
       </Card>
     </div>
