@@ -1,102 +1,74 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import React from "react";
 import { useInventory } from "@/hooks/useInventory";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, AlertTriangle } from "lucide-react";
 
-export const InventoryPage = ({ businessId }) => {
+export const InventoryPage = () => {
+  const { items, loading } = useInventory();
 
-  const { items, loading } = useInventory(businessId);
+  if (loading) {
+    return <p className="text-muted-foreground">Loading inventory...</p>;
+  }
 
   return (
-    <div className="space-y-6 p-6">
-
-      <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Package className="w-6 h-6 text-primary" />
         <h1 className="text-2xl font-bold">Inventory</h1>
-
-        <button className="bg-primary text-white px-4 py-2 rounded-xl">
-          + Add Item
-        </button>
       </div>
 
       <Card>
-
         <CardHeader>
           <CardTitle>Stock Levels</CardTitle>
         </CardHeader>
 
         <CardContent>
+          <div className="divide-y">
 
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
+            {items.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No inventory items yet
+              </p>
+            )}
 
-            <table className="w-full text-sm">
+            {items.map((item) => {
+              const isLow = item.stock <= item.low_stock_threshold;
 
-              <thead className="text-muted-foreground">
-                <tr>
-                  <th className="text-left">Item</th>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th>Last Restock</th>
-                  <th></th>
-                </tr>
-              </thead>
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-4"
+                >
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Last movement:{" "}
+                      {item.last_movement
+                        ? new Date(item.last_movement).toLocaleDateString()
+                        : "Never"}
+                    </p>
+                  </div>
 
-              <tbody>
+                  <div className="flex items-center gap-4">
 
-                {items.map(item => {
+                    <span className="font-semibold">{item.stock}</span>
 
-                  const lowStock = item.stock <= item.low_stock_threshold;
+                    {isLow ? (
+                      <span className="flex items-center gap-1 text-yellow-600 text-sm">
+                        <AlertTriangle className="w-4 h-4" />
+                        Low
+                      </span>
+                    ) : (
+                      <span className="text-green-600 text-sm">OK</span>
+                    )}
 
-                  return (
-                    <tr key={item.id} className="border-t">
-
-                      <td>{item.name}</td>
-
-                      <td className="text-center">{item.stock}</td>
-
-                      <td className="text-center">
-
-                        {lowStock ? (
-                          <span className="text-destructive flex items-center gap-1 justify-center">
-                            <AlertTriangle size={14}/>
-                            LOW
-                          </span>
-                        ) : (
-                          <span className="text-success">
-                            OK
-                          </span>
-                        )}
-
-                      </td>
-
-                      <td className="text-center">
-                        {item.last_restocked
-                          ? new Date(item.last_restocked).toLocaleDateString()
-                          : "-"
-                        }
-                      </td>
-
-                      <td>
-                        <button className="text-primary text-sm">
-                          Edit
-                        </button>
-                      </td>
-
-                    </tr>
-                  );
-
-                })}
-
-              </tbody>
-
-            </table>
-
-          )}
-
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
-
       </Card>
-
     </div>
   );
 };
