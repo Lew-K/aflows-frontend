@@ -1,74 +1,66 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
 import { useCustomers } from "@/hooks/useCustomers";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users } from "lucide-react";
 
-export const CustomersPage = ({ businessId }) => {
+export const CustomersPage = () => {
+  const { customers, loading } = useCustomers();
 
-  const { customers, loading } = useCustomers(businessId);
+  if (loading) {
+    return <p className="text-muted-foreground">Loading customers...</p>;
+  }
 
   return (
+    <div className="space-y-6">
 
-    <div className="space-y-6 p-6">
-
-      <h1 className="text-2xl font-bold">
-        Customers
-      </h1>
+      <div className="flex items-center gap-2">
+        <Users className="w-6 h-6 text-primary" />
+        <h1 className="text-2xl font-bold">Customers</h1>
+      </div>
 
       <Card>
-
         <CardHeader>
           <CardTitle>Customer List</CardTitle>
         </CardHeader>
 
         <CardContent>
 
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
+          <div className="divide-y">
 
-            <table className="w-full text-sm">
+            {customers.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No customers yet
+              </p>
+            )}
 
-              <thead className="text-muted-foreground">
+            {customers.map((customer) => (
+              <div
+                key={customer.customer_name}
+                className="flex items-center justify-between py-4"
+              >
+                <div>
+                  <p className="font-medium">{customer.customer_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Last purchase:{" "}
+                    {new Date(customer.last_purchase).toLocaleDateString()}
+                  </p>
+                </div>
 
-                <tr>
-                  <th className="text-left">Customer</th>
-                  <th>Phone</th>
-                  <th>Total Spent</th>
-                  <th>Last Purchase</th>
-                </tr>
+                <div className="text-right">
+                  <p className="font-semibold">
+                    KES {Number(customer.total_spent).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {customer.transactions} purchases
+                  </p>
+                </div>
+              </div>
+            ))}
 
-              </thead>
-
-              <tbody>
-
-                {customers.map((c: any) => (
-
-                  <tr key={c.phone} className="border-t">
-
-                    <td>{c.customer_name}</td>
-
-                    <td>{c.customer_phone}</td>
-
-                    <td>KES {c.total_spent.toLocaleString()}</td>
-
-                    <td>
-                      {new Date(c.last_purchase).toLocaleDateString()}
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          )}
+          </div>
 
         </CardContent>
-
       </Card>
-
     </div>
   );
-
 };
