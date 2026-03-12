@@ -14,10 +14,6 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
-import AdminLogin from "@/components/internal-admin/AdminLogin"
-import AdminDashboard from "@/components/internal-admin/AdminDashboard"
-import Businesses from "@/components/internal-admin/Businesses"
-
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -43,9 +39,6 @@ const App = () => {
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
                     
-                    <Route path="/internal-admin/login" element={<AdminLogin />} />
-                    <Route path="/internal-admin" element={<AdminDashboard />} />
-                    <Route path="/internal-admin/businesses" element={<Businesses />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />
