@@ -14,6 +14,10 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
+import AdminLogin from "@/components/internal-admin/AdminLogin"
+import AdminDashboard from "@/components/internal-admin/AdminDashboard"
+import Businesses from "@/components/internal-admin/Businesses"
+
 const queryClient = new QueryClient();
 
 const App = () => {
