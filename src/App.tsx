@@ -38,6 +38,10 @@ const App = () => {
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
+                    
+                    <Route path="/internal-admin/login" element={<AdminLogin />} />
+                    <Route path="/internal-admin" element={<AdminDashboard />} />
+                    <Route path="/internal-admin/businesses" element={<Businesses />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />
