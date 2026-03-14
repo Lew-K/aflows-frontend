@@ -13,6 +13,18 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const allowed = await isSuperAdmin();
+  
+      if (!allowed) {
+        window.location.href = "/";
+      }
+    };
+  
+    checkAdmin();
+  }, []);
+
   return (
     <div className="p-6">
 
