@@ -10,10 +10,10 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { initAuthGuard } from "@/lib/authGuard";
 
-import {AdminLogin} from "@/components/internal-admin/AdminLogin";
-import {AdminDashboard} from "@/components/internal-admin/AdminDashboard";
-import {Businesses} from "@/components/internal-admin/Businesses";
-import {Activity} from "@/components/internal-admin/Activity";
+import { AdminLogin } from "@/components/internal-admin/AdminLogin";
+import { AdminDashboard } from "@/components/internal-admin/AdminDashboard";
+import { Businesses } from "@/components/internal-admin/Businesses";
+import { Activity } from "@/components/internal-admin/Activity";
 
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
