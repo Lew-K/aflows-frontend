@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { adminApi } from "@/lib/adminApi";
 
 type Business = {
   id: string;
@@ -13,16 +14,24 @@ const Businesses = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
 
+  /* LOAD BUSINESSES */
+
   useEffect(() => {
-    fetch("/api/admin/businesses")
-      .then((res) => res.json())
-      .then((data) => setBusinesses(data));
+
+    adminApi.getBusinesses()
+      .then((data) => setBusinesses(data))
+      .catch((err) => console.error("Failed to load businesses", err));
+
   }, []);
+
+  /* SEARCH FILTER */
 
   const filteredBusinesses = businesses.filter((b) =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
     b.owner_email.toLowerCase().includes(search.toLowerCase())
   );
+
+  /* ACTIONS */
 
   const openDashboard = (id: string) => {
     window.open(`/dashboard?business_id=${id}`, "_blank");
@@ -30,19 +39,18 @@ const Businesses = () => {
 
   const impersonateBusiness = async (id: string) => {
 
-    const res = await fetch("/api/admin/impersonate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ business_id: id }),
-    });
+    try {
 
-    const data = await res.json();
+      const data = await adminApi.impersonate(id);
 
-    if (data.login_url) {
-      window.location.href = data.login_url;
+      if (data.login_url) {
+        window.location.href = data.login_url;
+      }
+
+    } catch (err) {
+      console.error("Impersonation failed", err);
     }
+
   };
 
   const openReceipts = (id: string) => {
