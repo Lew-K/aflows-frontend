@@ -18,12 +18,14 @@ export default function AdminLogin() {
       })
     });
 
-    const data = await res.json();
-
+    const response = await res.json();
+    const data = Array.isArray(response) ? response[0] : response;
+    
     if (data.success) {
-
       localStorage.setItem("admin_token", data.token);
-      window.location.href = "/internal-admin";
+      window.location.href = "/admin";
+    }
+
 
     } else {
 
