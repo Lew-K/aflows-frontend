@@ -10,6 +10,11 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { initAuthGuard } from "@/lib/authGuard";
 
+import AdminLogin from "@/components/internal-admin/AdminLogin";
+import AdminDashboard from "@/components/internal-admin/AdminDashboard";
+import Businesses from "@/components/internal-admin/Businesses";
+import Activity from "@/components/internal-admin/Activity";
+
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -40,6 +45,13 @@ const App = () => {
                     <Route path="/dashboard/*" element={<Dashboard />} />
                     
                   </Route>
+
+                  {/* INTERNAL ADMIN ROUTES */}
+
+                  <Route path="/internal-admin/login" element={<AdminLogin />} />
+                  <Route path="/internal-admin" element={<AdminDashboard />} />
+                  <Route path="/internal-admin/businesses" element={<Businesses />} />
+                  <Route path="/internal-admin/activity" element={<Activity />} />
 
                   <Route path="*" element={<NotFound />} />
 
