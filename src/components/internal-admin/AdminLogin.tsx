@@ -23,7 +23,7 @@ export default function AdminLogin() {
     
     if (data.success) {
       localStorage.setItem("admin_token", data.token);
-      window.location.href = "/admin";
+      window.location.href = "/interna-admin";
     }
 
 
