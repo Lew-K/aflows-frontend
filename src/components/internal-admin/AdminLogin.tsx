@@ -1,50 +1,73 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-const AdminLogin = () => {
-  const navigate = useNavigate();
+export default function AdminLogin() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e:any) => {
-    e.preventDefault();
+  const handleLogin = async () => {
 
-    if (
-      email === import.meta.env.VITE_ADMIN_EMAIL &&
-      password === import.meta.env.VITE_ADMIN_PASSWORD
-    ) {
-      localStorage.setItem("superadmin", "true");
-      navigate("/internal-admin");
+    const res = await fetch("https://n8n.aflows.uk/webhook/admin-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+
+      localStorage.setItem("admin_token", data.token);
+      window.location.href = "/internal-admin";
+
     } else {
+
       alert("Invalid admin credentials");
+
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <form onSubmit={handleLogin} className="bg-white shadow p-6 rounded w-80">
-        <h2 className="text-xl font-bold mb-4">Internal Admin Login</h2>
+
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+
+      <div className="bg-white p-8 rounded-xl shadow-md w-96">
+
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">
+          Admin Login
+        </h1>
 
         <input
-          className="border p-2 w-full mb-3"
+          type="email"
           placeholder="Email"
+          className="w-full border p-2 mb-4 rounded text-gray-900 bg-white"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
-          className="border p-2 w-full mb-3"
           type="password"
           placeholder="Password"
+          className="w-full border p-2 mb-6 rounded text-gray-900 bg-white"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button className="bg-black text-white w-full py-2 rounded">
+        <button
+          onClick={handleLogin}
+          className="w-full bg-black text-white p-2 rounded"
+        >
           Login
         </button>
-      </form>
-    </div>
-  );
-};
 
-export default AdminLogin;
+      </div>
+
+    </div>
+
+  );
+}
