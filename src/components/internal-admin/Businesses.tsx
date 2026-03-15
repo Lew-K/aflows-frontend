@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminApi } from "@/lib/adminApi";
-import axios from "axios";
 
 type Business = {
   id: string;
@@ -21,6 +20,7 @@ const WEBHOOKS = {
 const PAGE_SIZE = 20;
 
 const Businesses = () => {
+
   const navigate = useNavigate();
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -48,6 +48,7 @@ const Businesses = () => {
 
   // ---------- LOAD BUSINESSES ----------
   useEffect(() => {
+
     let isMounted = true;
 
     const cached = sessionStorage.getItem("admin_businesses");
@@ -56,9 +57,11 @@ const Businesses = () => {
     adminApi
       .getBusinesses()
       .then((data) => {
+
         if (!isMounted) return;
 
         const list = data.businesses || [];
+
         setBusinesses(list);
 
         sessionStorage.setItem("admin_businesses", JSON.stringify(list));
@@ -68,23 +71,34 @@ const Businesses = () => {
     return () => {
       isMounted = false;
     };
+
   }, []);
 
   // ---------- CLICK OUTSIDE ----------
   useEffect(() => {
+
     const handleClickOutside = (event: MouseEvent) => {
+
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenu(null);
       }
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
-  const updateBusinessState = (id: string, updates: Partial<Business> | null) => {
+  const updateBusinessState = (
+    id: string,
+    updates: Partial<Business> | null
+  ) => {
+
     setBusinesses((prev) => {
+
       const newList = updates
         ? prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
         : prev.filter((b) => b.id !== id);
@@ -97,6 +111,7 @@ const Businesses = () => {
 
   // ---------- SEARCH ----------
   const filteredBusinesses = useMemo(() => {
+
     const q = search.toLowerCase();
 
     return businesses.filter(
@@ -104,66 +119,93 @@ const Businesses = () => {
         b.name.toLowerCase().includes(q) ||
         b.owner_email.toLowerCase().includes(q)
     );
+
   }, [search, businesses]);
 
   // ---------- SORT ----------
   const sortedBusinesses = useMemo(() => {
+
     const sorted = [...filteredBusinesses].sort((a, b) => {
+
       const aVal = (a[sortField] || "").toString();
       const bVal = (b[sortField] || "").toString();
 
       if (sortDirection === "asc") return aVal.localeCompare(bVal);
+
       return bVal.localeCompare(aVal);
+
     });
 
     return sorted;
+
   }, [filteredBusinesses, sortField, sortDirection]);
 
   // ---------- PAGINATION ----------
   const totalPages = Math.ceil(sortedBusinesses.length / PAGE_SIZE);
 
   const paginatedBusinesses = useMemo(() => {
+
     const start = (page - 1) * PAGE_SIZE;
+
     return sortedBusinesses.slice(start, start + PAGE_SIZE);
+
   }, [sortedBusinesses, page]);
 
-  // ---------- SORT HANDLER ----------
   const toggleSort = (field: keyof Business) => {
+
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
       setSortDirection("asc");
     }
+
   };
 
   // ---------- ACTIONS ----------
 
   const impersonateUser = async (business: Business) => {
+
     if (loadingId) return;
 
     try {
+
       setLoadingId(business.id);
 
-      const res = await axios.post(WEBHOOKS.IMPERSONATE, {
-        business_id: business.id,
-        email: business.owner_email
+      const res = await fetch(WEBHOOKS.IMPERSONATE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          business_id: business.id,
+          email: business.owner_email
+        })
       });
 
-      if (res.data?.url) {
-        window.open(res.data.url, "_blank", "noopener,noreferrer");
+      const data = await res.json();
+
+      if (data?.url) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
       }
 
       toast(`Impersonation started for ${business.name}`);
+
     } catch {
+
       toast("Impersonation failed");
+
     } finally {
+
       setLoadingId(null);
       setOpenMenu(null);
+
     }
+
   };
 
   const toggleActivation = async (business: Business) => {
+
     if (loadingId) return;
 
     const inactive = ["inactive", "deactivated"].includes(
@@ -171,11 +213,18 @@ const Businesses = () => {
     );
 
     try {
+
       setLoadingId(business.id);
 
-      await axios.post(WEBHOOKS.DEACTIVATE, {
-        business_id: business.id,
-        action: inactive ? "activate" : "deactivate"
+      await fetch(WEBHOOKS.DEACTIVATE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          business_id: business.id,
+          action: inactive ? "activate" : "deactivate"
+        })
       });
 
       updateBusinessState(business.id, {
@@ -183,15 +232,22 @@ const Businesses = () => {
       });
 
       toast(`Business ${inactive ? "activated" : "deactivated"}`);
+
     } catch {
+
       toast("Status update failed");
+
     } finally {
+
       setLoadingId(null);
       setOpenMenu(null);
+
     }
+
   };
 
   const confirmDelete = async (id: string) => {
+
     if (loadingId) return;
 
     const password = prompt("Enter admin password");
@@ -199,22 +255,35 @@ const Businesses = () => {
     if (!password) return;
 
     try {
+
       setLoadingId(id);
 
-      await axios.post(WEBHOOKS.DELETE, {
-        business_id: id,
-        admin_password: password
+      await fetch(WEBHOOKS.DELETE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          business_id: id,
+          admin_password: password
+        })
       });
 
       updateBusinessState(id, null);
 
       toast("Business deleted");
+
     } catch {
+
       toast("Delete failed");
+
     } finally {
+
       setLoadingId(null);
       setOpenMenu(null);
+
     }
+
   };
 
   const formatDate = (date?: string) =>
@@ -226,13 +295,14 @@ const Businesses = () => {
         })
       : "-";
 
-  // ---------- UI ----------
   return (
     <div className={`p-8 ${darkMode ? "bg-slate-900 text-white" : "bg-white"}`}>
       <div className="flex justify-between mb-6">
+
         <h1 className="text-2xl font-bold">Businesses</h1>
 
         <div className="flex gap-3">
+
           <button
             onClick={() => setDarkMode(!darkMode)}
             className="border px-3 py-2 rounded"
@@ -246,7 +316,9 @@ const Businesses = () => {
           >
             Back
           </button>
+
         </div>
+
       </div>
 
       <input
@@ -257,38 +329,65 @@ const Businesses = () => {
       />
 
       <table className="w-full border rounded overflow-hidden">
+
         <thead className="bg-slate-100 text-xs uppercase">
           <tr>
-            <th onClick={() => toggleSort("name")} className="p-4 cursor-pointer">
+
+            <th
+              onClick={() => toggleSort("name")}
+              className="p-4 cursor-pointer"
+            >
               Business
             </th>
-            <th onClick={() => toggleSort("owner_email")} className="p-4 cursor-pointer">
+
+            <th
+              onClick={() => toggleSort("owner_email")}
+              className="p-4 cursor-pointer"
+            >
               Owner
             </th>
-            <th onClick={() => toggleSort("status")} className="p-4 cursor-pointer">
+
+            <th
+              onClick={() => toggleSort("status")}
+              className="p-4 cursor-pointer"
+            >
               Status
             </th>
-            <th onClick={() => toggleSort("created_at")} className="p-4 cursor-pointer">
+
+            <th
+              onClick={() => toggleSort("created_at")}
+              className="p-4 cursor-pointer"
+            >
               Joined
             </th>
+
             <th className="p-4 text-right">Actions</th>
+
           </tr>
         </thead>
 
         <tbody>
+
           {paginatedBusinesses.map((b) => {
+
             const inactive = ["inactive", "deactivated"].includes(
               b.status?.toLowerCase() || ""
             );
 
             return (
+
               <tr key={b.id} className="border-t">
+
                 <td className="p-4">{b.name}</td>
+
                 <td className="p-4">{b.owner_email}</td>
+
                 <td className="p-4 capitalize">{b.status}</td>
+
                 <td className="p-4">{formatDate(b.created_at)}</td>
 
                 <td className="p-4 text-right relative">
+
                   <button
                     onClick={() =>
                       setOpenMenu(openMenu === b.id ? null : b.id)
@@ -299,10 +398,12 @@ const Businesses = () => {
                   </button>
 
                   {openMenu === b.id && (
+
                     <div
                       ref={menuRef}
                       className="absolute right-0 mt-2 w-52 bg-white border rounded shadow-xl"
                     >
+
                       <button
                         disabled={loadingId === b.id}
                         onClick={() => impersonateUser(b)}
@@ -332,18 +433,25 @@ const Businesses = () => {
                       >
                         {loadingId === b.id ? "Deleting..." : "Delete Business"}
                       </button>
+
                     </div>
+
                   )}
+
                 </td>
+
               </tr>
+
             );
+
           })}
+
         </tbody>
+
       </table>
 
-      {/* Pagination */}
-
       <div className="flex justify-between mt-6">
+
         <button
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
@@ -363,6 +471,7 @@ const Businesses = () => {
         >
           Next
         </button>
+
       </div>
     </div>
   );
