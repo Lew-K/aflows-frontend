@@ -20,7 +20,7 @@ const Businesses = () => {
   useEffect(() => {
 
     adminApi.getBusinesses()
-      .then((data) => setBusinesses(data))
+      .then((data) => setBusinesses(data.businesses || []))
       .catch((err) => console.error("Failed to load businesses", err));
 
   }, []);
