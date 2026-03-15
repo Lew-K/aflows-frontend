@@ -11,25 +11,24 @@ type Business = {
 };
 
 const Businesses = () => {
-
   const navigate = useNavigate();
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  // ---------- DATA LOADING WITH PREFETCH CACHE ----------
+  // ---------- LOAD + PREFETCH ----------
 
   useEffect(() => {
-
     const cached = sessionStorage.getItem("admin_businesses");
 
     if (cached) {
       setBusinesses(JSON.parse(cached));
     }
 
-    adminApi.getBusinesses()
+    adminApi
+      .getBusinesses()
       .then((data) => {
-
         const list = data.businesses || [];
 
         setBusinesses(list);
@@ -38,20 +37,19 @@ const Businesses = () => {
           "admin_businesses",
           JSON.stringify(list)
         );
-
       })
       .catch((err) => console.error("Failed to load businesses", err));
-
   }, []);
 
   // ---------- SEARCH ----------
 
-  const filteredBusinesses = businesses.filter((b) =>
-    b.name.toLowerCase().includes(search.toLowerCase()) ||
-    b.owner_email.toLowerCase().includes(search.toLowerCase())
+  const filteredBusinesses = businesses.filter(
+    (b) =>
+      b.name.toLowerCase().includes(search.toLowerCase()) ||
+      b.owner_email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ---------- ADMIN ACTIONS ----------
+  // ---------- ACTIONS ----------
 
   const openDashboard = (id: string) => {
     window.open(`/dashboard?business_id=${id}`, "_blank");
@@ -61,34 +59,27 @@ const Businesses = () => {
     window.open(`/internal-admin/business/${id}/receipts`, "_blank");
   };
 
-  const openDBInspector = (id: string) => {
+  const openDB = (id: string) => {
     window.open(`/internal-admin/db/${id}`, "_blank");
   };
 
   const resetPassword = async (id: string) => {
-
     const newPassword = prompt("Enter new password");
 
     if (!newPassword) return;
 
     try {
-
       await adminApi.resetPassword(id, newPassword);
-
       alert("Password updated");
-
     } catch (err) {
-      console.error("Password reset failed", err);
+      console.error("Reset failed", err);
     }
-
   };
 
   const deactivateBusiness = async (id: string) => {
-
     if (!confirm("Deactivate this business?")) return;
 
     try {
-
       await adminApi.deactivateBusiness(id);
 
       setBusinesses((prev) =>
@@ -96,39 +87,32 @@ const Businesses = () => {
           b.id === id ? { ...b, status: "inactive" } : b
         )
       );
-
     } catch (err) {
       console.error("Deactivate failed", err);
     }
-
   };
 
   const confirmDelete = async (id: string) => {
-
     const password = prompt(
-      "Enter admin password to permanently delete this business"
+      "Enter admin password to delete this business"
     );
 
     if (!password) return;
 
     try {
-
       await adminApi.deleteBusiness(id, password);
 
       setBusinesses((prev) =>
         prev.filter((b) => b.id !== id)
       );
-
     } catch (err) {
       console.error("Delete failed", err);
     }
-
   };
 
   // ---------- UI ----------
 
   return (
-
     <div className="p-8 space-y-6">
 
       <div className="flex justify-between items-center">
@@ -192,53 +176,66 @@ const Businesses = () => {
                 {b.status || "active"}
               </td>
 
-              <td className="p-3">
+              <td className="p-3 relative">
 
-                <div className="flex flex-wrap gap-3 text-sm">
+                <button
+                  onClick={() =>
+                    setOpenMenu(openMenu === b.id ? null : b.id)
+                  }
+                  className="px-2 py-1 border rounded"
+                >
+                  ⋮
+                </button>
 
-                  <button
-                    onClick={() => openDashboard(b.id)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Dashboard
-                  </button>
+                {openMenu === b.id && (
 
-                  <button
-                    onClick={() => openReceipts(b.id)}
-                    className="text-purple-600 hover:underline"
-                  >
-                    Receipts
-                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10 text-sm">
 
-                  <button
-                    onClick={() => openDBInspector(b.id)}
-                    className="text-orange-600 hover:underline"
-                  >
-                    DB
-                  </button>
+                    <button
+                      onClick={() => openDashboard(b.id)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Open Dashboard
+                    </button>
 
-                  <button
-                    onClick={() => resetPassword(b.id)}
-                    className="text-indigo-600 hover:underline"
-                  >
-                    Reset Password
-                  </button>
+                    <button
+                      onClick={() => openReceipts(b.id)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      View Receipts
+                    </button>
 
-                  <button
-                    onClick={() => deactivateBusiness(b.id)}
-                    className="text-yellow-600 hover:underline"
-                  >
-                    Deactivate
-                  </button>
+                    <button
+                      onClick={() => openDB(b.id)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Database
+                    </button>
 
-                  <button
-                    onClick={() => confirmDelete(b.id)}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
+                    <button
+                      onClick={() => resetPassword(b.id)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Reset Password
+                    </button>
 
-                </div>
+                    <button
+                      onClick={() => deactivateBusiness(b.id)}
+                      className="block w-full text-left px-4 py-2 text-yellow-600 hover:bg-gray-100"
+                    >
+                      Deactivate
+                    </button>
+
+                    <button
+                      onClick={() => confirmDelete(b.id)}
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                )}
 
               </td>
 
@@ -251,9 +248,7 @@ const Businesses = () => {
       </table>
 
     </div>
-
   );
-
 };
 
 export default Businesses;
