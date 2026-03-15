@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminApi } from "@/lib/adminApi";
 
 type Business = {
@@ -11,10 +12,10 @@ type Business = {
 
 const Businesses = () => {
 
+  const navigate = useNavigate();
+
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
-
-  /* LOAD BUSINESSES */
 
   useEffect(() => {
 
@@ -24,14 +25,10 @@ const Businesses = () => {
 
   }, []);
 
-  /* SEARCH FILTER */
-
   const filteredBusinesses = businesses.filter((b) =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
     b.owner_email.toLowerCase().includes(search.toLowerCase())
   );
-
-  /* ACTIONS */
 
   const openDashboard = (id: string) => {
     window.open(`/dashboard?business_id=${id}`, "_blank");
@@ -63,13 +60,22 @@ const Businesses = () => {
 
   return (
 
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-6">
 
-      <h1 className="text-2xl font-bold">
-        All Businesses
-      </h1>
+      <div className="flex justify-between items-center">
 
-      {/* SEARCH */}
+        <h1 className="text-2xl font-bold">
+          All Businesses
+        </h1>
+
+        <button
+          onClick={() => navigate("/internal-admin")}
+          className="px-4 py-2 border rounded"
+        >
+          Back
+        </button>
+
+      </div>
 
       <input
         type="text"
@@ -79,9 +85,7 @@ const Businesses = () => {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* RESULT COUNT */}
-
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-gray-500">
         Showing {filteredBusinesses.length} of {businesses.length} businesses
       </p>
 
@@ -103,23 +107,12 @@ const Businesses = () => {
 
             <tr key={b.id} className="border-t">
 
-              <td className="p-3 font-medium">
-                {b.name}
-              </td>
+              <td className="p-3 font-medium">{b.name}</td>
+              <td className="p-3">{b.owner_email}</td>
+              <td className="p-3">{b.plan}</td>
+              <td className="p-3">{b.status}</td>
 
-              <td className="p-3">
-                {b.owner_email}
-              </td>
-
-              <td className="p-3">
-                {b.plan}
-              </td>
-
-              <td className="p-3">
-                {b.status}
-              </td>
-
-              <td className="p-3 flex gap-3 flex-wrap">
+              <td className="p-3 flex gap-4 flex-wrap">
 
                 <button
                   onClick={() => openDashboard(b.id)}
@@ -160,6 +153,7 @@ const Businesses = () => {
       </table>
 
     </div>
+
   );
 };
 
