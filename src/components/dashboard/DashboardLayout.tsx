@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Package,
+  Settings,
   Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,8 @@ const navItems = [
   { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations' },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads' },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact' },
+  { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
+
 ];
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
