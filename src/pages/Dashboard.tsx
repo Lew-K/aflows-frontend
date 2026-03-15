@@ -8,7 +8,7 @@ import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { CustomersPage } from '@/components/dashboard/CustomersPage';
 import { InventoryPage } from '@/components/dashboard/InventoryPage';
 import { SettingsPage } from "@/components/dashboard/SettingsPage";
-import ReportsPage from "@/components/dashboard/ReportsPage";
+import { ReportsPage } from "@/components/dashboard/ReportsPage";
 
 import AdminLogin from "../components/internal-admin/AdminLogin"
 import AdminDashboard from "../components/internal-admin/AdminDashboard"
