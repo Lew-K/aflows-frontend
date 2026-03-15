@@ -68,7 +68,7 @@ Main Reports Page
 ------------------------------------
 */
 
-export const ReportsPage = () => {
+export default function ReportsPage() {
 
   const [dateRange, setDateRange] = useState("month");
 
