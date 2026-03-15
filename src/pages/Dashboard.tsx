@@ -8,6 +8,8 @@ import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { CustomersPage } from '@/components/dashboard/CustomersPage';
 import { InventoryPage } from '@/components/dashboard/InventoryPage';
 import { SettingsPage } from "@/components/dashboard/SettingsPage";
+import { ReportsPage } from "@/components/dashboard/ReportsPage";
+
 
 import AdminLogin from "../components/internal-admin/AdminLogin"
 import AdminDashboard from "../components/internal-admin/AdminDashboard"
@@ -25,8 +27,9 @@ const Dashboard = () => {
         <Route path="uploads" element={<UploadsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="inventory" element={<InventoryPage />} />
-        <Route path="contact" element={<DashboardContactPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="contact" element={<DashboardContactPage />} />
 
         
       </Routes>
