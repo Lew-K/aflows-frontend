@@ -8,7 +8,7 @@ type Business = {
   owner_email: string;
   plan?: string;
   status?: string;
-  created_at?: string; // Added from API
+  created_at?: string;
 };
 
 const Businesses = () => {
@@ -16,6 +16,7 @@ const Businesses = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(false); // Toggle State
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   // ---------- LOAD + PREFETCH ----------
@@ -99,6 +100,15 @@ const Businesses = () => {
   const openDashboard = (id: string) => window.open(`/dashboard?business_id=${id}`, "_blank");
   const openReceipts = (id: string) => window.open(`/internal-admin/business/${id}/receipts`, "_blank");
   const openDB = (id: string) => window.open(`/internal-admin/db/${id}`, "_blank");
+  
+  const impersonateUser = async (id: string) => {
+    try {
+      // Logic: Generate token and redirect
+      // const { token } = await adminApi.impersonate(id);
+      alert("Generating session for business: " + id);
+      window.open(`/dashboard?impersonate=${id}`, "_blank");
+    } catch (err) { alert("Impersonation failed"); }
+  };
 
   const resetPassword = async (id: string) => {
     const newPassword = prompt("Enter new password");
@@ -130,58 +140,67 @@ const Businesses = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 bg-white min-h-screen text-slate-900">
+    <div className={`p-8 space-y-6 min-h-screen transition-colors duration-200 ${darkMode ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}`}>
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-black">All Businesses</h1>
-        <button 
-          onClick={() => navigate("/internal-admin")} 
-          className="px-4 py-2 border border-slate-300 rounded hover:bg-slate-50 text-slate-700 transition-colors"
-        >
-          Back
-        </button>
+        <h1 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>All Businesses</h1>
+        
+        <div className="flex gap-4 items-center">
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            className={`p-2 rounded-lg border transition-all ${darkMode ? "bg-slate-800 border-slate-700 hover:bg-slate-700" : "bg-slate-100 border-slate-200 hover:bg-slate-200"}`}
+          >
+            {darkMode ? "☀️ Light" : "🌙 Dark"}
+          </button>
+          <button 
+            onClick={() => navigate("/internal-admin")} 
+            className={`px-4 py-2 border rounded transition-colors ${darkMode ? "border-slate-700 hover:bg-slate-800" : "border-slate-300 hover:bg-slate-50"}`}
+          >
+            Back
+          </button>
+        </div>
       </div>
 
       <input
         type="text"
         placeholder="Search business or owner email..."
-        className="border border-slate-300 rounded px-3 py-2 w-full max-w-md text-black focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+        className={`border rounded px-3 py-2 w-full max-w-md focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-slate-300 text-black"}`}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <p className="text-sm text-slate-500">
+      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
         Showing <b>{filteredBusinesses.length}</b> of {businesses.length} businesses
       </p>
 
-      <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+      <div className={`border rounded-lg overflow-hidden shadow-sm transition-colors ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className={`${darkMode ? "bg-slate-900/50" : "bg-slate-50"} border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
               <tr>
-                <th className="p-4 text-left text-xs font-semibold text-slate-600 uppercase">Business</th>
-                <th className="p-4 text-left text-xs font-semibold text-slate-600 uppercase">Owner</th>
-                <th className="p-4 text-left text-xs font-semibold text-slate-600 uppercase">Plan</th>
-                <th className="p-4 text-left text-xs font-semibold text-slate-600 uppercase">Status</th>
-                <th className="p-4 text-left text-xs font-semibold text-slate-600 uppercase">Joined</th>
-                <th className="p-4 text-right text-xs font-semibold text-slate-600 uppercase">Actions</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Business</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Owner</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Plan</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Status</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Joined</th>
+                <th className={`p-4 text-right text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className={`divide-y ${darkMode ? "divide-slate-700" : "divide-slate-200"}`}>
               {filteredBusinesses.map((b) => (
-                <tr key={b.id} className="hover:bg-blue-50/50 transition-colors group">
-                  <td className="p-4 text-sm font-medium text-slate-900">{b.name}</td>
-                  <td className="p-4 text-sm text-slate-600">{b.owner_email}</td>
-                  <td className="p-4 text-sm text-slate-600 capitalize">{b.plan || "Free"}</td>
+                <tr key={b.id} className={`transition-colors group ${darkMode ? "hover:bg-slate-700/50" : "hover:bg-blue-50/50"}`}>
+                  <td className={`p-4 text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-900"}`}>{b.name}</td>
+                  <td className={`p-4 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>{b.owner_email}</td>
+                  <td className={`p-4 text-sm capitalize ${darkMode ? "text-slate-400" : "text-slate-600"}`}>{b.plan || "Free"}</td>
                   <td className="p-4 text-sm">
                     <StatusBadge status={b.status} />
                   </td>
-                  <td className="p-4 text-sm text-slate-500">
+                  <td className={`p-4 text-sm ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
                     {formatDate(b.created_at)}
                   </td>
                   <td className="p-4 text-right relative">
                     <button
                       onClick={() => setOpenMenu(openMenu === b.id ? null : b.id)}
-                      className="inline-flex items-center justify-center w-8 h-8 text-slate-500 border border-slate-200 rounded hover:bg-white transition-all shadow-sm"
+                      className={`inline-flex items-center justify-center w-8 h-8 border rounded transition-all shadow-sm ${darkMode ? "text-slate-400 border-slate-600 hover:bg-slate-600" : "text-slate-500 border-slate-200 hover:bg-white"}`}
                     >
                       ⋮
                     </button>
@@ -189,15 +208,16 @@ const Businesses = () => {
                     {openMenu === b.id && (
                       <div 
                         ref={menuRef} 
-                        className="absolute right-4 mt-2 w-52 bg-white border border-slate-200 rounded-md shadow-xl z-[100] py-1 text-slate-700"
+                        className={`absolute right-4 mt-2 w-52 border rounded-md shadow-xl z-[100] py-1 transition-colors ${darkMode ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
                       >
-                        <button onClick={() => openDashboard(b.id)} className="block w-full text-left px-4 py-2 hover:bg-slate-100 text-sm">Open Dashboard</button>
-                        <button onClick={() => openReceipts(b.id)} className="block w-full text-left px-4 py-2 hover:bg-slate-100 text-sm">View Receipts</button>
-                        <button onClick={() => openDB(b.id)} className="block w-full text-left px-4 py-2 hover:bg-slate-100 text-sm">Database</button>
-                        <div className="border-t border-slate-100 my-1"></div>
-                        <button onClick={() => resetPassword(b.id)} className="block w-full text-left px-4 py-2 hover:bg-slate-100 text-sm text-blue-600 font-medium">Reset Password</button>
-                        <button onClick={() => deactivateBusiness(b.id)} className="block w-full text-left px-4 py-2 text-orange-600 hover:bg-orange-50 text-sm font-medium">Deactivate</button>
-                        <button onClick={() => confirmDelete(b.id)} className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 text-sm font-medium">Delete Business</button>
+                        <button onClick={() => openDashboard(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Open Dashboard</button>
+                        <button onClick={() => openReceipts(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>View Receipts</button>
+                        <button onClick={() => openDB(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Database</button>
+                        <button onClick={() => impersonateUser(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-purple-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>✨ Impersonate</button>
+                        <div className={`border-t my-1 ${darkMode ? "border-slate-700" : "border-slate-100"}`}></div>
+                        <button onClick={() => resetPassword(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-blue-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Reset Password</button>
+                        <button onClick={() => deactivateBusiness(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-orange-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Deactivate</button>
+                        <button onClick={() => confirmDelete(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-red-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Delete Business</button>
                       </div>
                     )}
                   </td>
