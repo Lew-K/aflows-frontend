@@ -11,467 +11,221 @@ type Business = {
   created_at?: string;
 };
 
-const WEBHOOKS = {
-  IMPERSONATE: "https://n8n.aflows.uk/webhook/api/admin/impersonate",
-  DELETE: "https://n8n.aflows.uk/webhook/admin/delete-business",
-  DEACTIVATE: "https://n8n.aflows.uk/webhook/admin/deactivate-business"
-};
-
-const PAGE_SIZE = 20;
-
 const Businesses = () => {
-
   const navigate = useNavigate();
-
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
-
-  const [loadingId, setLoadingId] = useState<string | null>(null);
-
-  const [page, setPage] = useState(1);
-
-  const [sortField, setSortField] = useState<keyof Business>("created_at");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-
+  const [darkMode, setDarkMode] = useState(false); // Toggle State
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const toast = (msg: string) => {
-    const el = document.createElement("div");
-    el.innerText = msg;
-    el.className =
-      "fixed bottom-5 right-5 bg-black text-white px-4 py-2 rounded shadow-lg z-50";
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
-  };
-
-  // ---------- LOAD BUSINESSES ----------
+  // ---------- LOAD + PREFETCH ----------
   useEffect(() => {
-
     let isMounted = true;
-
     const cached = sessionStorage.getItem("admin_businesses");
     if (cached) setBusinesses(JSON.parse(cached));
 
     adminApi
       .getBusinesses()
       .then((data) => {
-
         if (!isMounted) return;
-
         const list = data.businesses || [];
-
         setBusinesses(list);
-
         sessionStorage.setItem("admin_businesses", JSON.stringify(list));
       })
-      .catch(() => toast("Failed to load businesses"));
+      .catch((err) => console.error("Failed to load businesses", err));
 
-    return () => {
-      isMounted = false;
-    };
-
+    return () => { isMounted = false; };
   }, []);
 
-  // ---------- CLICK OUTSIDE ----------
+  // ---------- CLICK OUTSIDE HANDLER ----------
   useEffect(() => {
-
     const handleClickOutside = (event: MouseEvent) => {
-
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenu(null);
       }
-
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const updateBusinessState = (
-    id: string,
-    updates: Partial<Business> | null
-  ) => {
+  // ---------- SEARCH ----------
+  const filteredBusinesses = useMemo(() => {
+    const query = search.toLowerCase();
+    return businesses.filter(
+      (b) =>
+        b.name.toLowerCase().includes(query) ||
+        b.owner_email.toLowerCase().includes(query)
+    );
+  }, [search, businesses]);
 
+  // ---------- HELPERS ----------
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const StatusBadge = ({ status }: { status?: string }) => {
+    const s = status?.toLowerCase() || "active";
+    const configs: Record<string, string> = {
+      active: "bg-green-100 text-green-700 border-green-200",
+      inactive: "bg-gray-100 text-gray-700 border-gray-200",
+      deactivated: "bg-orange-100 text-orange-700 border-orange-200",
+      overdue: "bg-red-100 text-red-700 border-red-200",
+    };
+    const style = configs[s] || configs.active;
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${style}`}>
+        <span className={`mr-1.5 h-2 w-2 rounded-full ${style.split(' ')[1].replace('text', 'bg')}`}></span>
+        {s.charAt(0).toUpperCase() + s.slice(1)}
+      </span>
+    );
+  };
+
+  const updateBusinessState = (id: string, updates: Partial<Business> | null) => {
     setBusinesses((prev) => {
-
-      const newList = updates
+      const newList = updates 
         ? prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
         : prev.filter((b) => b.id !== id);
-
       sessionStorage.setItem("admin_businesses", JSON.stringify(newList));
-
       return newList;
     });
   };
 
-  // ---------- SEARCH ----------
-  const filteredBusinesses = useMemo(() => {
-
-    const q = search.toLowerCase();
-
-    return businesses.filter(
-      (b) =>
-        b.name.toLowerCase().includes(q) ||
-        b.owner_email.toLowerCase().includes(q)
-    );
-
-  }, [search, businesses]);
-
-  // ---------- SORT ----------
-  const sortedBusinesses = useMemo(() => {
-
-    const sorted = [...filteredBusinesses].sort((a, b) => {
-
-      const aVal = (a[sortField] || "").toString();
-      const bVal = (b[sortField] || "").toString();
-
-      if (sortDirection === "asc") return aVal.localeCompare(bVal);
-
-      return bVal.localeCompare(aVal);
-
-    });
-
-    return sorted;
-
-  }, [filteredBusinesses, sortField, sortDirection]);
-
-  // ---------- PAGINATION ----------
-  const totalPages = Math.ceil(sortedBusinesses.length / PAGE_SIZE);
-
-  const paginatedBusinesses = useMemo(() => {
-
-    const start = (page - 1) * PAGE_SIZE;
-
-    return sortedBusinesses.slice(start, start + PAGE_SIZE);
-
-  }, [sortedBusinesses, page]);
-
-  const toggleSort = (field: keyof Business) => {
-
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-
-  };
-
   // ---------- ACTIONS ----------
-
-  const impersonateUser = async (business: Business) => {
-
-    if (loadingId) return;
-
+  const openDashboard = (id: string) => window.open(`/dashboard?business_id=${id}`, "_blank");
+  const openReceipts = (id: string) => window.open(`/internal-admin/business/${id}/receipts`, "_blank");
+  const openDB = (id: string) => window.open(`/internal-admin/db/${id}`, "_blank");
+  
+  const impersonateUser = async (id: string) => {
     try {
-
-      setLoadingId(business.id);
-
-      const res = await fetch(WEBHOOKS.IMPERSONATE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          business_id: business.id,
-          email: business.owner_email
-        })
-      });
-
-      const data = await res.json();
-
-      if (data?.url) {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      }
-
-      toast(`Impersonation started for ${business.name}`);
-
-    } catch {
-
-      toast("Impersonation failed");
-
-    } finally {
-
-      setLoadingId(null);
-      setOpenMenu(null);
-
-    }
-
+      // Logic: Generate token and redirect
+      // const { token } = await adminApi.impersonate(id);
+      alert("Generating session for business: " + id);
+      window.open(`/dashboard?impersonate=${id}`, "_blank");
+    } catch (err) { alert("Impersonation failed"); }
   };
 
-  const toggleActivation = async (business: Business) => {
-
-    if (loadingId) return;
-
-    const inactive = ["inactive", "deactivated"].includes(
-      business.status?.toLowerCase() || ""
-    );
-
+  const resetPassword = async (id: string) => {
+    const newPassword = prompt("Enter new password");
+    if (!newPassword) return;
     try {
-
-      setLoadingId(business.id);
-
-      await fetch(WEBHOOKS.DEACTIVATE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          business_id: business.id,
-          action: inactive ? "activate" : "deactivate"
-        })
-      });
-
-      updateBusinessState(business.id, {
-        status: inactive ? "active" : "inactive"
-      });
-
-      toast(`Business ${inactive ? "activated" : "deactivated"}`);
-
-    } catch {
-
-      toast("Status update failed");
-
-    } finally {
-
-      setLoadingId(null);
+      await adminApi.resetPassword(id, newPassword);
+      alert("Password updated");
       setOpenMenu(null);
+    } catch (err) { alert("Reset failed"); }
+  };
 
-    }
-
+  const deactivateBusiness = async (id: string) => {
+    if (!confirm("Deactivate this business?")) return;
+    try {
+      await adminApi.deactivateBusiness(id);
+      updateBusinessState(id, { status: "inactive" });
+      setOpenMenu(null);
+    } catch (err) { console.error("Deactivate failed", err); }
   };
 
   const confirmDelete = async (id: string) => {
-
-    if (loadingId) return;
-
-    const password = prompt("Enter admin password");
-
+    const password = prompt("Enter admin password to delete this business");
     if (!password) return;
-
     try {
-
-      setLoadingId(id);
-
-      await fetch(WEBHOOKS.DELETE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          business_id: id,
-          admin_password: password
-        })
-      });
-
+      await adminApi.deleteBusiness(id, password);
       updateBusinessState(id, null);
-
-      toast("Business deleted");
-
-    } catch {
-
-      toast("Delete failed");
-
-    } finally {
-
-      setLoadingId(null);
       setOpenMenu(null);
-
-    }
-
+    } catch (err) { console.error("Delete failed", err); }
   };
 
-  const formatDate = (date?: string) =>
-    date
-      ? new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric"
-        })
-      : "-";
-
   return (
-    <div className={`p-8 ${darkMode ? "bg-slate-900 text-white" : "bg-white"}`}>
-      <div className="flex justify-between mb-6">
-
-        <h1 className="text-2xl font-bold">Businesses</h1>
-
-        <div className="flex gap-3">
-
-          <button
+    <div className={`p-8 space-y-6 min-h-screen transition-colors duration-200 ${darkMode ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}`}>
+      <div className="flex justify-between items-center">
+        <h1 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>All Businesses</h1>
+        
+        <div className="flex gap-4 items-center">
+          <button 
             onClick={() => setDarkMode(!darkMode)}
-            className="border px-3 py-2 rounded"
+            className={`p-2 rounded-lg border transition-all ${darkMode ? "bg-slate-800 border-slate-700 hover:bg-slate-700" : "bg-slate-100 border-slate-200 hover:bg-slate-200"}`}
           >
-            {darkMode ? "Light" : "Dark"}
+            {darkMode ? "☀️ Light" : "🌙 Dark"}
           </button>
-
-          <button
-            onClick={() => navigate("/internal-admin")}
-            className="border px-3 py-2 rounded"
+          <button 
+            onClick={() => navigate("/internal-admin")} 
+            className={`px-4 py-2 border rounded transition-colors ${darkMode ? "border-slate-700 hover:bg-slate-800" : "border-slate-300 hover:bg-slate-50"}`}
           >
             Back
           </button>
-
         </div>
-
       </div>
 
       <input
-        placeholder="Search businesses..."
-        className="border px-3 py-2 rounded mb-6 w-full max-w-md"
+        type="text"
+        placeholder="Search business or owner email..."
+        className={`border rounded px-3 py-2 w-full max-w-md focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-slate-300 text-black"}`}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <table className="w-full border rounded overflow-hidden">
+      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+        Showing <b>{filteredBusinesses.length}</b> of {businesses.length} businesses
+      </p>
 
-        <thead className="bg-slate-100 text-xs uppercase">
-          <tr>
-
-            <th
-              onClick={() => toggleSort("name")}
-              className="p-4 cursor-pointer"
-            >
-              Business
-            </th>
-
-            <th
-              onClick={() => toggleSort("owner_email")}
-              className="p-4 cursor-pointer"
-            >
-              Owner
-            </th>
-
-            <th
-              onClick={() => toggleSort("status")}
-              className="p-4 cursor-pointer"
-            >
-              Status
-            </th>
-
-            <th
-              onClick={() => toggleSort("created_at")}
-              className="p-4 cursor-pointer"
-            >
-              Joined
-            </th>
-
-            <th className="p-4 text-right">Actions</th>
-
-          </tr>
-        </thead>
-
-        <tbody>
-
-          {paginatedBusinesses.map((b) => {
-
-            const inactive = ["inactive", "deactivated"].includes(
-              b.status?.toLowerCase() || ""
-            );
-
-            return (
-
-              <tr key={b.id} className="border-t">
-
-                <td className="p-4">{b.name}</td>
-
-                <td className="p-4">{b.owner_email}</td>
-
-                <td className="p-4 capitalize">{b.status}</td>
-
-                <td className="p-4">{formatDate(b.created_at)}</td>
-
-                <td className="p-4 text-right relative">
-
-                  <button
-                    onClick={() =>
-                      setOpenMenu(openMenu === b.id ? null : b.id)
-                    }
-                    className="border px-2 py-1 rounded"
-                  >
-                    ⋮
-                  </button>
-
-                  {openMenu === b.id && (
-
-                    <div
-                      ref={menuRef}
-                      className="absolute right-0 mt-2 w-52 bg-white border rounded shadow-xl"
-                    >
-
-                      <button
-                        disabled={loadingId === b.id}
-                        onClick={() => impersonateUser(b)}
-                        className="block w-full px-4 py-2 text-left text-purple-600"
-                      >
-                        {loadingId === b.id ? "Loading..." : "Impersonate"}
-                      </button>
-
-                      <button
-                        disabled={loadingId === b.id}
-                        onClick={() => toggleActivation(b)}
-                        className={`block w-full px-4 py-2 text-left ${
-                          inactive ? "text-green-600" : "text-orange-600"
-                        }`}
-                      >
-                        {loadingId === b.id
-                          ? "Processing..."
-                          : inactive
-                          ? "Activate Business"
-                          : "Deactivate Business"}
-                      </button>
-
-                      <button
-                        disabled={loadingId === b.id}
-                        onClick={() => confirmDelete(b.id)}
-                        className="block w-full px-4 py-2 text-left text-red-600"
-                      >
-                        {loadingId === b.id ? "Deleting..." : "Delete Business"}
-                      </button>
-
-                    </div>
-
-                  )}
-
-                </td>
-
+      <div className={`border rounded-lg overflow-hidden shadow-sm transition-colors ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead className={`${darkMode ? "bg-slate-900/50" : "bg-slate-50"} border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+              <tr>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Business</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Owner</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Plan</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Status</th>
+                <th className={`p-4 text-left text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Joined</th>
+                <th className={`p-4 text-right text-xs font-semibold uppercase ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Actions</th>
               </tr>
+            </thead>
+            <tbody className={`divide-y ${darkMode ? "divide-slate-700" : "divide-slate-200"}`}>
+              {filteredBusinesses.map((b) => (
+                <tr key={b.id} className={`transition-colors group ${darkMode ? "hover:bg-slate-700/50" : "hover:bg-blue-50/50"}`}>
+                  <td className={`p-4 text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-900"}`}>{b.name}</td>
+                  <td className={`p-4 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>{b.owner_email}</td>
+                  <td className={`p-4 text-sm capitalize ${darkMode ? "text-slate-400" : "text-slate-600"}`}>{b.plan || "Free"}</td>
+                  <td className="p-4 text-sm">
+                    <StatusBadge status={b.status} />
+                  </td>
+                  <td className={`p-4 text-sm ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
+                    {formatDate(b.created_at)}
+                  </td>
+                  <td className="p-4 text-right relative">
+                    <button
+                      onClick={() => setOpenMenu(openMenu === b.id ? null : b.id)}
+                      className={`inline-flex items-center justify-center w-8 h-8 border rounded transition-all shadow-sm ${darkMode ? "text-slate-400 border-slate-600 hover:bg-slate-600" : "text-slate-500 border-slate-200 hover:bg-white"}`}
+                    >
+                      ⋮
+                    </button>
 
-            );
-
-          })}
-
-        </tbody>
-
-      </table>
-
-      <div className="flex justify-between mt-6">
-
-        <button
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          className="border px-3 py-1 rounded"
-        >
-          Previous
-        </button>
-
-        <span>
-          Page {page} / {totalPages}
-        </span>
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-          className="border px-3 py-1 rounded"
-        >
-          Next
-        </button>
-
+                    {openMenu === b.id && (
+                      <div 
+                        ref={menuRef} 
+                        className={`absolute right-4 mt-2 w-52 border rounded-md shadow-xl z-[100] py-1 transition-colors ${darkMode ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                      >
+                        <button onClick={() => openDashboard(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Open Dashboard</button>
+                        <button onClick={() => openReceipts(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>View Receipts</button>
+                        <button onClick={() => openDB(b.id)} className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Database</button>
+                        <button onClick={() => impersonateUser(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-purple-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>✨ Impersonate</button>
+                        <div className={`border-t my-1 ${darkMode ? "border-slate-700" : "border-slate-100"}`}></div>
+                        <button onClick={() => resetPassword(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-blue-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Reset Password</button>
+                        <button onClick={() => deactivateBusiness(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-orange-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Deactivate</button>
+                        <button onClick={() => confirmDelete(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-red-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Delete Business</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
