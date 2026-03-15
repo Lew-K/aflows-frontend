@@ -27,8 +27,8 @@ const Dashboard = () => {
         <Route path="uploads" element={<UploadsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="inventory" element={<InventoryPage />} />
-        <Route path="settings" element={<SettingsPage />} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="contact" element={<DashboardContactPage />} />
 
         
