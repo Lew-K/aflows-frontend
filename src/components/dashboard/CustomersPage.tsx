@@ -150,7 +150,7 @@ export const CustomersPage = () => {
                       <p className="text-[10px] text-muted-foreground uppercase">Total Spent</p>
                       <p className="text-lg font-bold">KES {c.total_spent.toLocaleString()}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">{c.transactions} visits</p>
+                    <p className="text-xs text-muted-foreground">{c.transactions} transactions</p>
                   </div>
                 </CardContent>
               </Card>
