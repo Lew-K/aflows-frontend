@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminApi } from "@/lib/adminApi";
-import axios from "axios"; // Ensure axios is installed: npm install axios
+import axios from "axios";
 
 type Business = {
   id: string;
@@ -18,193 +18,351 @@ const WEBHOOKS = {
   DEACTIVATE: "https://n8n.aflows.uk/webhook/admin/deactivate-business"
 };
 
+const PAGE_SIZE = 20;
+
 const Businesses = () => {
   const navigate = useNavigate();
+
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const [page, setPage] = useState(1);
+
+  const [sortField, setSortField] = useState<keyof Business>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // ---------- LOAD + PREFETCH ----------
+  const toast = (msg: string) => {
+    const el = document.createElement("div");
+    el.innerText = msg;
+    el.className =
+      "fixed bottom-5 right-5 bg-black text-white px-4 py-2 rounded shadow-lg z-50";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  };
+
+  // ---------- LOAD BUSINESSES ----------
   useEffect(() => {
     let isMounted = true;
+
     const cached = sessionStorage.getItem("admin_businesses");
     if (cached) setBusinesses(JSON.parse(cached));
 
-    adminApi.getBusinesses()
+    adminApi
+      .getBusinesses()
       .then((data) => {
         if (!isMounted) return;
+
         const list = data.businesses || [];
         setBusinesses(list);
+
         sessionStorage.setItem("admin_businesses", JSON.stringify(list));
       })
-      .catch((err) => console.error("Failed to load businesses", err));
+      .catch(() => toast("Failed to load businesses"));
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // ---------- CLICK OUTSIDE HANDLER ----------
+  // ---------- CLICK OUTSIDE ----------
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenu(null);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const updateBusinessState = (id: string, updates: Partial<Business> | null) => {
     setBusinesses((prev) => {
-      const newList = updates 
+      const newList = updates
         ? prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
         : prev.filter((b) => b.id !== id);
+
       sessionStorage.setItem("admin_businesses", JSON.stringify(newList));
+
       return newList;
     });
   };
 
-  // ---------- ACTIONS ----------
-  
-  const impersonateUser = async (business: Business) => {
-    try {
-      const response = await axios.post(WEBHOOKS.IMPERSONATE, { 
-        business_id: business.id,
-        email: business.owner_email 
-      });
-      // Logic assumes webhook returns a redirect URL or a temp token
-      if (response.data?.url) {
-        window.open(response.data.url, "_blank");
-      } else {
-        alert("Impersonation session triggered for " + business.name);
-      }
-    } catch (err) { alert("Impersonation failed"); }
-  };
-
-  const toggleActivation = async (business: Business) => {
-    const isDeactivated = ["deactivated", "inactive"].includes(business.status?.toLowerCase() || "");
-    const actionLabel = isDeactivated ? "activate" : "deactivate";
-    
-    if (!confirm(`Are you sure you want to ${actionLabel} this business?`)) return;
-
-    try {
-      await axios.post(WEBHOOKS.DEACTIVATE, { 
-        business_id: business.id, 
-        action: actionLabel // sending the context to your n8n workflow
-      });
-      
-      const newStatus = isDeactivated ? "active" : "inactive";
-      updateBusinessState(business.id, { status: newStatus });
-      setOpenMenu(null);
-      alert(`Business successfully ${isDeactivated ? 'activated' : 'deactivated'}.`);
-    } catch (err) { alert("Status update failed"); }
-  };
-
-  const confirmDelete = async (id: string) => {
-    const password = prompt("Enter admin password to delete this business");
-    if (!password) return;
-    try {
-      await axios.post(WEBHOOKS.DELETE, { business_id: id, admin_password: password });
-      updateBusinessState(id, null);
-      setOpenMenu(null);
-      alert("Business deleted permanently.");
-    } catch (err) { alert("Delete failed. Check password or connection."); }
-  };
-
-  // Helper formatting and UI logic remains the same...
+  // ---------- SEARCH ----------
   const filteredBusinesses = useMemo(() => {
-    const query = search.toLowerCase();
-    return businesses.filter(b => 
-      b.name.toLowerCase().includes(query) || b.owner_email.toLowerCase().includes(query)
+    const q = search.toLowerCase();
+
+    return businesses.filter(
+      (b) =>
+        b.name.toLowerCase().includes(q) ||
+        b.owner_email.toLowerCase().includes(q)
     );
   }, [search, businesses]);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  // ---------- SORT ----------
+  const sortedBusinesses = useMemo(() => {
+    const sorted = [...filteredBusinesses].sort((a, b) => {
+      const aVal = (a[sortField] || "").toString();
+      const bVal = (b[sortField] || "").toString();
+
+      if (sortDirection === "asc") return aVal.localeCompare(bVal);
+      return bVal.localeCompare(aVal);
+    });
+
+    return sorted;
+  }, [filteredBusinesses, sortField, sortDirection]);
+
+  // ---------- PAGINATION ----------
+  const totalPages = Math.ceil(sortedBusinesses.length / PAGE_SIZE);
+
+  const paginatedBusinesses = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return sortedBusinesses.slice(start, start + PAGE_SIZE);
+  }, [sortedBusinesses, page]);
+
+  // ---------- SORT HANDLER ----------
+  const toggleSort = (field: keyof Business) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
   };
 
-  const StatusBadge = ({ status }: { status?: string }) => {
-    const s = status?.toLowerCase() || "active";
-    const configs: Record<string, string> = {
-      active: "bg-green-100 text-green-700 border-green-200",
-      inactive: "bg-gray-100 text-gray-700 border-gray-200",
-      deactivated: "bg-orange-100 text-orange-700 border-orange-200",
-    };
-    const style = configs[s] || configs.active;
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${style}`}>
-        {s.charAt(0).toUpperCase() + s.slice(1)}
-      </span>
+  // ---------- ACTIONS ----------
+
+  const impersonateUser = async (business: Business) => {
+    if (loadingId) return;
+
+    try {
+      setLoadingId(business.id);
+
+      const res = await axios.post(WEBHOOKS.IMPERSONATE, {
+        business_id: business.id,
+        email: business.owner_email
+      });
+
+      if (res.data?.url) {
+        window.open(res.data.url, "_blank", "noopener,noreferrer");
+      }
+
+      toast(`Impersonation started for ${business.name}`);
+    } catch {
+      toast("Impersonation failed");
+    } finally {
+      setLoadingId(null);
+      setOpenMenu(null);
+    }
+  };
+
+  const toggleActivation = async (business: Business) => {
+    if (loadingId) return;
+
+    const inactive = ["inactive", "deactivated"].includes(
+      business.status?.toLowerCase() || ""
     );
+
+    try {
+      setLoadingId(business.id);
+
+      await axios.post(WEBHOOKS.DEACTIVATE, {
+        business_id: business.id,
+        action: inactive ? "activate" : "deactivate"
+      });
+
+      updateBusinessState(business.id, {
+        status: inactive ? "active" : "inactive"
+      });
+
+      toast(`Business ${inactive ? "activated" : "deactivated"}`);
+    } catch {
+      toast("Status update failed");
+    } finally {
+      setLoadingId(null);
+      setOpenMenu(null);
+    }
   };
 
+  const confirmDelete = async (id: string) => {
+    if (loadingId) return;
+
+    const password = prompt("Enter admin password");
+
+    if (!password) return;
+
+    try {
+      setLoadingId(id);
+
+      await axios.post(WEBHOOKS.DELETE, {
+        business_id: id,
+        admin_password: password
+      });
+
+      updateBusinessState(id, null);
+
+      toast("Business deleted");
+    } catch {
+      toast("Delete failed");
+    } finally {
+      setLoadingId(null);
+      setOpenMenu(null);
+    }
+  };
+
+  const formatDate = (date?: string) =>
+    date
+      ? new Date(date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        })
+      : "-";
+
+  // ---------- UI ----------
   return (
-    <div className={`p-8 space-y-6 min-h-screen ${darkMode ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}`}>
-      {/* Header & Search */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">All Businesses</h1>
-        <div className="flex gap-4">
-          <button onClick={() => setDarkMode(!darkMode)} className="p-2 border rounded">{darkMode ? "☀️ Light" : "🌙 Dark"}</button>
-          <button onClick={() => navigate("/internal-admin")} className="px-4 py-2 border rounded">Back</button>
+    <div className={`p-8 ${darkMode ? "bg-slate-900 text-white" : "bg-white"}`}>
+      <div className="flex justify-between mb-6">
+        <h1 className="text-2xl font-bold">Businesses</h1>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="border px-3 py-2 rounded"
+          >
+            {darkMode ? "Light" : "Dark"}
+          </button>
+
+          <button
+            onClick={() => navigate("/internal-admin")}
+            className="border px-3 py-2 rounded"
+          >
+            Back
+          </button>
         </div>
       </div>
 
-      <input 
-        type="text" 
-        placeholder="Search..." 
-        className={`border rounded px-3 py-2 w-full max-w-md ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white"}`}
+      <input
+        placeholder="Search businesses..."
+        className="border px-3 py-2 rounded mb-6 w-full max-w-md"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* Table */}
-      <div className={`border rounded-lg overflow-hidden ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
-        <table className="w-full">
-          <thead className={darkMode ? "bg-slate-900/50" : "bg-slate-50"}>
-            <tr className="text-left text-xs font-semibold uppercase opacity-70">
-              <th className="p-4">Business</th>
-              <th className="p-4">Owner</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Joined</th>
-              <th className="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-700/20">
-            {filteredBusinesses.map((b) => {
-              const isDeactivated = ["deactivated", "inactive"].includes(b.status?.toLowerCase() || "");
-              
-              return (
-                <tr key={b.id} className="hover:bg-blue-50/10">
-                  <td className="p-4 text-sm font-medium">{b.name}</td>
-                  <td className="p-4 text-sm opacity-80">{b.owner_email}</td>
-                  <td className="p-4"><StatusBadge status={b.status} /></td>
-                  <td className="p-4 text-sm opacity-60">{formatDate(b.created_at)}</td>
-                  <td className="p-4 text-right relative">
-                    <button onClick={() => setOpenMenu(openMenu === b.id ? null : b.id)} className="px-2 py-1 border rounded">⋮</button>
-                    {openMenu === b.id && (
-                      <div ref={menuRef} className={`absolute right-4 mt-2 w-52 border rounded shadow-xl z-[100] py-1 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white"}`}>
-                        <button onClick={() => impersonateUser(b)} className="block w-full text-left px-4 py-2 text-sm text-purple-500 hover:bg-slate-100/10">✨ Impersonate</button>
-                        <div className="border-t border-slate-700/20 my-1"></div>
-                        
-                        {/* Dynamic Toggle Button */}
-                        <button 
-                          onClick={() => toggleActivation(b)} 
-                          className={`block w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-100/10 ${isDeactivated ? "text-green-500" : "text-orange-600"}`}
-                        >
-                          {isDeactivated ? "Activate Business" : "Deactivate Business"}
-                        </button>
+      <table className="w-full border rounded overflow-hidden">
+        <thead className="bg-slate-100 text-xs uppercase">
+          <tr>
+            <th onClick={() => toggleSort("name")} className="p-4 cursor-pointer">
+              Business
+            </th>
+            <th onClick={() => toggleSort("owner_email")} className="p-4 cursor-pointer">
+              Owner
+            </th>
+            <th onClick={() => toggleSort("status")} className="p-4 cursor-pointer">
+              Status
+            </th>
+            <th onClick={() => toggleSort("created_at")} className="p-4 cursor-pointer">
+              Joined
+            </th>
+            <th className="p-4 text-right">Actions</th>
+          </tr>
+        </thead>
 
-                        <button onClick={() => confirmDelete(b.id)} className="block w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-slate-100/10">Delete Business</button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <tbody>
+          {paginatedBusinesses.map((b) => {
+            const inactive = ["inactive", "deactivated"].includes(
+              b.status?.toLowerCase() || ""
+            );
+
+            return (
+              <tr key={b.id} className="border-t">
+                <td className="p-4">{b.name}</td>
+                <td className="p-4">{b.owner_email}</td>
+                <td className="p-4 capitalize">{b.status}</td>
+                <td className="p-4">{formatDate(b.created_at)}</td>
+
+                <td className="p-4 text-right relative">
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === b.id ? null : b.id)
+                    }
+                    className="border px-2 py-1 rounded"
+                  >
+                    ⋮
+                  </button>
+
+                  {openMenu === b.id && (
+                    <div
+                      ref={menuRef}
+                      className="absolute right-0 mt-2 w-52 bg-white border rounded shadow-xl"
+                    >
+                      <button
+                        disabled={loadingId === b.id}
+                        onClick={() => impersonateUser(b)}
+                        className="block w-full px-4 py-2 text-left text-purple-600"
+                      >
+                        {loadingId === b.id ? "Loading..." : "Impersonate"}
+                      </button>
+
+                      <button
+                        disabled={loadingId === b.id}
+                        onClick={() => toggleActivation(b)}
+                        className={`block w-full px-4 py-2 text-left ${
+                          inactive ? "text-green-600" : "text-orange-600"
+                        }`}
+                      >
+                        {loadingId === b.id
+                          ? "Processing..."
+                          : inactive
+                          ? "Activate Business"
+                          : "Deactivate Business"}
+                      </button>
+
+                      <button
+                        disabled={loadingId === b.id}
+                        onClick={() => confirmDelete(b.id)}
+                        className="block w-full px-4 py-2 text-left text-red-600"
+                      >
+                        {loadingId === b.id ? "Deleting..." : "Delete Business"}
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+
+      <div className="flex justify-between mt-6">
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+          className="border px-3 py-1 rounded"
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {page} / {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+          className="border px-3 py-1 rounded"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
