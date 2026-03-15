@@ -14,6 +14,7 @@ import {
   X,
   Package,
   Settings,
+  FileBarChart,
   Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,11 +26,13 @@ const navItems = [
   { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales' },
   { icon: Package, label: 'Inventory', path: '/dashboard/inventory' },
   { icon: Users, label: 'Customers', path: '/dashboard/customers' },
+
+  { icon: FileBarChart, label: 'Reports', path: '/dashboard/reports' },
+
   { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations' },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads' },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact' },
   { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
-
 ];
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
