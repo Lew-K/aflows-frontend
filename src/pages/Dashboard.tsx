@@ -7,7 +7,7 @@ import { OperationsPage } from '@/components/dashboard/OperationsPage';
 import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { CustomersPage } from '@/components/dashboard/CustomersPage';
 import { InventoryPage } from '@/components/dashboard/InventoryPage';
-import { SettingsPage } from "@/pages/SettingsPage";
+import { SettingsPage } from "@/components/dashboard/SettingsPage";
 
 import AdminLogin from "../components/internal-admin/AdminLogin"
 import AdminDashboard from "../components/internal-admin/AdminDashboard"
@@ -26,7 +26,7 @@ const Dashboard = () => {
         <Route path="customers" element={<CustomersPage />} />
         <Route path="inventory" element={<InventoryPage />} />
         <Route path="contact" element={<DashboardContactPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
 
         
       </Routes>
