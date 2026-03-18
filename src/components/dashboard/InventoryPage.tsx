@@ -17,8 +17,60 @@ export const InventoryPage = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
+  // NEW: modal state (safe, not used yet if you haven’t built modals)
+  const [openAddProduct, setOpenAddProduct] = useState(false);
+  const [openAddStock, setOpenAddStock] = useState(false);
+
+  /* ---------------- LOADING STATE (IMPROVED) ---------------- */
+
   if (loading) {
-    return <p className="text-muted-foreground">Loading inventory...</p>;
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-1/3" />
+        <div className="grid grid-cols-3 gap-4">
+          <div className="h-24 bg-gray-200 rounded" />
+          <div className="h-24 bg-gray-200 rounded" />
+          <div className="h-24 bg-gray-200 rounded" />
+        </div>
+        <div className="h-64 bg-gray-200 rounded" />
+      </div>
+    );
+  }
+
+  /* ---------------- EMPTY STATE (NEW) ---------------- */
+
+  if (!loading && items.length === 0) {
+    return (
+      <Card>
+        <CardContent className="text-center py-10 space-y-4">
+          <Package className="mx-auto w-10 h-10 text-muted-foreground" />
+
+          <h2 className="text-lg font-semibold">
+            No inventory yet
+          </h2>
+
+          <p className="text-sm text-muted-foreground">
+            Start by adding products manually or uploading a file
+          </p>
+
+          <div className="flex justify-center gap-2">
+            <Button onClick={() => setOpenAddProduct(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={() => setOpenAddStock(true)}
+              disabled
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Stock
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   /* ---------------- KPI CALCULATIONS ---------------- */
@@ -30,7 +82,7 @@ export const InventoryPage = () => {
   );
 
   const inventoryValue = items.reduce(
-    (sum, item) => sum + item.stock * item.cost_price,
+    (sum, item) => sum + item.stock * (item.cost_price || 0),
     0
   );
 
@@ -71,7 +123,7 @@ export const InventoryPage = () => {
   return (
     <div className="space-y-6">
 
-      {/* PAGE HEADER */}
+      {/* HEADER */}
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -85,12 +137,16 @@ export const InventoryPage = () => {
         </div>
 
         <div className="flex gap-2">
-          <Button>
+          <Button onClick={() => setOpenAddProduct(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
 
-          <Button variant="secondary">
+          <Button
+            variant="secondary"
+            onClick={() => setOpenAddStock(true)}
+            disabled={items.length === 0}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Stock
           </Button>
@@ -105,7 +161,6 @@ export const InventoryPage = () => {
           <CardHeader>
             <CardTitle className="text-sm">Total Products</CardTitle>
           </CardHeader>
-
           <CardContent>
             <p className="text-2xl font-bold">{totalProducts}</p>
           </CardContent>
@@ -115,7 +170,6 @@ export const InventoryPage = () => {
           <CardHeader>
             <CardTitle className="text-sm">Low Stock Items</CardTitle>
           </CardHeader>
-
           <CardContent>
             <p className="text-2xl font-bold text-yellow-600">
               {lowStockItems.length}
@@ -127,7 +181,6 @@ export const InventoryPage = () => {
           <CardHeader>
             <CardTitle className="text-sm">Inventory Value</CardTitle>
           </CardHeader>
-
           <CardContent>
             <p className="text-2xl font-bold">
               KES {inventoryValue.toLocaleString()}
@@ -150,10 +203,7 @@ export const InventoryPage = () => {
 
           <CardContent className="space-y-2">
             {lowStockItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between text-sm"
-              >
+              <div key={item.id} className="flex justify-between text-sm">
                 <span>{item.name}</span>
                 <span className="font-semibold">
                   {item.stock} left
@@ -191,7 +241,7 @@ export const InventoryPage = () => {
 
       </div>
 
-      {/* INVENTORY TABLE */}
+      {/* TABLE */}
 
       <Card>
         <CardHeader>
@@ -217,6 +267,7 @@ export const InventoryPage = () => {
                   <th>Inventory Value</th>
                   <th>Status</th>
                   <th>Last Updated</th>
+                  <th>Actions</th> {/* NEW */}
                 </tr>
               </thead>
 
@@ -233,10 +284,10 @@ export const InventoryPage = () => {
 
                       <td>{item.stock}</td>
 
-                      <td>KES {item.cost_price}</td>
+                      <td>KES {item.cost_price || 0}</td>
 
                       <td>
-                        KES {(item.stock * item.cost_price).toLocaleString()}
+                        KES {(item.stock * (item.cost_price || 0)).toLocaleString()}
                       </td>
 
                       <td>
@@ -266,6 +317,17 @@ export const InventoryPage = () => {
                           : "—"}
                       </td>
 
+                      {/* NEW ACTION BUTTON */}
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setOpenAddStock(true)}
+                        >
+                          Add Stock
+                        </Button>
+                      </td>
+
                     </tr>
                   );
                 })}
@@ -276,6 +338,12 @@ export const InventoryPage = () => {
 
         </CardContent>
       </Card>
+
+      {/* MODALS PLACEHOLDER (SAFE) */}
+      {/* You can plug your modals here later */}
+      {/* {openAddProduct && <AddProductModal ... />} */}
+      {/* {openAddStock && <AddStockModal ... />} */}
+
     </div>
   );
 };
