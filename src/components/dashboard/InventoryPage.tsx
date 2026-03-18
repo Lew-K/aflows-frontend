@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // Added a basic Dialog/Modal import assumption from Shadcn
-// import { AddProductModal } from "./modals/AddProductModal"; 
-// import { AddStockModal } from "./modals/AddStockModal";
+import { AddProductModal } from "./modals/AddProductModal"; 
+import { AddStockModal } from "./modals/AddStockModal";
+import { useAuth } from '@/contexts/AuthContext';
+
 
 import {
   Package,
@@ -15,7 +17,9 @@ import {
 } from "lucide-react";
 
 export const InventoryPage = () => {
-  const { items = [], loading, refresh } = useInventory(); // Added refresh for business logic
+  const { user } = useAuth();
+  const businessId = user?.businessId;
+  const { items = [], loading, refresh } = useInventory(businessId); // Added refresh for business logic
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -53,7 +57,7 @@ export const InventoryPage = () => {
     let filtered = [...items];
     if (search) {
       filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        (item.name || "").toLowerCase().includes(search.toLowerCase())
       );
     }
     if (filter === "low") {
@@ -108,7 +112,16 @@ export const InventoryPage = () => {
 
         <div className="flex gap-2">
           <Button onClick={() => setOpenAddProduct(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Add Product
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
+        
+          <Button 
+            variant="secondary"
+            onClick={() => setSelectedItemForStock({})} // empty = generic stock add
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Stock
           </Button>
         </div>
       </div>
@@ -199,19 +212,29 @@ export const InventoryPage = () => {
         </CardContent>
       </Card>
 
-      {/* BUSINESS LOGIC READY MODALS */}
-      {/* Example logic:
-          <AddProductModal 
-            isOpen={openAddProduct} 
-            onClose={() => setOpenAddProduct(false)} 
-            onSuccess={refresh}
-          />
-          <AddStockModal 
-            item={selectedItemForStock} 
-            onClose={() => setSelectedItemForStock(null)} 
-            onSuccess={refresh}
-          />
-      */}
+      {/* MODALS */}
+
+      {openAddProduct && (
+        <AddProductModal
+          isOpen={openAddProduct}
+          onClose={() => setOpenAddProduct(false)}
+          onSuccess={() => {
+            setOpenAddProduct(false);
+            refresh();
+          }}
+        />
+      )}
+      
+      {selectedItemForStock !== null && (
+        <AddStockModal
+          item={selectedItemForStock}
+          onClose={() => setSelectedItemForStock(null)}
+          onSuccess={() => {
+            setSelectedItemForStock(null);
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 };
