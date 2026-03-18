@@ -6,12 +6,21 @@ export const useInventory = (businessId: string) => {
 
   const fetchInventory = async () => {
     setLoading(true);
-
-    const res = await fetch(`/api/inventory?businessId=${businessId}`);
-    const data = await res.json();
-
-    setItems(data);
-    setLoading(false);
+  
+    try {
+      const res = await fetch(
+        `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
+      );
+  
+      const data = await res.json();
+  
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch inventory:", err);
+      setItems([]);
+    } finally {
+      setLoading(false); // 🚨 ensures no infinite loading
+    }
   };
 
   useEffect(() => {
