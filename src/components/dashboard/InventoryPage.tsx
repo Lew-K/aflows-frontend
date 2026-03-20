@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // Added a basic Dialog/Modal import assumption from Shadcn
-// import { AddProductModal } from "./modals/AddProductModal"; 
+import { AddProductModal } from "./modals/AddProductModal"; 
 // import { AddStockModal } from "./modals/AddStockModal";
 import { useAuth } from '@/contexts/AuthContext';
 
