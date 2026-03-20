@@ -57,14 +57,14 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }: Props) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4 shadow-lg">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-background border border-border rounded-lg w-full max-w-md p-6 space-y-4 shadow-lg">
 
-        <h2 className="text-lg font-semibold">Add Product</h2>
+        <h2 className="text-foreground text-lg font-semibold">Add Product</h2>
 
         {/* Product Name */}
         <div className="space-y-1">
-          <label className="text-sm font-medium">Product Name</label>
+          <label className="text-muted-foreground text-sm font-medium">Product Name</label>
           <Input
             placeholder="e.g. Cooking Gas 6kg"
             value={name}
