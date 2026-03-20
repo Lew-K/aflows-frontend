@@ -19,7 +19,10 @@ import {
 export const InventoryPage = () => {
   const { user } = useAuth();
   const businessId = user?.businessId;
-  const { items = [], loading, refresh } = useInventory(businessId); // Added refresh for business logic
+  if (!user) {
+    return <p className="p-6">Loading user...</p>;
+  }
+  const { items = [], loading, refresh } = useInventory(businessId || ""); // Added refresh for business logic
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -28,21 +31,6 @@ export const InventoryPage = () => {
   const [openAddProduct, setOpenAddProduct] = useState(false);
   const [selectedItemForStock, setSelectedItemForStock] = useState(null); // Track WHICH item to add stock to
 
-  /* ---------------- LOADING STATE ---------------- */
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6 animate-pulse">
-        <div className="h-10 bg-gray-200 rounded w-1/3" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-24 bg-gray-200 rounded" />)}
-        </div>
-        <div className="h-64 bg-gray-200 rounded" />
-      </div>
-    );
-  }
-
-  /* ---------------- KPI CALCULATIONS ---------------- */
-  // Moved above Empty State so we can use them in the UI logic
   const totalProducts = items.length;
   const lowStockItems = items.filter(
     (item) => item.stock <= (item.low_stock_threshold || 5)
@@ -68,6 +56,23 @@ export const InventoryPage = () => {
     }
     return filtered;
   }, [items, search, filter]);
+
+  /* ---------------- LOADING STATE ---------------- */
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6 animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-1/3" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <div key={i} className="h-24 bg-gray-200 rounded" />)}
+        </div>
+        <div className="h-64 bg-gray-200 rounded" />
+      </div>
+    );
+  }
+
+  /* ---------------- KPI CALCULATIONS ---------------- */
+  // Moved above Empty State so we can use them in the UI logic
+  
 
   const getStatus = (item) => {
     if (item.stock <= 0) return "Out of Stock";
