@@ -83,21 +83,35 @@ export const InventoryPage = () => {
   /* ---------------- EMPTY STATE ---------------- */
   if (items.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="w-full max-w-md">
-          <CardContent className="text-center py-10 space-y-4">
-            <Package className="mx-auto w-12 h-12 text-muted-foreground opacity-50" />
-            <h2 className="text-xl font-semibold">No inventory yet</h2>
-            <p className="text-sm text-muted-foreground">
-              Your warehouse is empty. Start by adding your first product.
-            </p>
-            <Button onClick={() => setOpenAddProduct(true)} className="w-full">
-              <Plus className="w-4 h-4 mr-2" />
-              Add First Product
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="w-full max-w-md">
+            <CardContent className="text-center py-10 space-y-4">
+              <Package className="mx-auto w-12 h-12 text-muted-foreground opacity-50" />
+              <h2 className="text-xl font-semibold">No inventory yet</h2>
+              <p className="text-sm text-muted-foreground">
+                Your warehouse is empty. Start by adding your first product.
+              </p>
+              <Button onClick={() => setOpenAddProduct(true)} className="w-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Product
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+  
+        {/* ✅ ADD THIS RIGHT HERE */}
+        {openAddProduct && (
+          <AddProductModal
+            isOpen={openAddProduct}
+            onClose={() => setOpenAddProduct(false)}
+            onSuccess={() => {
+              setOpenAddProduct(false);
+              refresh();
+            }}
+          />
+        )}
+      </>
     );
   }
 
@@ -219,7 +233,7 @@ export const InventoryPage = () => {
 
       {/* MODALS */}
 
-      {openAddProduct && (
+        {/*{openAddProduct && (
         <AddProductModal
           isOpen={openAddProduct}
           onClose={() => setOpenAddProduct(false)}
@@ -230,7 +244,7 @@ export const InventoryPage = () => {
         />
       )}
       
-      {/*{selectedItemForStock !== null && (
+    {selectedItemForStock !== null && (
         <AddStockModal
           item={selectedItemForStock}
           onClose={() => setSelectedItemForStock(null)}
