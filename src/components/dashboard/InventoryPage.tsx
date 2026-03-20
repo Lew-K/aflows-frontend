@@ -219,7 +219,7 @@ export const InventoryPage = () => {
 
       {/* MODALS */}
 
-      {/*{openAddProduct && (
+      {openAddProduct && (
         <AddProductModal
           isOpen={openAddProduct}
           onClose={() => setOpenAddProduct(false)}
@@ -230,7 +230,7 @@ export const InventoryPage = () => {
         />
       )}
       
-      {selectedItemForStock !== null && (
+      {/*{selectedItemForStock !== null && (
         <AddStockModal
           item={selectedItemForStock}
           onClose={() => setSelectedItemForStock(null)}
