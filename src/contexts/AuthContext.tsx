@@ -97,11 +97,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [accessToken]);
 
-  const login = (newAccessToken: string, newRefreshToken: string, newUser: User) => {
+  // const login = (newAccessToken: string, newRefreshToken: string, newUser: User) => {
+  //   localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+  //   localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+  //   localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+
+  //   setAccessToken(newAccessToken);
+  //   setRefreshToken(newRefreshToken);
+  //   setUser(newUser);
+  // };
+
+  const login = async (newAccessToken: string, newRefreshToken: string, newUser: User) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
-
+  
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
     setUser(newUser);
