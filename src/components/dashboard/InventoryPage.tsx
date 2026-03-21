@@ -197,6 +197,7 @@ export const InventoryPage = () => {
         {selectedItemForStock && (
           <AddStockModal
             item={selectedItemForStock}
+            items={items}
             onClose={() => setSelectedItemForStock(null)}
             onSuccess={() => {
               setSelectedItemForStock(null);
