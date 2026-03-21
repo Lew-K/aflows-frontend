@@ -22,6 +22,8 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
   useEffect(() => {
     if (item?.id) {
       setSelectedItemId(item.id);
+    } else {
+      setSelectedItemId("");
     }
   }, [item]);
 
@@ -75,7 +77,7 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
         </h2>
 
         {/* PRODUCT SELECT (only if not pre-selected) */}
-        {!item && (
+        {!item?.id && (
           <div className="space-y-1">
             <label className="text-sm font-medium">Product</label>
             <select
