@@ -1,99 +1,54 @@
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/apiFetch";
-
-interface RevenueSummary {
-  totalRevenue: number;
-  previousRevenue: number;
-  percentageChange: number;
-  trend: "up" | "down" | "neutral";
-}
-
-interface DailyRevenue {
-  date: string;
-  revenue: number;
-}
-
-interface TopSellingItem {
-  item: string;
-  metrics: {
-    quantity: number;
-    revenue: number;
-  };
-}
-
-interface PaymentMethod {
-  method: string;
-  metrics: {
-    revenue: number;
-    transactionCount: number;
-  };
-  percentageOfRevenue: number;
-  percentageOfTransactions: number;
-}
+import { useData } from "@/contexts/DataContext";
 
 export const useRevenueAnalytics = (
   businessId: string,
   period: string,
   customStart?: string,
-  customEnd?: string,
-  fetchKey?: number
+  customEnd?: string
 ) => {
-  const [revenueSummary, setRevenueSummary] =
-    useState<RevenueSummary | null>(null);
-  const [dailyRevenue, setDailyRevenue] =
-    useState<DailyRevenue[]>([]);
-  const [topSellingItems, setTopSellingItems] =
-    useState<TopSellingItem[]>([]);
-  const [paymentMethods, setPaymentMethods] =
-    useState<PaymentMethod[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    getRevenueAnalytics,
+    fetchRevenueAnalytics,
+    isFetching,
+  } = useData();
+
+  const [data, setData] = useState({
+    revenueSummary: null,
+    dailyRevenue: [],
+    topSellingItems: [],
+    paymentMethods: [],
+  });
+
+  const key = `${businessId}-${period}-${customStart || ""}-${customEnd || ""}`;
 
   useEffect(() => {
     if (!businessId) return;
     if (period === "custom" && (!customStart || !customEnd)) return;
 
-    const fetchRevenue = async () => {
-      setLoading(true);
+    const run = async () => {
+      await fetchRevenueAnalytics(
+        businessId,
+        period,
+        customStart,
+        customEnd
+      );
 
-      try {
-        const url = new URL(
-          "https://n8n.aflows.uk/webhook/revenue"
-        );
+      const res = getRevenueAnalytics(
+        businessId,
+        period,
+        customStart,
+        customEnd
+      );
 
-        url.searchParams.append("businessId", businessId);
-
-        if (period === "custom") {
-          url.searchParams.append("start", customStart!);
-          url.searchParams.append("end", customEnd!);
-        } else {
-          url.searchParams.append("period", period);
-        }
-
-        const res = await apiFetch(url.toString());
-
-        const json = await res.json();
-
-        const data = Array.isArray(json) ? json[0] : json;
-
-        setRevenueSummary(data?.revenueSummary ?? null);
-        setDailyRevenue(data?.dailyRevenue ?? []);
-        setTopSellingItems(data?.topSellingItems ?? []);
-        setPaymentMethods(data?.paymentMethods ?? []);
-      } catch (err) {
-        console.error("Revenue fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
+      setData(res);
     };
 
-    fetchRevenue();
-  }, [businessId, period, customStart, customEnd, fetchKey]);
+    run();
+  }, [businessId, period, customStart, customEnd]);
 
   return {
-    revenueSummary,
-    dailyRevenue,
-    topSellingItems,
-    paymentMethods,
-    loading,
+    ...data,
+    loading: isFetching(key),
   };
 };
