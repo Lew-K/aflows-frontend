@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
 
 interface Props {
   item?: any; // optional (for restock)
@@ -18,16 +19,22 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
   const [unitPrice, setUnitPrice] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (item?.id) {
+      setSelectedItemId(item.id);
+    }
+  }, [item]);
+
   const handleSubmit = async () => {
     if (!selectedItemId) {
       alert("Select a product");
       return;
     }
 
-    if (quantity <= 0) {
-      alert("Enter valid quantity");
-      return;
-    }
+   if (quantity <= 0 || unitPrice < 0) {
+     alert("Enter valid quantity and cost");
+     return;
+   }
 
     setLoading(true);
 
@@ -42,7 +49,7 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
           item_id: selectedItemId,
           quantity: Number(quantity),
           unit_price: Number(unitPrice),
-          type: "IN",
+          type: "PURCHASE",
           movement_type: "PURCHASE",
           source: "MANUAL",
         }),
@@ -61,7 +68,7 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4 shadow-lg">
+      <div className="bg-background text-foreground rounded-lg w-full max-w-md p-6 space-y-4 shadow-lg border">
 
         <h2 className="text-lg font-semibold">
           {item ? `Restock ${item.name}` : "Add Stock"}
@@ -86,13 +93,17 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
           </div>
         )}
 
-        {/* QUANTITY */}
+        {/* TITY */}
         <div className="space-y-1">
           <label className="text-sm font-medium">Quantity</label>
           <Input
             type="number"
+            min="1"
             value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0) setQuantity(value);
+            }}
           />
         </div>
 
@@ -101,8 +112,12 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
           <label className="text-sm font-medium">Cost per Unit (KES)</label>
           <Input
             type="number"
+            min="0"
             value={unitPrice}
-            onChange={(e) => setUnitPrice(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0) setUnitPrice(value);
+            }}
           />
         </div>
 
