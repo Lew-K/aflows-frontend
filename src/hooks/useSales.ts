@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/apiFetch';
+import { useEffect, useState } from "react";
+import { useData } from "@/contexts/DataContext";
 
 type Sale = {
   id: string;
-  amount: number; // we keep this internally
+  amount: number;
   created_at: string;
   receipt_id?: string | null;
   receipt_number?: string | null;
@@ -13,54 +13,30 @@ export const useSales = (
   businessId: string,
   period: string,
   start?: string,
-  end?: string,
-  fetchKey?: number
+  end?: string
 ) => {
+  const { getSales, fetchSales, isFetching } = useData();
+
   const [sales, setSales] = useState<Sale[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const key = `${businessId}-${period}-${start || ""}-${end || ""}`;
 
   useEffect(() => {
     if (!businessId) return;
+    if (period === "custom" && (!start || !end)) return;
 
-    const fetchSales = async () => {
-      try {
-        setLoading(true);
+    const run = async () => {
+      await fetchSales(businessId, period, start, end);
 
-        const url = new URL(
-          `https://n8n.aflows.uk/webhook/get-sales`
-        );
-
-        url.searchParams.append('business_id', businessId);
-        url.searchParams.append('period', period);
-
-        if (period === 'custom' && start && end) {
-          url.searchParams.append('start', start);
-          url.searchParams.append('end', end);
-        }
-
-        const res = await apiFetch(url.toString());
-        const data = await res.json();
-
-        const rawSales = data?.sales?.sales || [];
-
-        // 🔥 Map total_amount → amount safely
-        const mappedSales: Sale[] = rawSales.map((sale: any) => ({
-          ...sale,
-          amount: Number(sale.total_amount ?? sale.amount ?? 0),
-        }));
-
-        setSales(mappedSales);
-
-      } catch (err) {
-        console.error('Sales fetch error:', err);
-        setSales([]);
-      } finally {
-        setLoading(false);
-      }
+      const data = getSales(businessId, period, start, end);
+      setSales(data);
     };
 
-    fetchSales();
-  }, [businessId, period, start, end, fetchKey]);
+    run();
+  }, [businessId, period, start, end]);
 
-  return { sales, loading };
+  return {
+    sales,
+    loading: isFetching(key),
+  };
 };
