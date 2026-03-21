@@ -1,8 +1,7 @@
 import React from 'react';
 import { LabelList } from "recharts";
 import { useAuth } from '@/contexts/AuthContext';
-import { useSales } from '@/hooks/useSales';
-import { useRevenueAnalytics } from "@/hooks/useRevenueAnalytics";
+import { useData } from "@/contexts/DataContext";
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -784,39 +783,40 @@ export const AnalyticsPage = () => {
     }
   }, [businessId, period]);
 
-  const { sales, loading } = useSales(
-    businessId,
-    period,
-    customStart,
-    customEnd,
-    fetchKey
-  );
+  const { getSales, fetchSales, isFetching } = useData();
+
+  useEffect(() => {
+    if (businessId) {
+      fetchSales(businessId, period, customStart, customEnd);
+    }
+  }, [businessId, period, customStart, customEnd, fetchKey]);
+  
+  const sales = getSales(businessId, period, customStart, customEnd);
+  const loading = isFetching(`${businessId}-${period}-${customStart || ""}-${customEnd || ""}`);
 
   const {
-    revenueSummary,
-    dailyRevenue,
-    monthlyRevenue,
-    topSellingItems,
-    paymentMethods,
-    loading: revenueLoading,
-  } = useRevenueAnalytics(
-    businessId,
-    period,
-    customStart,
-    customEnd,
-    fetchKey
+    getRevenueAnalytics,
+    fetchRevenueAnalytics,
+  } = useData();
+  
+  useEffect(() => {
+    if (businessId) {
+      fetchRevenueAnalytics(businessId, period, customStart, customEnd);
+    }
+  }, [businessId, period, customStart, customEnd, fetchKey]);
+  
+  const analytics = getRevenueAnalytics(businessId, period, customStart, customEnd);
+  
+  const revenueSummary = analytics.revenueSummary;
+  const dailyRevenue = analytics.dailyRevenue;
+  const topSellingItems = analytics.topSellingItems;
+  const paymentMethods = analytics.paymentMethods;
+  
+  const revenueLoading = isFetching(
+    `${businessId}-${period}-${customStart || ""}-${customEnd || ""}`
   );
 
-  // const {
-  //   paymentMethods: currentMonthPayments,
-  //   revenueSummary: currentMonthSummary,
-  // } = useRevenueAnalytics(
-  //   businessId,
-  //   'this_month',
-  //   '',
-  //   '',
-  //   fetchKey
-  // );
+  
 
   const totalSales = sales?.length ?? 0;
 
