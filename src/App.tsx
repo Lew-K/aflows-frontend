@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { initAuthGuard } from "@/lib/authGuard";
+import { DataProvider } from "@/contexts/DataContext";
 
 import AdminLogin from "@/components/internal-admin/AdminLogin";
 import AdminDashboard from "@/components/internal-admin/AdminDashboard";
@@ -33,6 +34,7 @@ const App = () => {
       <ThemeProvider>
         <NotificationProvider>
           <AuthProvider>
+            <DataProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -60,6 +62,7 @@ const App = () => {
               </BrowserRouter>
 
             </TooltipProvider>
+          </DataProvider>
           </AuthProvider>
         </NotificationProvider>
       </ThemeProvider>
