@@ -14,7 +14,7 @@ export const useInventory = (businessId: string) => {
   
       const data = await res.json();
   
-      setItems(Array.isArray(data) ? data : []);
+      setItems(Array.isArray(data.items) ? data.items : []);
     } catch (err) {
       console.error("Failed to fetch inventory:", err);
       setItems([]);
