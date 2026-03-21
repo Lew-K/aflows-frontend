@@ -56,6 +56,7 @@ interface DataContextType {
 
   prefetchAll: (businessId: string) => Promise<void>;
   refreshInventory: (businessId: string) => Promise<void>;
+  refreshCustomers: (businessId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -259,6 +260,10 @@ export const DataProvider = ({ children }: any) => {
     await fetchInventory(businessId);
   };
 
+  const refreshCustomers = async (businessId: string) => {
+    await fetchCustomers(businessId);
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -273,6 +278,7 @@ export const DataProvider = ({ children }: any) => {
         loading,
         prefetchAll,
         refreshInventory,
+        refreshCustomers,
       }}
     >
       {children}
