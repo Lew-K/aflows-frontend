@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from '@/contexts/AuthContext';
 import { AddProductModal } from "./modals/AddProductModal"; 
-// import { AddStockModal } from "./modals/AddStockModal"; // Uncomment when ready
+import { AddStockModal } from "./modals/AddStockModal"; // Uncomment when ready
 
 import {
   Package,
@@ -193,7 +193,7 @@ export const InventoryPage = () => {
         }}
       />
 
-      {/* Uncomment when AddStockModal is ready 
+      {/* Uncomment when AddStockModal is ready */}
         {selectedItemForStock && (
           <AddStockModal
             item={selectedItemForStock}
@@ -204,7 +204,7 @@ export const InventoryPage = () => {
             }}
           />
         )}
-      */}
+      
     </div>
   );
 };
