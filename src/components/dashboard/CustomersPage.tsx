@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useSales } from "@/hooks/useSales";
+import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +10,18 @@ import { Button } from "@/components/ui/button";
 
 export const CustomersPage = () => {
   const { user } = useAuth();
-  const { sales, loading } = useSales(user?.businessId || "", "all");
+  const { getSales, fetchSales, isFetching } = useData();
+
+  const businessId = user?.businessId || "";
+  
+  useEffect(() => {
+    if (businessId) {
+      fetchSales(businessId, "all");
+    }
+  }, [businessId]);
+  
+  const sales = getSales(businessId, "all");
+  const loading = isFetching(`${businessId}-all--`);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("total_spent");
