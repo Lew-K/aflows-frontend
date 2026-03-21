@@ -1,12 +1,57 @@
 import React, { createContext, useContext, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
+// 🔥 Minimal useful types
+type Sale = {
+  amount: number;
+  created_at: string;
+};
+
+interface RevenueAnalytics {
+  revenueSummary: any;
+  dailyRevenue: any[];
+  topSellingItems: any[];
+  paymentMethods: any[];
+}
+
 interface DataContextType {
   inventory: any[];
   customers: any[];
-  sales: any[];
-  revenue: any;
 
+  // SALES
+  getSales: (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => Sale[];
+
+  fetchSales: (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => Promise<void>;
+
+  // ANALYTICS
+  getRevenueAnalytics: (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => RevenueAnalytics;
+
+  fetchRevenueAnalytics: (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => Promise<void>;
+
+  // 🔥 per-key loading
+  isFetching: (key: string) => boolean;
+
+  revenue: any;
   loading: boolean;
 
   prefetchAll: (businessId: string) => Promise<void>;
@@ -18,11 +63,26 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider = ({ children }: any) => {
   const [inventory, setInventory] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
-  const [sales, setSales] = useState<any[]>([]);
+  const [salesCache, setSalesCache] = useState<Record<string, Sale[]>>({});
+  const [analyticsCache, setAnalyticsCache] = useState<
+    Record<string, RevenueAnalytics>
+  >({});
+  const [fetchingKeys, setFetchingKeys] = useState<Record<string, boolean>>({});
   const [revenue, setRevenue] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
 
+  // 🔑 cache key
+  const getKey = (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => {
+    return `${businessId}-${period}-${start || ""}-${end || ""}`;
+  };
+
+  // INVENTORY
   const fetchInventory = async (businessId: string) => {
     const res = await apiFetch(
       `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
@@ -31,28 +91,109 @@ export const DataProvider = ({ children }: any) => {
     setInventory(data?.items || []);
   };
 
+  // CUSTOMERS
   const fetchCustomers = async (businessId: string) => {
     const res = await apiFetch(`/api/customers?businessId=${businessId}`);
     const data = await res.json();
     setCustomers(data || []);
   };
 
-  const fetchSales = async (businessId: string) => {
-    const url = new URL(`https://n8n.aflows.uk/webhook/get-sales`);
-    url.searchParams.append("business_id", businessId);
-    url.searchParams.append("period", "today");
+  // SALES (🔥 cache + loading safe)
+  const fetchSales = async (
+    businessId: string,
+    period: string = "today",
+    start?: string,
+    end?: string
+  ) => {
+    const key = getKey(businessId, period, start, end);
 
-    const res = await apiFetch(url.toString());
-    const data = await res.json();
+    if (salesCache[key]) return;
 
-    const mapped = (data?.sales?.sales || []).map((s: any) => ({
-      ...s,
-      amount: Number(s.total_amount ?? 0),
-    }));
+    setFetchingKeys((prev) => ({ ...prev, [key]: true }));
 
-    setSales(mapped);
+    try {
+      const url = new URL(`https://n8n.aflows.uk/webhook/get-sales`);
+      url.searchParams.append("business_id", businessId);
+      url.searchParams.append("period", period);
+
+      if (period === "custom" && start && end) {
+        url.searchParams.append("start", start);
+        url.searchParams.append("end", end);
+      }
+
+      const res = await apiFetch(url.toString());
+      const data = await res.json();
+
+      const mapped: Sale[] = (data?.sales?.sales || []).map((s: any) => ({
+        ...s,
+        amount: Number(s.total_amount ?? 0),
+      }));
+
+      setSalesCache((prev) => {
+        if (prev[key]) return prev;
+
+        return {
+          ...prev,
+          [key]: mapped,
+        };
+      });
+    } catch (err) {
+      console.error("Sales fetch error:", err);
+    } finally {
+      setFetchingKeys((prev) => ({ ...prev, [key]: false }));
+    }
   };
 
+  // ANALYTICS (🔥 cache + loading safe)
+  const fetchRevenueAnalytics = async (
+    businessId: string,
+    period: string = "today",
+    start?: string,
+    end?: string
+  ) => {
+    const key = getKey(businessId, period, start, end);
+
+    if (analyticsCache[key]) return;
+
+    setFetchingKeys((prev) => ({ ...prev, [key]: true }));
+
+    try {
+      const url = new URL(`https://n8n.aflows.uk/webhook/revenue`);
+      url.searchParams.append("businessId", businessId);
+
+      if (period === "custom" && start && end) {
+        url.searchParams.append("start", start);
+        url.searchParams.append("end", end);
+      } else {
+        url.searchParams.append("period", period);
+      }
+
+      const res = await apiFetch(url.toString());
+      const json = await res.json();
+
+      const data = Array.isArray(json) ? json[0] : json;
+
+      setAnalyticsCache((prev) => {
+        if (prev[key]) return prev;
+
+        return {
+          ...prev,
+          [key]: {
+            revenueSummary: data?.revenueSummary ?? null,
+            dailyRevenue: data?.dailyRevenue ?? [],
+            topSellingItems: data?.topSellingItems ?? [],
+            paymentMethods: data?.paymentMethods ?? [],
+          },
+        };
+      });
+    } catch (err) {
+      console.error("Analytics fetch error:", err);
+    } finally {
+      setFetchingKeys((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // SIMPLE REVENUE (legacy)
   const fetchRevenue = async (businessId: string) => {
     const url = new URL(`https://n8n.aflows.uk/webhook/revenue`);
     url.searchParams.append("businessId", businessId);
@@ -64,7 +205,7 @@ export const DataProvider = ({ children }: any) => {
     setRevenue(Array.isArray(data) ? data[0] : data);
   };
 
-  // 🚀 MAIN PREFETCH FUNCTION
+  // PREFETCH
   const prefetchAll = async (businessId: string) => {
     setLoading(true);
 
@@ -72,7 +213,8 @@ export const DataProvider = ({ children }: any) => {
       await Promise.all([
         fetchInventory(businessId),
         fetchCustomers(businessId),
-        fetchSales(businessId),
+        fetchSales(businessId, "today"),
+        fetchRevenueAnalytics(businessId, "today"),
         fetchRevenue(businessId),
       ]);
     } catch (err) {
@@ -81,6 +223,37 @@ export const DataProvider = ({ children }: any) => {
       setLoading(false);
     }
   };
+
+  // GETTERS
+  const getSales = (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => {
+    const key = getKey(businessId, period, start, end);
+    return salesCache[key] || [];
+  };
+
+  const getRevenueAnalytics = (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ): RevenueAnalytics => {
+    const key = getKey(businessId, period, start, end);
+
+    return (
+      analyticsCache[key] || {
+        revenueSummary: null,
+        dailyRevenue: [],
+        topSellingItems: [],
+        paymentMethods: [],
+      }
+    );
+  };
+
+  const isFetching = (key: string) => !!fetchingKeys[key];
 
   const refreshInventory = async (businessId: string) => {
     await fetchInventory(businessId);
@@ -91,7 +264,11 @@ export const DataProvider = ({ children }: any) => {
       value={{
         inventory,
         customers,
-        sales,
+        getSales,
+        fetchSales,
+        getRevenueAnalytics,
+        fetchRevenueAnalytics,
+        isFetching,
         revenue,
         loading,
         prefetchAll,
