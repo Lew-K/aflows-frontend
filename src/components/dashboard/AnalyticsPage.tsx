@@ -840,7 +840,7 @@ export const AnalyticsPage = () => {
   const receiptsGrowth = 12;
 
   // Mock data
-  const revenueData = monthlyRevenue ?? [];
+  // const revenueData = monthlyRevenue ?? [];
 
   const hasMultipleMonths =
     revenueData.filter(m => m.revenue > 0).length > 1;
