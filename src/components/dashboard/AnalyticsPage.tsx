@@ -74,7 +74,10 @@ const formatPercentage = (value: number | null | undefined, prefix = true): stri
   if (value == null) return '0%';
   const sign = prefix && value >= 0 ? '+' : '';
   return `${sign}${value.toFixed(1)}%`;
-};
+}
+  
+const monthlyRevenue = analytics.monthlyRevenue || [];
+const revenueData = monthlyRevenue; // Define this so the prop isn't undefined;
 
 // Stat Card Component
 const StatCard = ({
@@ -840,7 +843,7 @@ export const AnalyticsPage = () => {
   const receiptsGrowth = 12;
 
   // Mock data
-  // const revenueData = monthlyRevenue ?? [];
+  const revenueData = monthlyRevenue ?? [];
 
   const hasMultipleMonths =
     revenueData.filter(m => m.revenue > 0).length > 1;
