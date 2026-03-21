@@ -76,8 +76,8 @@ const formatPercentage = (value: number | null | undefined, prefix = true): stri
   return `${sign}${value.toFixed(1)}%`;
 }
   
-const monthlyRevenue = analytics.monthlyRevenue || [];
-const revenueData = monthlyRevenue; // Define this so the prop isn't undefined;
+// const monthlyRevenue = analytics.monthlyRevenue || [];
+// const revenueData = monthlyRevenue; // Define this so the prop isn't undefined;
 
 // Stat Card Component
 const StatCard = ({
