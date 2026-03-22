@@ -41,9 +41,7 @@ export const SalesPage = () => {
   const businessId = user?.businessId;
   const period = "this_month"; 
 
-  const allSales = useMemo(() => 
-    getSales(businessId, period)|| [],
-  [businessId, period, getSales]);
+  const allSales = getSales(businessId, period) || [];
 
   const isLoadingSales = isFetching(`${businessId}-${period}`);
   const { items: inventoryItems = [] } = useInventory(businessId || "");
@@ -340,14 +338,14 @@ export const SalesPage = () => {
                                   className="h-10"
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                  
+                                
                                     setItems(prev => {
                                       const updated = [...prev];
-                                  
+                                
                                       const match = inventoryItems.find(
                                         (i) => i.name.toLowerCase().trim() === value.toLowerCase().trim()
                                       );
-                                  
+                                
                                       if (match) {
                                         updated[index] = {
                                           ...updated[index],
@@ -361,10 +359,10 @@ export const SalesPage = () => {
                                           ...updated[index],
                                           item: value,
                                           inventory_id: null,
-                                          affects_stock: false // 🔥 IMPORTANT CHANGE
+                                          affects_stock: false
                                         };
                                       }
-                                  
+                                
                                       return updated;
                                     });
                                   }}
