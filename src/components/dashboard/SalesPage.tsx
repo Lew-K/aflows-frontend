@@ -85,7 +85,7 @@ export const SalesPage = () => {
   useEffect(() => {
     if (!businessId) return;
     fetchSales(businessId, period);
-  }, [businessId, period, fetchSales]);
+  }, [businessId, period]);
 
   const {
     register,
