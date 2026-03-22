@@ -401,7 +401,7 @@ export const SalesPage = () => {
                                         i.name.toLowerCase().includes(entry.item.toLowerCase())
                                       )
                                       .slice(0, 5)
-                                      .map(i => {
+                                      .map((i) => {
                                         const isOutOfStock = Number(i.stock) <= 0;
                                       
                                         return (
@@ -435,7 +435,7 @@ export const SalesPage = () => {
                                           </span>
                                         </div>
                                       );
-                                    })
+                                    })}
                                   </div>
                                 )}
                               
