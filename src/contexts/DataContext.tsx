@@ -10,6 +10,7 @@ type Sale = {
 interface RevenueAnalytics {
   revenueSummary: any;
   dailyRevenue: any[];
+  monthlyRevenue: any[];
   topSellingItems: any[];
   paymentMethods: any[];
 }
@@ -148,7 +149,7 @@ export const DataProvider = ({ children }: any) => {
   // ANALYTICS (🔥 cache + loading safe)
   const fetchRevenueAnalytics = async (
     businessId: string,
-    period: string = "today",
+    period: string = "month",
     start?: string,
     end?: string
   ) => {
@@ -182,6 +183,7 @@ export const DataProvider = ({ children }: any) => {
           [key]: {
             revenueSummary: data?.revenueSummary ?? null,
             dailyRevenue: data?.dailyRevenue ?? [],
+            monthlyRevenue: data?.monthlyRevenue ?? [],
             topSellingItems: data?.topSellingItems ?? [],
             paymentMethods: data?.paymentMethods ?? [],
           },
@@ -214,8 +216,8 @@ export const DataProvider = ({ children }: any) => {
       await Promise.all([
         fetchInventory(businessId),
         fetchCustomers(businessId),
-        fetchSales(businessId, "today"),
-        fetchRevenueAnalytics(businessId, "today"),
+        fetchSales(businessId, "month"),
+        fetchRevenueAnalytics(businessId, "month"),
         fetchRevenue(businessId),
       ]);
     } catch (err) {
@@ -248,6 +250,7 @@ export const DataProvider = ({ children }: any) => {
       analyticsCache[key] || {
         revenueSummary: null,
         dailyRevenue: [],
+        monthlyRevenue: [],
         topSellingItems: [],
         paymentMethods: [],
       }
