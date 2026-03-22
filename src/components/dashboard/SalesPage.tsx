@@ -30,18 +30,20 @@ const paymentMethods = [
 ];
 
 export const SalesPage = () => {
-  
-  const isLoadingSales = isFetching(`${businessId}-${period}`);
-  const [isLoading, setIsLoading] = useState(false);
-  const { getSales, fetchSales, isFetching } = useData();
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+
   const { user, accessToken } = useAuth();
+  const { getSales, fetchSales, isFetching } = useData();
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const businessId = user?.businessId;
   const period = "this_month"; 
 
   const allSales = useMemo(() => 
-    getSales(businessId, period), 
+    getSales(businessId, period)|| [],
   [businessId, period, getSales]);
+
+  const isLoadingSales = isFetching(`${businessId}-${period}`);
 
   const [items, setItems] = useState([
     { item: "", quantity: 1, unitCost: 0 }
