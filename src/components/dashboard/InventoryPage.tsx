@@ -69,7 +69,7 @@ export const InventoryPage = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-xl">
+          <div className="p-3 bg-primary/10 text-primary rounded-xl">
             <Package className="w-8 h-8 text-primary" />
           </div>
           <div>
@@ -90,7 +90,7 @@ export const InventoryPage = () => {
 
       {/* KPI STRIP */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-sm border-none bg-slate-50/50">
+        <Card className="shadow-sm border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
             <Boxes className="w-4 h-4 text-muted-foreground" />
@@ -100,7 +100,7 @@ export const InventoryPage = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-sm border-none bg-slate-50/50">
+        <Card className="shadow-sm border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alert</CardTitle>
             <AlertTriangle className={`w-4 h-4 ${stats.lowStockCount > 0 ? "text-amber-500" : "text-muted-foreground"}`} />
@@ -112,7 +112,7 @@ export const InventoryPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-none bg-slate-50/50">
+        <Card className="shadow-sm border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Inventory Value</CardTitle>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
@@ -144,7 +144,7 @@ export const InventoryPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search by product name..." 
-                className="pl-10 h-11 bg-muted/30 border-none focus-visible:ring-1" 
+                className="pl-10 h-11 bg-background border border-border focus-visible:ring-1" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -189,11 +189,12 @@ export const InventoryPage = () => {
                         </td>
                         <td className="p-4 text-right">
                           <Button 
-                            variant="secondary" 
+                            variant="outline"
                             size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="flex items-center gap-1 opacity-90 hover:opacity-100"
                             onClick={() => setSelectedItemForStock(item)}
                           >
+                            <ArrowRightLeft className="w-3 h-3" />
                             Restock
                           </Button>
                         </td>
