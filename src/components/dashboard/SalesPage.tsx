@@ -1,5 +1,7 @@
 import { apiFetch } from '@/lib/apiFetch';
 import { useData } from '@/contexts/DataContext';
+import { useInventory } from "@/hooks/useInventory";
+
 
 import React, { useState, useEffect ,useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,9 +46,16 @@ export const SalesPage = () => {
   [businessId, period, getSales]);
 
   const isLoadingSales = isFetching(`${businessId}-${period}`);
+  const { items: inventoryItems = [] } = useInventory(businessId || "");
 
   const [items, setItems] = useState([
-    { item: "", quantity: 1, unitCost: 0 }
+    { 
+      item: "", 
+      quantity: 1, 
+      unitCost: 0,
+      inventory_id: null,
+      affects_stock: false
+    }
   ]);
 
 
@@ -161,7 +170,13 @@ export const SalesPage = () => {
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
-            items,
+            items: items.map(i => ({
+              item: i.item,
+              quantity: i.quantity,
+              unitCost: i.unitCost,
+              inventory_id: i.inventory_id,
+              affects_stock: i.affects_stock
+            })),
             total_amount: calculatedAmount,
             payment_method: data.paymentMethod || null,
             payment_reference: data.paymentReference || null,
@@ -179,7 +194,15 @@ export const SalesPage = () => {
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
-        setItems([{ item: "", quantity: 1, unitCost: 0 }]);
+        setItems([
+          { 
+            item: "", 
+            quantity: 1, 
+            unitCost: 0,
+            inventory_id: null,
+            affects_stock: false
+          }
+        ]);
         await fetchSales(businessId, period);
       } else {
         toast.error(result.message || 'Failed to record sale');
@@ -310,19 +333,85 @@ export const SalesPage = () => {
                               <Label className="md:hidden text-[10px] uppercase mb-1 block">
                                 Product Name
                               </Label>
-                              <Input
-                                placeholder="Product or service"
-                                value={entry.item}
-                                className="h-9 focus-visible:ring-primary"
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  setItems(prev => {
-                                    const updated = [...prev];
-                                    updated[index] = { ...updated[index], item: value };
-                                    return updated;
-                                  });
-                                }}
-                              />
+                              <div className="space-y-1">
+                                <Input
+                                  placeholder="Product or service"
+                                  value={entry.item}
+                                  className="h-10"
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                              
+                                    setItems(prev => {
+                                      const updated = [...prev];
+                              
+                                      // check if typed value matches inventory
+                                      const match = inventoryItems.find(
+                                        (i) => i.name.toLowerCase().trim() === value.toLowerCase().trim()
+                                      );
+                              
+                                      if (match) {
+                                        updated[index] = {
+                                          ...updated[index],
+                                          item: match.name,
+                                          unitCost: Number(match.selling_price || match.cost_price || 0),
+                                          inventory_id: match.item_id,
+                                          affects_stock: true
+                                        };
+                                      } else {
+                                        updated[index] = {
+                                          ...updated[index],
+                                          item: value,
+                                          inventory_id: null,
+                                          affects_stock: false
+                                        };
+                                      }
+                              
+                                      return updated;
+                                    });
+                                  }}
+                                />
+                              
+                                {/* Suggestions dropdown */}
+                                {entry.item && !entry.affects_stock && (
+                                  <div className="border rounded-md bg-background shadow-sm max-h-40 overflow-y-auto text-sm">
+                                    {inventoryItems
+                                      .filter(i =>
+                                        i.name.toLowerCase().includes(entry.item.toLowerCase())
+                                      )
+                                      .slice(0, 5)
+                                      .map(i => (
+                                        <div
+                                          key={i.item_id}
+                                          className="px-3 py-2 hover:bg-muted cursor-pointer"
+                                          onClick={() => {
+                                            setItems(prev => {
+                                              const updated = [...prev];
+                                              updated[index] = {
+                                                ...updated[index],
+                                                item: i.name,
+                                                unitCost: Number(i.selling_price || 0),
+                                                inventory_id: i.item_id,
+                                                affects_stock: true
+                                              };
+                                              return updated;
+                                            });
+                                          }}
+                                        >
+                                          {i.name}
+                                        </div>
+                                      ))}
+                                  </div>
+                                )}
+                              
+                                {/* Indicator */}
+                                {entry.affects_stock ? (
+                                  <span className="text-[10px] text-green-600">Tracked item</span>
+                                ) : (
+                                  entry.item && (
+                                    <span className="text-[10px] text-muted-foreground">Custom item</span>
+                                  )
+                                )}
+                              </div>
                             </div>
                 
                             {/* Qty + Price */}
@@ -425,7 +514,7 @@ export const SalesPage = () => {
                     onClick={() =>
                       setItems(prev => [
                         ...prev,
-                        { item: "", quantity: 1, unitCost: 0 }
+                        { item: "", quantity: 1, unitCost: 0, inventory_id: null, affects_stock: false }
                       ])
                     }
                   >
