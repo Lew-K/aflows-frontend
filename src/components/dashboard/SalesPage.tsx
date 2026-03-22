@@ -251,7 +251,7 @@ export const SalesPage = () => {
                   </Label>
                   <Input
                     placeholder="Customer name"
-                    className="h-10"
+                    className="h-9"
                     {...register('customerName')}
                   />
                 </div>
@@ -268,7 +268,7 @@ export const SalesPage = () => {
                   </div>
                 
                   {/* Scrollable Rows */}
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
                     <AnimatePresence>
                       {items.map((entry, index) => {
                         const subtotal = entry.quantity * entry.unitCost;
@@ -279,7 +279,7 @@ export const SalesPage = () => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative flex flex-col md:grid md:grid-cols-12 gap-3 bg-background border border-border/50 rounded-lg p-3 md:p-2 md:items-center hover:shadow-sm transition-all"
+                            className="relative flex flex-col md:grid md:grid-cols-10 gap-4 bg-background border border-border/50 rounded-xl p-4 md:p-3 md:items-center hover:shadow-md transition-all"
                           >
                             {/* Mobile Row Header */}
                             <div className="md:col-span-1 flex justify-between items-center mb-2 md:mb-0">
@@ -512,11 +512,11 @@ export const SalesPage = () => {
                   <History className="w-5 h-5 text-primary" />
                   Recent Sales
                 </CardTitle>
-                <CardDescription>Your latest 5 activities.</CardDescription>
+                <CardDescription>Your latest activities.</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="flex-grow overflow-auto">
-              <div className="space-y-3">
+              <div className="">
                 {isLoadingSales ? (
                   <div className="py-10 text-center text-muted-foreground">
                     Loading sales...
@@ -529,7 +529,7 @@ export const SalesPage = () => {
                 ) : (
                   [...allSales]
                     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 5)
+                    .slice(0, 7)
                     .map((sale) => (
                       <div key={sale.id ?? sale.created_at} className="p-3 rounded-lg border bg-card/50 flex items-center justify-between group hover:border-primary/50 transition-all">
                         <div className="min-w-0 flex-1">
