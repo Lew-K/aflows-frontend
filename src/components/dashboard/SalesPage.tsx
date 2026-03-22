@@ -340,15 +340,14 @@ export const SalesPage = () => {
                                   className="h-10"
                                   onChange={(e) => {
                                     const value = e.target.value;
-                              
+                                  
                                     setItems(prev => {
                                       const updated = [...prev];
-                              
-                                      // check if typed value matches inventory
+                                  
                                       const match = inventoryItems.find(
                                         (i) => i.name.toLowerCase().trim() === value.toLowerCase().trim()
                                       );
-                              
+                                  
                                       if (match) {
                                         updated[index] = {
                                           ...updated[index],
@@ -362,10 +361,10 @@ export const SalesPage = () => {
                                           ...updated[index],
                                           item: value,
                                           inventory_id: null,
-                                          affects_stock: false
+                                          affects_stock: false // 🔥 IMPORTANT CHANGE
                                         };
                                       }
-                              
+                                  
                                       return updated;
                                     });
                                   }}
