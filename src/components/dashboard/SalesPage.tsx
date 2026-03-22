@@ -389,7 +389,7 @@ export const SalesPage = () => {
                                                 ...updated[index],
                                                 item: i.name,
                                                 unitCost: Number(i.selling_price || 0),
-                                                inventory_id: i.item_id,
+                                                inventory_id: i.id,
                                                 affects_stock: true
                                               };
                                               return updated;
