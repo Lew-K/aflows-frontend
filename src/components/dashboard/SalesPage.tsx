@@ -156,6 +156,22 @@ export const SalesPage = () => {
         toast.error("Please complete all item fields correctly.");
         return;
       }
+    
+      // 🚫 BLOCK OUT OF STOCK ITEMS
+      if (item.affects_stock && item.inventory_id) {
+        const inventoryMatch = inventoryItems.find(i => i.id === item.inventory_id);
+    
+        if (!inventoryMatch || Number(inventoryMatch.stock) <= 0) {
+          toast.error(`${item.item} is out of stock`);
+          return;
+        }
+    
+        // 🚫 BLOCK OVER-SELLING
+        if (item.quantity > Number(inventoryMatch.stock)) {
+          toast.error(`Only ${inventoryMatch.stock} ${item.item}(s) left in stock`);
+          return;
+        }
+      }
     }
     
     setIsLoading(true);
@@ -341,29 +357,36 @@ export const SalesPage = () => {
                                 
                                     setItems(prev => {
                                       const updated = [...prev];
+
+                                      updated[index] = {
+                                        ...updated[index],
+                                        item: value,
+                                        inventory_id: null,
+                                        affects_stock: false
+                                      };
+                                                                      
+                                      // const match = inventoryItems.find(
+                                      //   (i) =>
+                                      //     i.name.toLowerCase().includes(value.toLowerCase().trim()) ||
+                                      //     value.toLowerCase().includes(i.name.toLowerCase().trim())
+                                      // );
                                 
-                                      const match = inventoryItems.find(
-                                        (i) =>
-                                          i.name.toLowerCase().includes(value.toLowerCase().trim()) ||
-                                          value.toLowerCase().includes(i.name.toLowerCase().trim())
-                                      );
-                                
-                                      if (match) {
-                                        updated[index] = {
-                                          ...updated[index],
-                                          item: match.name,
-                                          unitCost: Number(match.selling_price || match.cost_price || 0),
-                                          inventory_id: match.id,
-                                          affects_stock: true
-                                        };
-                                      } else {
-                                        updated[index] = {
-                                          ...updated[index],
-                                          item: value,
-                                          inventory_id: null,
-                                          affects_stock: false
-                                        };
-                                      }
+                                      // if (match) {
+                                      //   updated[index] = {
+                                      //     ...updated[index],
+                                      //     item: match.name,
+                                      //     unitCost: Number(match.selling_price || match.cost_price || 0),
+                                      //     inventory_id: match.id,
+                                      //     affects_stock: true
+                                      //   };
+                                      // } else {
+                                      //   updated[index] = {
+                                      //     ...updated[index],
+                                      //     item: value,
+                                      //     inventory_id: null,
+                                      //     affects_stock: false
+                                      //   };
+                                      // }
                                 
                                       return updated;
                                     });
@@ -378,17 +401,26 @@ export const SalesPage = () => {
                                         i.name.toLowerCase().includes(entry.item.toLowerCase())
                                       )
                                       .slice(0, 5)
-                                      .map(i => (
-                                        <div
-                                          key={i.id}
-                                          className="px-3 py-2 hover:bg-muted cursor-pointer"
-                                          onClick={() => {
+                                      .map(i => {
+                                        const isOutOfStock = Number(i.stock) <= 0;
+                                      
+                                        return (
+                                          <div
+                                            key={i.id}
+                                            className={`px-3 py-2 flex justify-between items-center cursor-pointer ${
+                                              isOutOfStock
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : "hover:bg-muted"
+                                            }`}
+                                         onClick={() => {
+                                            if (isOutOfStock) return; // 🚫 block click
+                                    
                                             setItems(prev => {
                                               const updated = [...prev];
                                               updated[index] = {
                                                 ...updated[index],
                                                 item: i.name,
-                                                unitCost: Number(i.selling_price || 0),
+                                                unitCost: Number(i.selling_price || i.cost_price || 0),
                                                 inventory_id: i.id,
                                                 affects_stock: true
                                               };
@@ -396,9 +428,14 @@ export const SalesPage = () => {
                                             });
                                           }}
                                         >
-                                          {i.name}
+                                          <span>{i.name}</span>
+                                    
+                                          <span className="text-xs text-muted-foreground">
+                                            {isOutOfStock ? "Out of stock" : `${i.stock} left`}
+                                          </span>
                                         </div>
-                                      ))}
+                                      );
+                                    })
                                   </div>
                                 )}
                               
