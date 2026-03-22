@@ -780,11 +780,11 @@ export const AnalyticsPage = () => {
   const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
 
-  useEffect(() => {
-    if (businessId) {
-      setFetchKey(prev => prev + 1);
-    }
-  }, [businessId, period]);
+  // useEffect(() => {
+  //   if (businessId) {
+  //     setFetchKey(prev => prev + 1);
+  //   }
+  // }, [businessId, period]);
 
   const { getSales, fetchSales, isFetching } = useData();
 
@@ -812,6 +812,7 @@ export const AnalyticsPage = () => {
   
   const revenueSummary = analytics.revenueSummary;
   const dailyRevenue = analytics.dailyRevenue;
+  const monthlyRevenue = analytics.monthlyRevenue;
   const topSellingItems = analytics.topSellingItems;
   const paymentMethods = analytics.paymentMethods;
   
@@ -911,7 +912,11 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
           icon={ShoppingCart}
           title="Total Sales"
           value={loading ? '...' : totalSales.toString()}
-          trend={revenueSummary?.trend as any}
+          trend={
+            revenueSummary?.trend === 'flat'
+              ? 'neutral'
+              : revenueSummary?.trend
+          }
           percentageChange={formatPercentage(revenueSummary?.percentageChange)}
           isLoading={loading}
         />
