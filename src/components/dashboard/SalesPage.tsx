@@ -29,11 +29,16 @@ const paymentMethods = [
 ];
 
 export const SalesPage = () => {
-  const [allSales, setAllSales] = useState<any[]>([]);
+  const allSales = useMemo(() => 
+    getSales(businessId, period), 
+  [businessId, period, getSales]);
+  const isLoadingSales = isFetching(`${businessId}-${period}--`);
   const [isLoading, setIsLoading] = useState(false);
+  const { getSales, fetchSales, isFetching } = useData();
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId;
+  const period = "this_month"; // or make dynamic later
 
   const [items, setItems] = useState([
     { item: "", quantity: 1, unitCost: 0 }
@@ -62,29 +67,12 @@ export const SalesPage = () => {
     };
   }, [allSales]);
 
-  const fetchSales = async () => {
-    if (!user?.businessId || !accessToken) return;
-    try {
-      const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/get-sales?business_id=${user.businessId}`
-      );
-      
-      const data = await res.json();
-      
-      const sales = Array.isArray(data?.sales?.sales) ? data.sales.sales : [];
-      setAllSales(sales);
-    } catch (err) {
-      console.error("Failed to fetch sales:", err);
-      setAllSales([]);
-    }
-  };
 
   useEffect(() => {
-    if (!user?.businessId) return;
-    fetchSales();
-    const interval = setInterval(fetchSales, 60000);
-    return () => clearInterval(interval);
-  }, [user?.businessId, accessToken]);
+    if (businessId) {
+      fetchSales(businessId, period);
+    }
+  }, [businessId, period]);
 
   const {
     register,
@@ -188,7 +176,7 @@ export const SalesPage = () => {
         toast.success('Sale recorded successfully!');
         reset();
         setItems([{ item: "", quantity: 1, unitCost: 0 }]);
-        fetchSales();
+        await fetchSales(businessId, period);
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
@@ -525,7 +513,11 @@ export const SalesPage = () => {
             </CardHeader>
             <CardContent className="flex-grow overflow-auto">
               <div className="space-y-3">
-                {allSales.length === 0 ? (
+                {isLoadingSales ? (
+                  <div className="py-10 text-center text-muted-foreground">
+                    Loading sales...
+                  </div>
+                ) : allSales.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center py-20 opacity-50">
                     <Info className="w-8 h-8 mb-2" />
                     <p>No sales activity found</p>
