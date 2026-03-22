@@ -172,8 +172,8 @@ export const SalesPage = () => {
               item: i.item,
               quantity: i.quantity,
               unitCost: i.unitCost,
-              inventory_id: i.inventory_id,
-              affects_stock: i.affects_stock
+              affects_stock: i.affects_stock,
+              ...(i.inventory_id ? { inventory_id: i.inventory_id } : {})
             })),
             total_amount: calculatedAmount,
             payment_method: data.paymentMethod || null,
