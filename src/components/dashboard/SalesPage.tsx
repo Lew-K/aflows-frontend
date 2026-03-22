@@ -383,21 +383,15 @@ export const SalesPage = () => {
                                           key={i.id}
                                           className="px-3 py-2 hover:bg-muted cursor-pointer"
                                           onClick={() => {
-                                            console.log("SELECTED ITEM:", i);
-                                          
                                             setItems(prev => {
                                               const updated = [...prev];
-                                          
                                               updated[index] = {
+                                                ...updated[index],
                                                 item: i.name,
-                                                quantity: updated[index].quantity,
-                                                unitCost: Number(i.selling_price || i.cost_price || 0),
-                                                inventory_id: i.id,
+                                                unitCost: Number(i.selling_price || 0),
+                                                inventory_id: i.item_id,
                                                 affects_stock: true
                                               };
-                                          
-                                              console.log("UPDATED STATE:", updated[index]);
-                                          
                                               return updated;
                                             });
                                           }}
