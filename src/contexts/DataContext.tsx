@@ -216,8 +216,8 @@ export const DataProvider = ({ children }: any) => {
       await Promise.all([
         fetchInventory(businessId),
         fetchCustomers(businessId),
-        fetchSales(businessId, "month"),
-        fetchRevenueAnalytics(businessId, "month"),
+        fetchSales(businessId, "this_month"),
+        fetchRevenueAnalytics(businessId, "this_month"),
         fetchRevenue(businessId),
       ]);
     } catch (err) {
