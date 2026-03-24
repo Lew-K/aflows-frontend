@@ -1,3 +1,5 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 import React from 'react';
 import { LabelList } from "recharts";
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,15 +98,16 @@ const StatCard = ({
   isLoading?: boolean;
 }) => (
   <motion.div
+    whileHover={{ scale: 1.02 }}
     initial={ANIMATION_VARIANTS.card.initial}
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
   >
     <Card className="hover:shadow-soft transition-shadow">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-            <Icon className="w-6 h-6 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+            <Icon className="w-4 h-4 text-primary" />
           </div>
         </div>
         
@@ -208,6 +211,7 @@ const PaymentBreakdown = ({
   isLoading: boolean;
 }) => (
   <motion.div
+    whileHover={{ scale: 1.02 }}
     initial={ANIMATION_VARIANTS.card.initial}
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
@@ -215,7 +219,7 @@ const PaymentBreakdown = ({
     <Card className="hover:shadow-soft transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
             <DollarSign className="w-5 h-5 text-primary" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -231,7 +235,7 @@ const PaymentBreakdown = ({
           }}
         >
           {isLoading ? (
-            <p className="text-xs text-muted-foreground text-center mt-6">
+            <Skeleton className="h-16 w-full rounded-xl" />
               Loading...
             </p>
           ) : paymentChartData.length === 0 ? (
@@ -341,7 +345,7 @@ const RevenueTrend = ({
           Revenue Trend
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex justify-center gap-2 mb-4">
           {(['monthly', 'daily'] as const).map(view => (
             <button
@@ -358,6 +362,14 @@ const RevenueTrend = ({
           ))}
         </div>
 
+        <div className="mb-4">
+          <p className="text-xs text-muted-foreground">Total Revenue</p>
+          <p className="text-2xl font-bold">
+            {formatCurrency(
+              revenueData?.reduce((sum, r) => sum + (r.revenue || 0), 0)
+            )}
+          </p>
+        </div>
         <div className="h-72">
 
           {revenueView === "monthly" && !hasMultipleMonths ? (
@@ -460,6 +472,7 @@ const TopSellingItems = ({
   isLoading: boolean;
 }) => (
   <motion.div
+    whileHover={{ scale: 1.02 }}
     initial={ANIMATION_VARIANTS.card.initial}
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.5 }}
@@ -471,7 +484,7 @@ const TopSellingItems = ({
           Top Selling Items
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex justify-center gap-2 mb-4">
           {(['quantity', 'revenue'] as const).map(metric => (
             <button
@@ -507,10 +520,10 @@ const TopSellingItems = ({
         </div>
 
         {isLoading ? (
-          <p className="text-center text-muted-foreground">Loading...</p>
+          <Skeleton className="h-72 w-full rounded-xl" />
         ) : chartTopItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-72 text-center text-muted-foreground">
-            <p>No sales data for this period</p>
+            <p>No sales yet for this period</p>
             <p className="text-sm">Try changing the date range or adding transactions</p>
           </div>
         ) : (
@@ -640,13 +653,17 @@ const TodaySnapshotCard = ({
               <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
                 <ShoppingCart className="h-3 w-3" /> Transactions
               </span>
-              <p className="text-lg font-semibold">{isLoading ? '...' : todayTransactions}</p>
+              <p className="text-lg font-semibold">
+                {isLoading ? <Skeleton className="h-5 w-12" /> : todayTransactions}
+              </p>
             </div>
             <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
                 <DollarSign className="h-3 w-3" /> Avg. Sale
               </span>
-              <p className="text-lg font-semibold">{isLoading ? '...' : formatCurrency(avgSale)}</p>
+              <p className="text-lg font-semibold">
+                {isLoading ? <Skeleton className="h-5 w-16" /> : formatCurrency(avgSale)}
+              </p>
             </div>
           </div>
 
@@ -720,7 +737,9 @@ const MonthlyProjectionCard = ({
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Revenue So Far</p>
-                  <p className="text-xl font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
+                  <p className="text-xl font-bold">
+                    {isLoading ? <Skeleton className="h-6 w-20" /> : formatCurrency(monthRevenue)}
+                  </p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center justify-end gap-1 mb-1">
@@ -735,7 +754,7 @@ const MonthlyProjectionCard = ({
                     </TooltipProvider>
                   </div>
                   <p className="text-2xl font-black text-primary">
-                    {isLoading ? '...' : formatCurrency(projectedRevenue)}
+                    {isLoading ? <Skeleton className="h-7 w-24" /> : formatCurrency(projectedRevenue)}
                   </p>
                 </div>
               </div>
@@ -812,11 +831,11 @@ export const AnalyticsPage = () => {
   //   fetchRevenueAnalytics,
   // } = useData();
   
-  // useEffect(() => {
-  //   if (businessId) {
-  //     fetchRevenueAnalytics(businessId, period, customStart, customEnd);
-  //   }
-  // }, [businessId, period, customStart, customEnd, fetchKey]);
+  useEffect(() => {
+    if (businessId) {
+      fetchRevenueAnalytics(businessId, period, customStart, customEnd);
+    }
+  }, [businessId, period, customStart, customEnd, fetchKey]);
   
   const analytics = getRevenueAnalytics(businessId, period, customStart, customEnd);
   
@@ -882,7 +901,7 @@ const projectedRevenue = averageDailyRevenue * daysInMonth;
 const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -935,7 +954,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
           icon={Receipt}
           title="Receipts Generated (This Month)"
           value={currentMonthReceipts.toString()}
-          percentageChange={`↑ ${receiptsGrowth}%`}
+          percentageChange={undefined}
         />
 
         <PaymentBreakdown
