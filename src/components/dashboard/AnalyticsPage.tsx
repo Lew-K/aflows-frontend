@@ -235,7 +235,7 @@ const PaymentBreakdown = ({
           }}
         >
           {isLoading ? (
-            </p>
+            <p>
               <Skeleton className="h-16 w-full rounded-xl" />
               Loading...
             </p>
