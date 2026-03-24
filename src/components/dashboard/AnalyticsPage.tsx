@@ -235,7 +235,8 @@ const PaymentBreakdown = ({
           }}
         >
           {isLoading ? (
-            <Skeleton className="h-16 w-full rounded-xl" />
+            </p>
+              <Skeleton className="h-16 w-full rounded-xl" />
               Loading...
             </p>
           ) : paymentChartData.length === 0 ? (
