@@ -15,13 +15,17 @@ export const CustomersPage = () => {
   const businessId = user?.businessId || "";
   
   useEffect(() => {
-    if (businessId) {
+    if (!businessId) return;
+  
+    const existing = getSales(businessId, "all");
+  
+    if (!existing || existing.length === 0) {
       fetchSales(businessId, "all");
     }
-  }, [businessId]);
+  }, [businessId, getSales]);
   
   const sales = getSales(businessId, "all");
-  const loading = isFetching(`${businessId}-all--`);
+  const loading = isFetching(`${businessId}-all`);
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("total_spent");
