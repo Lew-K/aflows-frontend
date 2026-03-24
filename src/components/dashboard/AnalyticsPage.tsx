@@ -902,7 +902,7 @@ const projectedRevenue = averageDailyRevenue * daysInMonth;
 const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
   return (
-    <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 p-4 md:p-6 w-full max-w-full">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -928,7 +928,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full">
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -966,7 +966,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         <RevenueTrend
           revenueData={revenueData}
           dailyRevenue={dailyRevenue ?? []}
