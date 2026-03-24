@@ -109,7 +109,11 @@ const StatCard = ({
         </div>
         
         <p className="text-2xl font-bold text-foreground">
-          {isLoading ? '...' : value}
+          {isLoading ? (
+            <Skeleton className="h-8 w-24" />
+          ) : (
+            value
+          )}
         </p>
         
         {percentageChange && (
@@ -128,7 +132,7 @@ const StatCard = ({
           </div>
         )}
         
-        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">{title}</p>
       </CardContent>
     </Card>
   </motion.div>
@@ -152,7 +156,7 @@ const PeriodFilter = ({
   onCustomEndChange: (value: string) => void;
   onApplyCustom: () => void;
 }) => (
-  <div className="flex flex-wrap items-center gap-3">
+  <div className="flex flex-wrap items-center gap-3 bg-card border p-3 rounded-2xl">
     <select
       value={period}
       onChange={(e) => onPeriodChange(e.target.value)}
@@ -233,7 +237,7 @@ const PaymentBreakdown = ({
           ) : paymentChartData.length === 0 ? (
             <div className="text-xs text-muted-foreground text-center mt-6">
               <p>No payments recorded</p>
-              <p>This month</p>
+              <p className="text-[11px]">Transactions will appear here</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -361,7 +365,7 @@ const RevenueTrend = ({
             <div className="flex flex-col items-center justify-center h-full space-y-6">
         
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Revenue This Month
                 </p>
         
@@ -507,7 +511,7 @@ const TopSellingItems = ({
         ) : chartTopItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-72 text-center text-muted-foreground">
             <p>No sales data for this period</p>
-            <p className="text-sm">Try changing the date range or period above</p>
+            <p className="text-sm">Try changing the date range or adding transactions</p>
           </div>
         ) : (
           <div className="h-72">
@@ -626,7 +630,7 @@ const TodaySnapshotCard = ({
         <CardContent>
           <div className="mb-6">
             <div className="text-3xl font-bold tracking-tight">
-              {isLoading ? '...' : formatCurrency(todayRevenue)}
+              {isLoading ? <Skeleton className="h-8 w-28" /> : formatCurrency(todayRevenue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Total revenue today</p>
           </div>
@@ -786,7 +790,13 @@ export const AnalyticsPage = () => {
   //   }
   // }, [businessId, period]);
 
-  const { getSales, fetchSales, isFetching } = useData();
+  const {
+    getSales,
+    fetchSales,
+    getRevenueAnalytics,
+    fetchRevenueAnalytics,
+    isFetching,
+  } = useData();
 
   useEffect(() => {
     if (businessId) {
@@ -797,16 +807,16 @@ export const AnalyticsPage = () => {
   const sales = getSales(businessId, period, customStart, customEnd);
   const loading = isFetching(`${businessId}-${period}-${customStart || ""}-${customEnd || ""}`);
 
-  const {
-    getRevenueAnalytics,
-    fetchRevenueAnalytics,
-  } = useData();
+  // const {
+  //   getRevenueAnalytics,
+  //   fetchRevenueAnalytics,
+  // } = useData();
   
-  useEffect(() => {
-    if (businessId) {
-      fetchRevenueAnalytics(businessId, period, customStart, customEnd);
-    }
-  }, [businessId, period, customStart, customEnd, fetchKey]);
+  // useEffect(() => {
+  //   if (businessId) {
+  //     fetchRevenueAnalytics(businessId, period, customStart, customEnd);
+  //   }
+  // }, [businessId, period, customStart, customEnd, fetchKey]);
   
   const analytics = getRevenueAnalytics(businessId, period, customStart, customEnd);
   
