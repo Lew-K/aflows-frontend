@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Settings, Upload, Pencil, Check } from "lucide-react";
 
 export const SettingsPage = () => {
+  const { user } = useAuth();
+
   /* ---------------- STATE ---------------- */
   const [settings, setSettings] = useState({
-    business_name: "My Business",
-    phone: "+254 700 000 000",
+    business_name: "",
+    phone: "",
     location: "Nairobi, Kenya",
     currency: "KES",
     receipt_prefix: "RCT",
@@ -18,19 +21,28 @@ export const SettingsPage = () => {
     business_logo_url: "",
   });
 
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  
-  // Track which fields are in "Edit Mode"
+
   const [editingFields, setEditingFields] = useState({
     business_name: false,
     phone: false,
   });
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  /* ---------------- EFFECTS ---------------- */
-  // Clean up memory from object URLs
+  /* ---------------- LOAD FROM AUTH ---------------- */
+  useEffect(() => {
+    if (user) {
+      setSettings((prev) => ({
+        ...prev,
+        business_name: user.businessName || "",
+        phone: "", // will come from backend later
+      }));
+    }
+  }, [user]);
+
+  /* ---------------- CLEANUP ---------------- */
   useEffect(() => {
     return () => {
       if (logoPreview) URL.revokeObjectURL(logoPreview);
@@ -38,77 +50,79 @@ export const SettingsPage = () => {
   }, [logoPreview]);
 
   /* ---------------- HANDLERS ---------------- */
-  const handleChange = (field, value) => {
+  const handleChange = (field: string, value: string) => {
     setSettings((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const toggleEdit = (field) => {
+  const toggleEdit = (field: string) => {
     setEditingFields((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const processFile = (file) => {
+  const processFile = (file: File) => {
     if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Max file size is 2MB");
+      return;
+    }
+
     const preview = URL.createObjectURL(file);
     setLogoPreview(preview);
-    // Logic for Supabase upload would go here
+
+    // TODO: send to n8n
   };
 
-  const handleLogoUpload = (e) => {
-    processFile(e.target.files[0]);
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) processFile(e.target.files[0]);
   };
 
-  /* Drag and Drop Handlers */
-  const onDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const onDragLeave = () => setIsDragging(false);
-
-  const onDrop = (e) => {
+  const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    processFile(file);
+    processFile(e.dataTransfer.files[0]);
   };
 
   const handleSave = () => {
     console.log("Saving settings:", settings);
   };
 
-  /* ---------------- UI HELPERS ---------------- */
-  const EditableField = ({ label, field, value, placeholder }) => (
+  /* ---------------- COMPONENT ---------------- */
+  const EditableField = ({ label, field, value, placeholder }: any) => (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <Label>{label}</Label>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-primary h-8 px-2"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => toggleEdit(field)}
         >
           {editingFields[field] ? (
-            <span className="flex items-center gap-1 text-green-600"><Check className="w-4 h-4" /> Done</span>
+            <span className="flex items-center gap-1 text-green-600">
+              <Check className="w-4 h-4" /> Done
+            </span>
           ) : (
-            <span className="flex items-center gap-1"><Pencil className="w-3 h-3" /> Change</span>
+            <span className="flex items-center gap-1">
+              <Pencil className="w-3 h-3" /> Change
+            </span>
           )}
         </Button>
       </div>
+
       <Input
         disabled={!editingFields[field]}
         value={value}
         onChange={(e) => handleChange(field, e.target.value)}
         placeholder={placeholder}
-        className={!editingFields[field] ? "bg-muted/50" : "border-primary"}
+        className={!editingFields[field] ? "bg-muted/50" : ""}
       />
     </div>
   );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-4">
+
       {/* HEADER */}
       <div className="flex items-center gap-2">
         <Settings className="w-6 h-6 text-primary" />
@@ -120,24 +134,24 @@ export const SettingsPage = () => {
         </div>
       </div>
 
-      {/* BUSINESS PROFILE */}
+      {/* 1️⃣ BUSINESS PROFILE */}
       <Card>
         <CardHeader>
           <CardTitle>Business Profile</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6">
-          
-          <EditableField 
-            label="Business Name" 
-            field="business_name" 
-            value={settings.business_name} 
+
+          <EditableField
+            label="Business Name"
+            field="business_name"
+            value={settings.business_name}
             placeholder="Enter business name"
           />
 
-          <EditableField 
-            label="Phone Number" 
-            field="phone" 
-            value={settings.phone} 
+          <EditableField
+            label="Phone Number"
+            field="phone"
+            value={settings.phone}
             placeholder="+254..."
           />
 
@@ -146,90 +160,85 @@ export const SettingsPage = () => {
             <Input
               value={settings.location}
               onChange={(e) => handleChange("location", e.target.value)}
-              placeholder="City / Area"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Currency</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              value={settings.currency}
-              onChange={(e) => handleChange("currency", e.target.value)}
-            >
-              <option value="KES">KES (Kenyan Shilling)</option>
-              <option value="UGX">UGX (Ugandan Shilling)</option>
-              <option value="NGN">NGN (Nigerian Naira)</option>
-              <option value="USD">USD (US Dollar)</option>
-            </select>
-          </div>
         </CardContent>
       </Card>
 
-      {/* LOGO UPLOAD WITH DRAG & DROP */}
+      {/* 1B️⃣ LOGO */}
       <Card>
         <CardHeader>
           <CardTitle>Business Logo</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
             onDrop={onDrop}
-            className={`border-2 border-dashed rounded-xl p-8 transition-colors flex flex-col items-center justify-center gap-4 ${
+            className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-4 ${
               isDragging ? "border-primary bg-primary/5" : "border-muted"
             }`}
           >
             {(logoPreview || settings.business_logo_url) ? (
-              <div className="relative group">
-                <img
-                  src={logoPreview || settings.business_logo_url}
-                  alt="logo preview"
-                  className="w-32 h-32 object-contain bg-white border rounded-lg shadow-sm"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                   <p className="text-white text-xs">Drop new image to replace</p>
-                </div>
-              </div>
+              <img
+                src={logoPreview || settings.business_logo_url}
+                className="w-24 h-24 object-contain border rounded-lg"
+              />
             ) : (
-              <div className="bg-muted p-4 rounded-full">
-                <Upload className="w-8 h-8 text-muted-foreground" />
-              </div>
+              <Upload className="w-8 h-8 text-muted-foreground" />
             )}
-            
-            <div className="text-center">
-              <p className="text-sm font-medium">
-                Drag and drop your logo here, or{" "}
-                <button 
-                  type="button"
-                  className="text-primary hover:underline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  browse
-                </button>
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                PNG or JPG (Max 2MB)
-              </p>
-            </div>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="text-sm text-primary"
+            >
+              Upload Logo
+            </button>
 
             <Input
               ref={fileInputRef}
               type="file"
               className="hidden"
-              accept="image/png, image/jpeg"
               onChange={handleLogoUpload}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* RECEIPT SETTINGS */}
+      {/* 2️⃣ TEAM & ACCESS */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Team & Access</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+
+          <div className="text-sm text-muted-foreground">
+            Manage who has access to your business
+          </div>
+
+          {/* Placeholder list */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>{user?.ownerName} (You)</span>
+              <span className="text-muted-foreground">Owner</span>
+            </div>
+          </div>
+
+          <Button variant="outline" size="sm">
+            Add User (coming soon)
+          </Button>
+
+        </CardContent>
+      </Card>
+
+      {/* 3️⃣ RECEIPT SETTINGS */}
       <Card>
         <CardHeader>
           <CardTitle>Receipt Settings</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
+
           <div className="space-y-2">
             <Label>Receipt Prefix</Label>
             <Input
@@ -239,7 +248,7 @@ export const SettingsPage = () => {
           </div>
 
           <div className="space-y-2">
-            <Label>Receipt Footer Message</Label>
+            <Label>Footer Message</Label>
             <Input
               value={settings.receipt_footer}
               onChange={(e) => handleChange("receipt_footer", e.target.value)}
@@ -252,16 +261,52 @@ export const SettingsPage = () => {
               type="number"
               value={settings.tax_rate}
               onChange={(e) => handleChange("tax_rate", e.target.value)}
-              placeholder="e.g. 16"
             />
           </div>
+
         </CardContent>
       </Card>
 
-      {/* SAVE BUTTON */}
+      {/* 4️⃣ SECURITY */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Security</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">Password</p>
+              <p className="text-xs text-muted-foreground">
+                Change your account password
+              </p>
+            </div>
+
+            <Button size="sm" variant="outline">
+              Change Password
+            </Button>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-medium">Sessions</p>
+              <p className="text-xs text-muted-foreground">
+                Manage logged-in devices (coming soon)
+              </p>
+            </div>
+
+            <Button size="sm" variant="ghost" disabled>
+              Manage
+            </Button>
+          </div>
+
+        </CardContent>
+      </Card>
+
+      {/* SAVE */}
       <div className="flex justify-end pb-10">
-        <Button onClick={handleSave} size="lg" className="px-8">
-          Save All Changes
+        <Button onClick={handleSave} size="lg">
+          Save Changes
         </Button>
       </div>
     </div>
