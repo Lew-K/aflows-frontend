@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from '@/contexts/AuthContext';
 import { AddProductModal } from "./modals/AddProductModal"; 
 import { AddStockModal } from "./modals/AddStockModal";
+import { BulkStockModal } from "./modals/BulkStockModal";
 
 import {
   Package,
@@ -80,7 +81,7 @@ export const InventoryPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="shadow-sm" onClick={() => setSelectedItemForStock({})}>
+          <Button variant="outline" className="shadow-sm" onClick={() => setSelectedItemForStock(null)}
             <ArrowRightLeft className="w-4 h-4 mr-2" /> Quick Restock
           </Button>
           <Button className="shadow-md" onClick={() => setOpenAddProduct(true)}>
@@ -236,7 +237,7 @@ export const InventoryPage = () => {
             refresh();
           }}
         />
-      )
+      )}
 
       {bulkRestockOpen && (
         <BulkStockModal
