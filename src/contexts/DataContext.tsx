@@ -63,9 +63,14 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: any) => {
+  const inFlight = new Map<string, Promise<void>>();
+  
+  
   const [inventory, setInventory] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [salesCache, setSalesCache] = useState<Record<string, Sale[]>>({});
+  const [lastFetched, setLastFetched] = useState<Record<string, number>>({});
+  
   const [analyticsCache, setAnalyticsCache] = useState<
     Record<string, RevenueAnalytics>
   >({});
@@ -107,43 +112,66 @@ export const DataProvider = ({ children }: any) => {
     start?: string,
     end?: string
   ) => {
+
+    const STALE_TIME = 1000 * 60 * 5; // 5 minutes
+
+    const isStale =
+      !lastFetched[key] ||
+      Date.now() - lastFetched[key] > STALE_TIME;
+    
+    // ✅ if data exists AND not stale → skip
+    if (salesCache[key] && !isStale) return;
+    
     const key = getKey(businessId, period, start, end);
-
-    if (salesCache[key]) return;
-
-    setFetchingKeys((prev) => ({ ...prev, [key]: true }));
-
-    try {
-      const url = new URL(`https://n8n.aflows.uk/webhook/get-sales`);
-      url.searchParams.append("business_id", businessId);
-      url.searchParams.append("period", period);
-
-      if (period === "custom" && start && end) {
-        url.searchParams.append("start", start);
-        url.searchParams.append("end", end);
-      }
-
-      const res = await apiFetch(url.toString());
-      const data = await res.json();
-
-      const mapped: Sale[] = (data?.sales?.sales || []).map((s: any) => ({
-        ...s,
-        amount: Number(s.total_amount ?? 0),
-      }));
-
-      setSalesCache((prev) => {
-        if (prev[key]) return prev;
-
-        return {
+  
+    // // ✅ Already cached → skip
+    // if (salesCache[key]) return;
+  
+    // ✅ Already fetching → reuse same promise
+    if (inFlight.has(key)) {
+      return inFlight.get(key);
+    }
+  
+    const promise = (async () => {
+      setFetchingKeys((prev) => ({ ...prev, [key]: true }));
+  
+      try {
+        const url = new URL(`https://n8n.aflows.uk/webhook/get-sales`);
+        url.searchParams.append("business_id", businessId);
+        url.searchParams.append("period", period);
+  
+        if (period === "custom" && start && end) {
+          url.searchParams.append("start", start);
+          url.searchParams.append("end", end);
+        }
+  
+        const res = await apiFetch(url.toString());
+        const data = await res.json();
+  
+        const mapped: Sale[] = (data?.sales?.sales || []).map((s: any) => ({
+          ...s,
+          amount: Number(s.total_amount ?? 0),
+        }));
+  
+        setSalesCache((prev) => ({
           ...prev,
           [key]: mapped,
-        };
-      });
-    } catch (err) {
-      console.error("Sales fetch error:", err);
-    } finally {
-      setFetchingKeys((prev) => ({ ...prev, [key]: false }));
-    }
+        }));
+
+        setLastFetched((prev) => ({
+          ...prev,
+          [key]: Date.now(),
+        }));
+      } catch (err) {
+        console.error("Sales fetch error:", err);
+      } finally {
+        setFetchingKeys((prev) => ({ ...prev, [key]: false }));
+        inFlight.delete(key);
+      }
+    })();
+  
+    inFlight.set(key, promise);
+    return promise;
   };
 
   // ANALYTICS (🔥 cache + loading safe)
