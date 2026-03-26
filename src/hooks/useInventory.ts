@@ -1,17 +1,18 @@
+import { useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 
 export const useInventory = (businessId: string) => {
   const { inventory, loading, refreshInventory } = useData();
 
-  const refresh = () => {
+  useEffect(() => {
     if (!businessId) return;
-    return refreshInventory(businessId);
-  };
+    refreshInventory(businessId);
+  }, [businessId]);
 
   return {
     items: inventory,
     loading,
-    refresh,
+    refresh: () => refreshInventory(businessId),
   };
 };
 
