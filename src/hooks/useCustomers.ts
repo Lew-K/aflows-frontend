@@ -1,17 +1,18 @@
+import { useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 
 export const useCustomers = (businessId: string) => {
   const { customers, loading, refreshCustomers } = useData();
 
-  const refresh = () => {
+  useEffect(() => {
     if (!businessId) return;
-    return refreshCustomers(businessId);
-  };
+    refreshCustomers(businessId);
+  }, [businessId]);
 
   return {
     customers,
     loading,
-    refresh,
+    refresh: () => refreshCustomers(businessId),
   };
 };
 
