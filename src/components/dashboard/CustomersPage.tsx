@@ -21,7 +21,9 @@ export const CustomersPage = () => {
   }, [businessId]);
   
   const sales = getSales(businessId, "all");
-  const loading = isFetching(`${businessId}-all`);
+  const getKey = (businessId: string, period: string, start?: string, end?: string) =>
+    `${businessId}-${period}-${start || ""}-${end || ""}`;
+  const loading = isFetching(getKey(businessId, "all"));
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("total_spent");
@@ -101,16 +103,20 @@ export const CustomersPage = () => {
   const paginatedCustomers = processedCustomers.slice(0, visibleCount);
 
   /* ---------------- RENDER LOADING ---------------- */
-  {
+  if (loading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-40" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
         </div>
         <Skeleton className="h-12 w-full" />
         <div className="space-y-3">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
         </div>
       </div>
     );
