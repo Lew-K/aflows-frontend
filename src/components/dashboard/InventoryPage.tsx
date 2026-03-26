@@ -236,6 +236,7 @@ export const InventoryPage = () => {
             refresh();
           }}
         />
+      )
 
       {bulkRestockOpen && (
         <BulkStockModal
