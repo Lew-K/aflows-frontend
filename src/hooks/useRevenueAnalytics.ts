@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 
 export const useRevenueAnalytics = (
@@ -13,38 +13,25 @@ export const useRevenueAnalytics = (
     isFetching,
   } = useData();
 
-  const [data, setData] = useState({
-    revenueSummary: null,
-    dailyRevenue: [],
-    topSellingItems: [],
-    paymentMethods: [],
-  });
-
   const key = `${businessId}-${period}-${customStart || ""}-${customEnd || ""}`;
+
+  const data = getRevenueAnalytics(
+    businessId,
+    period,
+    customStart,
+    customEnd
+  );
 
   useEffect(() => {
     if (!businessId) return;
     if (period === "custom" && (!customStart || !customEnd)) return;
 
-    const run = async () => {
-      await fetchRevenueAnalytics(
-        businessId,
-        period,
-        customStart,
-        customEnd
-      );
-
-      const res = getRevenueAnalytics(
-        businessId,
-        period,
-        customStart,
-        customEnd
-      );
-
-      setData(res);
-    };
-
-    run();
+    fetchRevenueAnalytics(
+      businessId,
+      period,
+      customStart,
+      customEnd
+    );
   }, [businessId, period, customStart, customEnd]);
 
   return {
