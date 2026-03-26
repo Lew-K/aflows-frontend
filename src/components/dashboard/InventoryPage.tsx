@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 export const InventoryPage = () => {
+  const [bulkRestockOpen, setBulkRestockOpen] = useState(false);
   const { user } = useAuth();
   const businessId = user?.businessId;
   const { items = [], loading, refresh } = useInventory(businessId || "");
@@ -84,6 +85,13 @@ export const InventoryPage = () => {
           </Button>
           <Button className="shadow-md" onClick={() => setOpenAddProduct(true)}>
             <Plus className="w-4 h-4 mr-2" /> New Product
+          </Button>
+          <Button 
+            variant="outline" 
+            className="shadow-sm"
+            onClick={() => setBulkRestockOpen(true)}
+          >
+            <Boxes className="w-4 h-4 mr-2" /> Bulk Restock
           </Button>
         </div>
       </div>
@@ -225,6 +233,16 @@ export const InventoryPage = () => {
           onClose={() => setSelectedItemForStock(null)}
           onSuccess={() => {
             setSelectedItemForStock(null);
+            refresh();
+          }}
+        />
+
+      {bulkRestockOpen && (
+        <BulkStockModal
+          items={items}
+          onClose={() => setBulkRestockOpen(false)}
+          onSuccess={() => {
+            setBulkRestockOpen(false);
             refresh();
           }}
         />
