@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRef } from "react";
+
 
 // 🔥 Minimal useful types
 type Sale = {
@@ -63,7 +65,6 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: any) => {
-  import { useRef } from "react";
 
   const inFlight = useRef(new Map<string, Promise<void>>());
   
