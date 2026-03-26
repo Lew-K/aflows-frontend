@@ -63,7 +63,9 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: any) => {
-  const inFlight = new Map<string, Promise<void>>();
+  import { useRef } from "react";
+
+  const inFlight = useRef(new Map<string, Promise<void>>());
   
   
   const [inventory, setInventory] = useState<any[]>([]);
@@ -113,6 +115,8 @@ export const DataProvider = ({ children }: any) => {
     end?: string
   ) => {
 
+    const key = getKey(businessId, period, start, end);
+
     const STALE_TIME = 1000 * 60 * 5; // 5 minutes
 
     const isStale =
@@ -120,16 +124,18 @@ export const DataProvider = ({ children }: any) => {
       Date.now() - lastFetched[key] > STALE_TIME;
     
     // ✅ if data exists AND not stale → skip
-    if (salesCache[key] && !isStale) return;
+    const existing = salesCache[key];
+
+    if (existing && !isStale) return;
     
-    const key = getKey(businessId, period, start, end);
+    
   
     // // ✅ Already cached → skip
     // if (salesCache[key]) return;
   
     // ✅ Already fetching → reuse same promise
-    if (inFlight.has(key)) {
-      return inFlight.get(key);
+    if (inFlight.current.has(key)) {
+      return inFlight.current.get(key);
     }
   
     const promise = (async () => {
@@ -166,11 +172,11 @@ export const DataProvider = ({ children }: any) => {
         console.error("Sales fetch error:", err);
       } finally {
         setFetchingKeys((prev) => ({ ...prev, [key]: false }));
-        inFlight.delete(key);
+        inFlight.current.delete(key);
       }
     })();
   
-    inFlight.set(key, promise);
+    inFlight.current.set(key, promise);
     return promise;
   };
 
