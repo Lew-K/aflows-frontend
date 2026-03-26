@@ -17,12 +17,8 @@ export const CustomersPage = () => {
   useEffect(() => {
     if (!businessId) return;
   
-    const existing = getSales(businessId, "all");
-  
-    if (!existing || existing.length === 0) {
-      fetchSales(businessId, "all");
-    }
-  }, [businessId, getSales]);
+    fetchSales(businessId, "all"); // safe now (deduped + stale-aware)
+  }, [businessId]);
   
   const sales = getSales(businessId, "all");
   const loading = isFetching(`${businessId}-all`);
@@ -105,7 +101,7 @@ export const CustomersPage = () => {
   const paginatedCustomers = processedCustomers.slice(0, visibleCount);
 
   /* ---------------- RENDER LOADING ---------------- */
-  if (loading) {
+  {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-40" />
