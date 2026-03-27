@@ -79,7 +79,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-      <div className="bg-background border border-border rounded-xl w-full max-w-3xl p-6 space-y-5 shadow-lg">
+      <div className="bg-background border border-border rounded-xl w-full max-w-3xl p-4 sm:p-6 space-y-5 shadow-lg max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -92,7 +92,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-3 items-center px-1 text-sm text-muted-foreground">
+        <className="hidden sm:grid grid-cols-12 gap-3 items-center px-1 text-xs font-medium text-muted-foreground">
           <div className="col-span-4">Product Name</div>
           <div className="col-span-2">Initial Stock</div>
           <div className="col-span-2">Cost per Unit</div>
@@ -105,9 +105,10 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
           {rows.map((row, i) => (
             <div
               key={i}
-              className="grid grid-cols-12 gap-3 items-center"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center"
             >
-              <div className="col-span-4">
+              <div className="col-span-1 sm:col-span-4">
+                <p className="text-xs text-muted-foreground mb-1 sm:hidden">Product Name</p>
                 <Input
                   placeholder="Enter Product Name"
                   value={row.name}
@@ -122,7 +123,8 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
+                <p className="text-xs text-muted-foreground mb-1 sm:hidden">Stock</p>
                 <Input
                   type="number"
                   placeholder="0"
@@ -133,7 +135,8 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
+                <p className="text-xs text-muted-foreground mb-1 sm:hidden">Cost (KES)</p>
                 <Input
                   type="number"
                   placeholder="KES"
@@ -144,7 +147,8 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              <div className="col-span-3">
+              <div className="col-span-1 sm:col-span-3">
+                <p className="text-xs text-muted-foreground mb-1 sm:hidden">Threshold</p>
                 <Input
                   type="number"
                   value={row.threshold}
@@ -154,7 +158,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              <div className="col-span-1 flex justify-center">
+              <div className="col-span-1 sm:col-span-1 flex justify-end sm:justify-center">
                 <Button
                   variant="ghost"
                   size="icon"
