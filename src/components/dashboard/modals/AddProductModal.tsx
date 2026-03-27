@@ -92,7 +92,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-3 text-sm text-muted-foreground px-2">
+        <div className="grid grid-cols-12 gap-3 items-center">
           <div className="col-span-4">Product Name</div>
           <div className="col-span-2">Initial Stock</div>
           <div className="col-span-2">Cost per Unit (KES)</div>
