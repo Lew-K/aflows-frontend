@@ -46,7 +46,7 @@ export const BulkStockModal = ({ items, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
       {/* Updated colors for Dark/Light mode support */}
-      <div className="bg-white dark:bg-slate-900 border dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl w-full max-w-3xl p-6 shadow-2xl space-y-4">
+      <div className="bg-background border border-border text-foreground rounded-xl w-full max-w-3xl p-6 shadow-2xl space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold tracking-tight">Bulk Restock</h2>
           <span className="text-xs text-muted-foreground uppercase font-semibold">
