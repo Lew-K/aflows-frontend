@@ -1,191 +1,179 @@
-import React, { useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Plus, Trash } from "lucide-react";
 
-export const BulkStockModal = ({ items, onClose, onSuccess }) => {
-  const [updates, setUpdates] = useState({});
+export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
+  const { user } = useAuth();
+
+  const [rows, setRows] = useState([
+    { name: "", stock: "", threshold: 5 },
+  ]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [mode, setMode] = useState("add"); // add | set
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (id, value) => {
-    if (Number(value) < 0) return;
-    setUpdates((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+  if (!isOpen) return null;
+
+  const updateRow = (index, field, value) => {
+    const updated = [...rows];
+    updated[index][field] = value;
+    setRows(updated);
   };
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item) =>
-      item.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [items, search]);
+  const addRow = () => {
+    setRows([...rows, { name: "", stock: "", threshold: 5 }]);
+  };
 
-  const computedUpdates = useMemo(() => {
-    return Object.entries(updates).map(([id, qty]) => {
-      const item = items.find((i) => i.id === id);
-      const current = item?.stock ?? 0;
-      const value = Number(qty);
+  const removeRow = (index) => {
+    if (rows.length === 1) return;
+    setRows(rows.filter((_, i) => i !== index));
+  };
 
-      let next = current;
-      if (mode === "add") next = current + value;
-      if (mode === "set") next = value;
-
-      return { id, current, next, value };
+  const validate = () => {
+    const newErrors = {};
+    rows.forEach((row, i) => {
+      if (!row.name.trim()) {
+        newErrors[i] = "Name required";
+      }
     });
-  }, [updates, items, mode]);
-
-  const totalItemsChanged = computedUpdates.length;
-  const totalUnitsAdded = computedUpdates.reduce(
-    (sum, u) => sum + (u.next - u.current),
-    0
-  );
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async () => {
-    const payload = computedUpdates.map((u) => ({
-      item_id: u.id,
-      quantity: u.value,
-      mode, // backend can ignore for now
-    }));
-
-    if (payload.length === 0) return;
+    if (!validate()) return;
 
     setLoading(true);
-    try {
-      const response = await fetch("/api/bulk-restock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
 
-      if (response.ok) {
-        onSuccess();
-        onClose();
+    try {
+      for (const row of rows) {
+        const res = await fetch("https://n8n.aflows.uk/webhook/add-product", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            businessId: user?.businessId,
+            name: row.name.trim(),
+            low_stock_threshold: Number(row.threshold),
+            initial_stock: row.stock ? Number(row.stock) : 0, // safe addition
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed");
       }
+
+      setRows([{ name: "", stock: "", threshold: 5 }]);
+      onSuccess();
+      onClose();
     } catch (err) {
-      console.error("Restock failed:", err);
+      console.error(err);
+      alert("Error adding products");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-      <div className="bg-background border border-border text-foreground rounded-xl w-full max-w-4xl p-6 shadow-2xl space-y-5">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+      <div className="bg-background border border-border rounded-xl w-full max-w-3xl p-6 space-y-5 shadow-lg">
 
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Bulk Stock Update</h2>
+          <h2 className="text-lg font-semibold">
+            Add Products
+          </h2>
           <span className="text-xs text-muted-foreground">
-            {items.length} items
+            {rows.length} items
           </span>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap gap-3 items-center">
-          <Input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
-
-          <div className="flex gap-1 border border-border rounded-md p-1">
-            <Button
-              size="sm"
-              variant={mode === "add" ? "default" : "ghost"}
-              onClick={() => setMode("add")}
-            >
-              Add
-            </Button>
-            <Button
-              size="sm"
-              variant={mode === "set" ? "default" : "ghost"}
-              onClick={() => setMode("set")}
-            >
-              Set
-            </Button>
-          </div>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setUpdates({})}
-          >
-            Clear
-          </Button>
+        {/* Table Header */}
+        <div className="grid grid-cols-12 gap-3 text-sm text-muted-foreground px-2">
+          <div className="col-span-5">Product Name</div>
+          <div className="col-span-3">Initial Stock</div>
+          <div className="col-span-3">Threshold</div>
+          <div className="col-span-1"></div>
         </div>
 
-        {/* List */}
-        <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
-          {filteredItems.map((item) => {
-            const value = updates[item.id];
-            const current = item.stock ?? 0;
+        {/* Rows */}
+        <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2">
+          {rows.map((row, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-3 items-center"
+            >
+              <div className="col-span-5">
+                <Input
+                  placeholder="e.g. Gas 6kg"
+                  value={row.name}
+                  onChange={(e) =>
+                    updateRow(i, "name", e.target.value)
+                  }
+                />
+                {errors[i] && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors[i]}
+                  </p>
+                )}
+              </div>
 
-            let next = current;
-            if (value !== undefined) {
-              const v = Number(value);
-              next = mode === "add" ? current + v : v;
-            }
-
-            const isChanged = value !== undefined;
-
-            return (
-              <div
-                key={item.id}
-                className={`flex items-center gap-4 p-3 rounded-lg border transition ${
-                  isChanged
-                    ? "bg-primary/5 border-primary/20"
-                    : "border-transparent hover:bg-muted/50"
-                }`}
-              >
-                <div className="flex-1 font-medium">{item.name}</div>
-
-                <div className="text-sm text-muted-foreground w-32 text-right">
-                  {current} {isChanged && "→"}{" "}
-                  {isChanged && <span className="text-foreground">{next}</span>}
-                </div>
-
+              <div className="col-span-3">
                 <Input
                   type="number"
-                  min="0"
                   placeholder="0"
-                  className="w-24"
-                  value={value || ""}
+                  value={row.stock}
                   onChange={(e) =>
-                    handleChange(item.id, e.target.value)
+                    updateRow(i, "stock", e.target.value)
                   }
                 />
               </div>
-            );
-          })}
+
+              <div className="col-span-3">
+                <Input
+                  type="number"
+                  value={row.threshold}
+                  onChange={(e) =>
+                    updateRow(i, "threshold", e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="col-span-1 flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRow(i)}
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Summary */}
-        {totalItemsChanged > 0 && (
-          <div className="text-sm text-muted-foreground border-t pt-3">
-            Updating <span className="font-medium">{totalItemsChanged}</span> items •{" "}
-            Net change:{" "}
-            <span className="font-medium">{totalUnitsAdded}</span>
-          </div>
-        )}
+        {/* Add Row */}
+        <Button
+          variant="outline"
+          onClick={addRow}
+          className="w-full flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Another Product
+        </Button>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 border-t pt-4">
-          <Button variant="ghost" onClick={onClose} disabled={loading}>
+        <div className="flex justify-end gap-3 pt-3 border-t">
+          <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || totalItemsChanged === 0}
-          >
+          <Button onClick={handleSubmit} disabled={loading}>
             {loading && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Apply Changes ({totalItemsChanged})
+            Add {rows.length} Products
           </Button>
         </div>
       </div>
