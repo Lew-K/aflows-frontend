@@ -8,7 +8,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
 
   const [rows, setRows] = useState([
-    { name: "", stock: "", threshold: 5, Cost per Unit (KES): "" },
+    { name: "", stock: "", threshold: 5, cost: "" },
   ]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -22,7 +22,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const addRow = () => {
-    setRows([...rows, { name: "", stock: "", threshold: 5, Cost per Unit (KES): "" }]);
+    setRows([...rows, { name: "", stock: "", threshold: 5, cost: "" }]);
   };
 
   const removeRow = (index) => {
@@ -58,6 +58,8 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
             name: row.name.trim(),
             low_stock_threshold: Number(row.threshold),
             initial_stock: row.stock ? Number(row.stock) : 0, // safe addition
+            cost_per_unit: row.cost ? Number(row.cost) : null, // ✅ NEW
+
           }),
         });
 
