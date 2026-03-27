@@ -81,9 +81,9 @@ export const InventoryPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="shadow-sm" onClick={() => setSelectedItemForStock(null)}>
+          {/* <Button variant="outline" className="shadow-sm" onClick={() => setSelectedItemForStock(null)}>
             <ArrowRightLeft className="w-4 h-4 mr-2" /> Quick Restock
-          </Button>
+          </Button> */}
           <Button className="shadow-md" onClick={() => setOpenAddProduct(true)}>
             <Plus className="w-4 h-4 mr-2" /> New Product
           </Button>
