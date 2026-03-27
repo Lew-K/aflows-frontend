@@ -8,7 +8,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
 
   const [rows, setRows] = useState([
-    { name: "", stock: "", threshold: 5 },
+    { name: "", stock: "", threshold: 5, Cost per Unit (KES): "" },
   ]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -22,7 +22,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const addRow = () => {
-    setRows([...rows, { name: "", stock: "", threshold: 5 }]);
+    setRows([...rows, { name: "", stock: "", threshold: 5, Cost per Unit (KES): "" }]);
   };
 
   const removeRow = (index) => {
@@ -93,6 +93,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
         <div className="grid grid-cols-12 gap-3 text-sm text-muted-foreground px-2">
           <div className="col-span-5">Product Name</div>
           <div className="col-span-3">Initial Stock</div>
+          <div className="col-span-2">Cost per Unit (KES)</div>
           <div className="col-span-3">Threshold</div>
           <div className="col-span-1"></div>
         </div>
@@ -106,7 +107,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
             >
               <div className="col-span-5">
                 <Input
-                  placeholder="e.g. Gas 6kg"
+                  placeholder="Enter Product Name"
                   value={row.name}
                   onChange={(e) =>
                     updateRow(i, "name", e.target.value)
@@ -126,6 +127,17 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                   value={row.stock}
                   onChange={(e) =>
                     updateRow(i, "stock", e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="col-span-2">
+                <Input
+                  type="number"
+                  placeholder="KES"
+                  value={row.cost}
+                  onChange={(e) =>
+                    updateRow(i, "cost", e.target.value)
                   }
                 />
               </div>
