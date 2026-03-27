@@ -66,7 +66,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
         if (!res.ok) throw new Error("Failed");
       }
 
-      setRows([{ name: "", stock: "", threshold: 5 }]);
+      setRows([{ name: "", stock: "", threshold: 5, cost: "" }]);
       onSuccess();
       onClose();
     } catch (err) {
