@@ -92,7 +92,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-3 items-center">
+        <div className="grid grid-cols-12 gap-3 items-center px-1 text-sm text-muted-foreground">
           <div className="col-span-4">Product Name</div>
           <div className="col-span-2">Initial Stock</div>
           <div className="col-span-2">Cost per Unit</div>
@@ -107,7 +107,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
               key={i}
               className="grid grid-cols-12 gap-3 items-center"
             >
-              <div className="col-span-5">
+              <div className="col-span-4">
                 <Input
                   placeholder="Enter Product Name"
                   value={row.name}
@@ -122,7 +122,7 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Input
                   type="number"
                   placeholder="0"
