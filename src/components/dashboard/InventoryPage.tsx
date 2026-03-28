@@ -148,31 +148,43 @@ export const InventoryPage = () => {
       ) : (
         <div className="space-y-4">
           {/* SEARCH & FILTERS */}
-          <div className="flex flex-col sm:flex-row gap-3 bg-background p-1">
-            {/* SEARCH: flex-1 makes this take up all available remaining width */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search by product name..." 
-                className="pl-10 h-11 bg-background border border-border focus-visible:ring-1" 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="relative">
-              <select 
-                className="h-11 w-full sm:w-[180px] rounded-lg border border-input bg-background pl-4 pr-10 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="all">All Inventory</option>
-                <option value="low">Low Stock</option>
-                <option value="out">Out of Stock</option>
-              </select>
+          <div className="flex flex-col sm:flex-row gap-4 bg-background p-1">
 
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </div>
+            <div className="relative flex-1">
+
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+              <Input 
+
+                placeholder="Search by product name..." 
+
+                className="pl-10 h-11 bg-background border border-border focus-visible:ring-1" 
+
+                value={search}
+
+                onChange={(e) => setSearch(e.target.value)}
+
+              />
+
+            </div>
+
+            <select 
+
+              className="h-11 rounded-md border-none bg-muted/30 px-4 text-sm font-medium outline-none focus:ring-1 focus:ring-primary min-w-[160px]"
+              value={filter}
+
+              onChange={(e) => setFilter(e.target.value)}
+
+            >
+
+              <option value="all" className="bg-background text-foreground">All Inventory</option>
+
+              <option value="low" className="bg-background text-foreground">Low Stock Warning</option>
+
+              <option value="out" className="bg-background text-foreground">Out of Stock</option>
+
+            </select>
+
           </div>
 
           {/* TABLE */}
