@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Users, Search, Calendar, TrendingUp, UserMinus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CustomerModal } from "./CustomerModal";
+import { CustomerModal } from "./modals/CustomerModal";
 
 export const CustomersPage = () => {
   const { user } = useAuth();
