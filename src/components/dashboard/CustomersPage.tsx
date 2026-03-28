@@ -227,7 +227,7 @@ export const CustomersPage = () => {
 
 
           {/* SEARCH */}
-          <div className="sticky top-0 bg-background/80 backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
+          <div className="sticky top-0 bg-background backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
             <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
     
             <select value={segmentFilter} onChange={(e) => setSegmentFilter(e.target.value)} className="border rounded px-2">
