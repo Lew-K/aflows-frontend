@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 
-export const CustomerPanel = ({ customer, sales, onClose }) => {
+export const CustomerModal = ({ customer, sales, onClose }) => {
   if (!customer) return null;
 
   const getInitials = (name) =>
