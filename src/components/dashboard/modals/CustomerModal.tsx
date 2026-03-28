@@ -72,7 +72,7 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
           </div>
           <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
             <p className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5 mb-1">
-              <ShoppingBag className="w-3 h-3" /> Avg. Ticket
+              <ShoppingBag className="w-3 h-3" /> Avg. Order
             </p>
             <p className="text-lg font-bold tabular-nums">
               KES {avgOrderValue.toLocaleString()}
