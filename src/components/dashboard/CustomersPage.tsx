@@ -1,14 +1,13 @@
-// FULL UPDATED CUSTOMERS PAGE WITH MODAL + SEGMENTATION + KPIs
+// CUSTOMERS PAGE WITH INLINE SIDE PANEL (PREMIUM UX)
 import React, { useEffect, useMemo, useState } from "react";
 import { useData } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Calendar, TrendingUp, UserMinus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Users, Search, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomerModal } from "./modals/CustomerModal";
+import { CustomerModal } from "../modals/CustomerModal"; // ← USE PANEL (NOT MODAL)
 
 export const CustomersPage = () => {
   const { user } = useAuth();
@@ -33,14 +32,6 @@ export const CustomersPage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const now = useMemo(() => new Date(), []);
-
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
 
   /* ---------------- AGGREGATION ---------------- */
   const customers = useMemo(() => {
@@ -70,16 +61,14 @@ export const CustomersPage = () => {
     return Array.from(map.values());
   }, [sales]);
 
-  /* ---------------- GLOBAL METRICS ---------------- */
+  /* ---------------- METRICS ---------------- */
   const totalRevenue = useMemo(
     () => sales.reduce((sum, s) => sum + Number(s.amount || 0), 0),
     [sales]
   );
 
   const repeatCustomers = customers.filter((c) => c.transactions > 1);
-
   const avgSpend = totalRevenue / (customers.length || 1);
-
   const repeatRate = (repeatCustomers.length / (customers.length || 1)) * 100;
 
   const activeThisMonth = customers.filter((c) => {
@@ -102,30 +91,6 @@ export const CustomersPage = () => {
 
     return { ...c, segment };
   });
-
-  const segmentStats = useMemo(() => {
-    const stats = {
-      vip: { count: 0, revenue: 0 },
-      regular: { count: 0, revenue: 0 },
-      at_risk: { count: 0, revenue: 0 },
-    };
-
-    segmentedCustomers.forEach((c) => {
-      stats[c.segment].count++;
-      stats[c.segment].revenue += c.total_spent;
-    });
-
-    return stats;
-  }, [segmentedCustomers]);
-
-  /* ---------------- TOP + AT RISK ---------------- */
-  const topCustomers = [...segmentedCustomers]
-    .sort((a, b) => b.total_spent - a.total_spent)
-    .slice(0, 3);
-
-  const atRiskCustomers = segmentedCustomers
-    .filter((c) => c.segment === "at_risk")
-    .slice(0, 5);
 
   /* ---------------- FILTER ---------------- */
   const processedCustomers = useMemo(() => {
@@ -150,7 +115,7 @@ export const CustomersPage = () => {
 
   const paginatedCustomers = processedCustomers.slice(0, visibleCount);
 
-  /* ---------------- CUSTOMER SALES FOR MODAL ---------------- */
+  /* ---------------- CUSTOMER SALES ---------------- */
   const customerSales = useMemo(() => {
     if (!selectedCustomer) return [];
 
@@ -165,110 +130,84 @@ export const CustomersPage = () => {
   }
 
   return (
-    <div className="space-y-8">
-      {/* HEADER */}
-      <div>
-        <h1 className="text-2xl font-bold">Customers</h1>
-        <p className="text-sm text-muted-foreground">
-          Monitor customer loyalty and spending habits.
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {repeatCustomers.length} repeat customers generating {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue
-        </p>
-      </div>
+    <div className="flex gap-6">
+      {/* LEFT SIDE (MAIN PAGE) */}
+      <div
+        className={`
+          transition-all duration-300 ease-in-out
+          ${selectedCustomer ? "w-full lg:w-2/3" : "w-full"}
+        `}
+      >
+        <div className="space-y-8">
+          {/* HEADER */}
+          <div>
+            <h1 className="text-2xl font-bold">Customers</h1>
+            <p className="text-sm text-muted-foreground">
+              Monitor customer loyalty and spending habits.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {repeatCustomers.length} repeat customers generating {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue
+            </p>
+          </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard title="Total Customers" value={customers.length} icon={<Users />} />
-        <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar />} />
-        <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp />} />
-        <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp />} />
-      </div>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard title="Total Customers" value={customers.length} icon={<Users />} />
+            <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar />} />
+            <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp />} />
+            <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp />} />
+          </div>
 
-      {/* SEGMENTS */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {Object.entries(segmentStats).map(([key, val]) => (
-          <Card key={key}>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground uppercase">{key.replace("_", " ")}</p>
-              <p className="text-lg font-bold">{val.count}</p>
-              <p className="text-xs text-muted-foreground">KES {val.revenue.toLocaleString()}</p>
+          {/* SEARCH */}
+          <div className="sticky top-0 bg-background/80 backdrop-blur p-3 rounded-xl flex gap-3">
+            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+
+          {/* LIST */}
+          <Card>
+            <CardContent className="p-0">
+              {paginatedCustomers.map((c, i) => (
+                <div
+                  key={c.customer_name}
+                  onClick={() => setSelectedCustomer(c)}
+                  className={`
+                    p-4 flex justify-between cursor-pointer transition-colors
+                    hover:bg-muted/40
+                    ${selectedCustomer?.customer_name === c.customer_name ? "bg-muted" : ""}
+                  `}
+                >
+                  <div>
+                    <p className="font-semibold">#{i + 1} {c.customer_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {c.transactions} orders • Last {new Date(c.last_purchase).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold">KES {c.total_spent.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
-        ))}
+
+          {/* LOAD MORE */}
+          {visibleCount < processedCustomers.length && (
+            <Button onClick={() => setVisibleCount((v) => v + 20)}>
+              Load More
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* TOP CUSTOMERS */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {topCustomers.map((c, i) => (
-          <Card key={c.customer_name} onClick={() => setSelectedCustomer(c)} className="cursor-pointer">
-            <CardContent className="p-4">
-              <p className="font-bold">#{i + 1} {c.customer_name}</p>
-              <p className="text-sm">KES {c.total_spent.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">
-                {Math.round((c.total_spent / (totalRevenue || 1)) * 100)}% revenue
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* AT RISK */}
-      {atRiskCustomers.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm font-semibold mb-2">At Risk Customers</p>
-            {atRiskCustomers.map((c) => (
-              <div key={c.customer_name} className="flex justify-between text-sm py-1">
-                <span>{c.customer_name}</span>
-                <span>KES {c.total_spent.toLocaleString()}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* SEARCH + FILTER */}
-      <div className="sticky top-0 bg-background/80 backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
-        <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-
-        <select value={segmentFilter} onChange={(e) => setSegmentFilter(e.target.value)} className="border rounded px-2">
-          <option value="all">All</option>
-          <option value="vip">VIP</option>
-          <option value="regular">Regular</option>
-          <option value="at_risk">At Risk</option>
-        </select>
-      </div>
-
-      {/* LIST */}
-      <Card>
-        <CardContent className="p-0">
-          {paginatedCustomers.map((c, i) => (
-            <div key={c.customer_name} onClick={() => setSelectedCustomer(c)} className="p-4 flex justify-between hover:bg-muted/40 cursor-pointer">
-              <div>
-                <p className="font-semibold">#{i + 1} {c.customer_name}</p>
-                <p className="text-xs text-muted-foreground">{c.transactions} orders</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold">KES {c.total_spent.toLocaleString()}</p>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* LOAD MORE */}
-      {visibleCount < processedCustomers.length && (
-        <Button onClick={() => setVisibleCount((v) => v + 20)}>Load More</Button>
-      )}
-
-      {/* MODAL */}
+      {/* RIGHT SIDE PANEL */}
       {selectedCustomer && (
-        <CustomerModal
-          customer={selectedCustomer}
-          sales={customerSales}
-          onClose={() => setSelectedCustomer(null)}
-        />
+        <div className="hidden lg:block w-1/3 max-w-[420px]">
+          <CustomerPanel
+            customer={selectedCustomer}
+            sales={customerSales}
+            onClose={() => setSelectedCustomer(null)}
+          />
+        </div>
       )}
     </div>
   );
