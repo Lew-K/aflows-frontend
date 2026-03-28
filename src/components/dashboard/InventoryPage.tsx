@@ -159,13 +159,13 @@ export const InventoryPage = () => {
               />
             </div>
             <select 
-              className="h-11 rounded-md border-none bg-muted/30 px-4 text-sm font-medium outline-none focus:ring-1 focus:ring-primary min-w-[160px]"
+              className="h-11 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm font-medium ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="all">All Items</option>
-              <option value="low">⚠️ Low Stock</option>
-              <option value="out">❌ Out of Stock</option>
+              <option value="all" className="bg-background text-foreground">All Inventory</option>
+              <option value="low" className="bg-background text-foreground">Low Stock Warning</option>
+              <option value="out" className="bg-background text-foreground">Out of Stock</option>
             </select>
           </div>
 
