@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Users, Search, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomerModal } from "../modals/CustomerModal"; // ← USE PANEL (NOT MODAL)
+import { CustomerModal } from "./modals/CustomerModal"; // ← USE PANEL (NOT MODAL)
 
 export const CustomersPage = () => {
   const { user } = useAuth();
@@ -92,6 +92,30 @@ export const CustomersPage = () => {
     return { ...c, segment };
   });
 
+  const segmentStats = useMemo(() => {
+    const stats = {
+      vip: { count: 0, revenue: 0 },
+      regular: { count: 0, revenue: 0 },
+      at_risk: { count: 0, revenue: 0 },
+    };
+
+    segmentedCustomers.forEach((c) => {
+      stats[c.segment].count++;
+      stats[c.segment].revenue += c.total_spent;
+    });
+
+    return stats;
+  }, [segmentedCustomers]);
+
+  /* ---------------- TOP + AT RISK ---------------- */
+  const topCustomers = [...segmentedCustomers]
+    .sort((a, b) => b.total_spent - a.total_spent)
+    .slice(0, 3);
+
+  const atRiskCustomers = segmentedCustomers
+    .filter((c) => c.segment === "at_risk")
+    .slice(0, 5);
+
   /* ---------------- FILTER ---------------- */
   const processedCustomers = useMemo(() => {
     let filtered = segmentedCustomers.filter((c) =>
@@ -158,10 +182,62 @@ export const CustomersPage = () => {
             <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp />} />
           </div>
 
-          {/* SEARCH */}
-          <div className="sticky top-0 bg-background/80 backdrop-blur p-3 rounded-xl flex gap-3">
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          {/* SEGMENTS */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {Object.entries(segmentStats).map(([key, val]) => (
+              <Card key={key}>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground uppercase">{key.replace("_", " ")}</p>
+                  <p className="text-lg font-bold">{val.count}</p>
+                  <p className="text-xs text-muted-foreground">KES {val.revenue.toLocaleString()}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+    
+          {/* TOP CUSTOMERS */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {topCustomers.map((c, i) => (
+              <Card key={c.customer_name} onClick={() => setSelectedCustomer(c)} className="cursor-pointer">
+                <CardContent className="p-4">
+                  <p className="font-bold">#{i + 1} {c.customer_name}</p>
+                  <p className="text-sm">KES {c.total_spent.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {Math.round((c.total_spent / (totalRevenue || 1)) * 100)}% revenue
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+    
+          {/* AT RISK */}
+          {atRiskCustomers.length > 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm font-semibold mb-2">At Risk Customers</p>
+                {atRiskCustomers.map((c) => (
+                  <div key={c.customer_name} className="flex justify-between text-sm py-1">
+                    <span>{c.customer_name}</span>
+                    <span>KES {c.total_spent.toLocaleString()}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+
+          {/* SEARCH */}
+          <div className="sticky top-0 bg-background/80 backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
+            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+    
+            <select value={segmentFilter} onChange={(e) => setSegmentFilter(e.target.value)} className="border rounded px-2">
+              <option value="all">All</option>
+              <option value="vip">VIP</option>
+              <option value="regular">Regular</option>
+              <option value="at_risk">At Risk</option>
+            </select>
+          </div>
+
 
           {/* LIST */}
           <Card>
