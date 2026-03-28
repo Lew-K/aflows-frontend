@@ -230,11 +230,15 @@ export const CustomersPage = () => {
           <div className="sticky top-0 bg-background backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
             <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
     
-            <select value={segmentFilter} onChange={(e) => setSegmentFilter(e.target.value)} className="border rounded px-2">
-              <option value="all">All</option>
-              <option value="vip">VIP</option>
-              <option value="regular">Regular</option>
-              <option value="at_risk">At Risk</option>
+            <select 
+              value={segmentFilter} 
+              onChange={(e) => setSegmentFilter(e.target.value)} 
+              className="bg-background text-foreground border-input rounded-md px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all" className="bg-background">All</option>
+              <option value="vip" className="bg-background">VIP</option>
+              <option value="regular" className="bg-background">Regular</option>
+              <option value="at_risk" className="bg-background">At Risk</option>
             </select>
           </div>
 
