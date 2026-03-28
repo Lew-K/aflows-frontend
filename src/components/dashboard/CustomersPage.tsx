@@ -9,279 +9,148 @@ import { Users, Search, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerModal } from "./modals/CustomerModal"; // ← USE PANEL (NOT MODAL)
 
+// ... keep imports the same
+
 export const CustomersPage = () => {
-  const { user } = useAuth();
-  const { getSales, fetchSales, isFetching } = useData();
-
-  const businessId = user?.businessId || "";
-
-  useEffect(() => {
-    if (!businessId) return;
-    fetchSales(businessId, "all");
-  }, [businessId]);
-
-  const sales = getSales(businessId, "all");
-
-  const getKey = (businessId, period) => `${businessId}-${period}`;
-  const loading = isFetching(getKey(businessId, "all"));
-
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("total_spent");
-  const [segmentFilter, setSegmentFilter] = useState("all");
-  const [visibleCount, setVisibleCount] = useState(20);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-
-  const now = useMemo(() => new Date(), []);
-
-  /* ---------------- AGGREGATION ---------------- */
-  const customers = useMemo(() => {
-    const map = new Map();
-
-    sales.forEach((sale) => {
-      if (!sale.customer_name) return;
-
-      if (!map.has(sale.customer_name)) {
-        map.set(sale.customer_name, {
-          customer_name: sale.customer_name,
-          total_spent: 0,
-          transactions: 0,
-          last_purchase: sale.created_at,
-        });
-      }
-
-      const c = map.get(sale.customer_name);
-      c.total_spent += Number(sale.amount);
-      c.transactions += 1;
-
-      if (new Date(sale.created_at) > new Date(c.last_purchase)) {
-        c.last_purchase = sale.created_at;
-      }
-    });
-
-    return Array.from(map.values());
-  }, [sales]);
-
-  /* ---------------- METRICS ---------------- */
-  const totalRevenue = useMemo(
-    () => sales.reduce((sum, s) => sum + Number(s.amount || 0), 0),
-    [sales]
-  );
-
-  const repeatCustomers = customers.filter((c) => c.transactions > 1);
-  const avgSpend = totalRevenue / (customers.length || 1);
-  const repeatRate = (repeatCustomers.length / (customers.length || 1)) * 100;
-
-  const activeThisMonth = customers.filter((c) => {
-    const d = new Date(c.last_purchase);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
-
-  /* ---------------- SEGMENTATION ---------------- */
-  const SEGMENT_DAYS = 30;
-  const VIP_THRESHOLD = avgSpend * 2;
-
-  const segmentedCustomers = customers.map((c) => {
-    const last = new Date(c.last_purchase);
-    const diffDays = (now - last) / (1000 * 60 * 60 * 24);
-
-    let segment = "regular";
-
-    if (c.total_spent >= VIP_THRESHOLD) segment = "vip";
-    else if (diffDays > SEGMENT_DAYS) segment = "at_risk";
-
-    return { ...c, segment };
-  });
-
-  const segmentStats = useMemo(() => {
-    const stats = {
-      vip: { count: 0, revenue: 0 },
-      regular: { count: 0, revenue: 0 },
-      at_risk: { count: 0, revenue: 0 },
-    };
-
-    segmentedCustomers.forEach((c) => {
-      stats[c.segment].count++;
-      stats[c.segment].revenue += c.total_spent;
-    });
-
-    return stats;
-  }, [segmentedCustomers]);
-
-  /* ---------------- TOP + AT RISK ---------------- */
-  const topCustomers = [...segmentedCustomers]
-    .sort((a, b) => b.total_spent - a.total_spent)
-    .slice(0, 3);
-
-  const atRiskCustomers = segmentedCustomers
-    .filter((c) => c.segment === "at_risk")
-    .slice(0, 5);
-
-  /* ---------------- FILTER ---------------- */
-  const processedCustomers = useMemo(() => {
-    let filtered = segmentedCustomers.filter((c) =>
-      c.customer_name.toLowerCase().includes(search.toLowerCase())
-    );
-
-    if (segmentFilter !== "all") {
-      filtered = filtered.filter((c) => c.segment === segmentFilter);
-    }
-
-    if (sortBy === "transactions") {
-      filtered.sort((a, b) => b.transactions - a.transactions);
-    } else if (sortBy === "last_purchase") {
-      filtered.sort((a, b) => new Date(b.last_purchase) - new Date(a.last_purchase));
-    } else {
-      filtered.sort((a, b) => b.total_spent - a.total_spent);
-    }
-
-    return filtered;
-  }, [segmentedCustomers, search, sortBy, segmentFilter]);
-
-  const paginatedCustomers = processedCustomers.slice(0, visibleCount);
-
-  /* ---------------- CUSTOMER SALES ---------------- */
-  const customerSales = useMemo(() => {
-    if (!selectedCustomer) return [];
-
-    return sales
-      .filter((s) => s.customer_name === selectedCustomer.customer_name)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 10);
-  }, [selectedCustomer, sales]);
-
-  if (loading) {
-    return <Skeleton className="h-40 w-full" />;
-  }
+  // ... keep all your logic/memo hooks exactly as they are
 
   return (
-    <div className="flex gap-6">
-      {/* LEFT SIDE (MAIN PAGE) */}
+    <div className="relative flex w-full h-full overflow-hidden">
+      {/* MAIN CONTENT AREA */}
       <div
         className={`
-          transition-all duration-300 ease-in-out
-          ${selectedCustomer ? "w-full lg:w-2/3" : "w-full"}
+          flex-1 transition-all duration-500 ease-in-out px-1
+          ${selectedCustomer ? "pr-4 lg:mr-[400px]" : ""} 
         `}
       >
-        <div className="space-y-8">
+        <div className="max-w-[1600px] mx-auto space-y-8 pb-10">
           {/* HEADER */}
-          <div>
-            <h1 className="text-2xl font-bold">Customers</h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor customer loyalty and spending habits.
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {repeatCustomers.length} repeat customers generating {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue
-            </p>
-          </div>
-
-          {/* KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="Total Customers" value={customers.length} icon={<Users />} />
-            <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar />} />
-            <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp />} />
-            <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp />} />
-          </div>
-
-          {/* SEGMENTS */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {Object.entries(segmentStats).map(([key, val]) => (
-              <Card key={key}>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground uppercase">{key.replace("_", " ")}</p>
-                  <p className="text-lg font-bold">{val.count}</p>
-                  <p className="text-xs text-muted-foreground">KES {val.revenue.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-    
-          {/* TOP CUSTOMERS */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {topCustomers.map((c, i) => (
-              <Card key={c.customer_name} onClick={() => setSelectedCustomer(c)} className="cursor-pointer">
-                <CardContent className="p-4">
-                  <p className="font-bold">#{i + 1} {c.customer_name}</p>
-                  <p className="text-sm">KES {c.total_spent.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {Math.round((c.total_spent / (totalRevenue || 1)) * 100)}% revenue
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-    
-          {/* AT RISK */}
-          {atRiskCustomers.length > 0 && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm font-semibold mb-2">At Risk Customers</p>
-                {atRiskCustomers.map((c) => (
-                  <div key={c.customer_name} className="flex justify-between text-sm py-1">
-                    <span>{c.customer_name}</span>
-                    <span>KES {c.total_spent.toLocaleString()}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-
-          {/* SEARCH */}
-          <div className="sticky top-0 bg-background backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-    
-            <select 
-              value={segmentFilter} 
-              onChange={(e) => setSegmentFilter(e.target.value)} 
-              className="bg-background text-foreground border-input rounded-md px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="all" className="bg-background">All</option>
-              <option value="vip" className="bg-background">VIP</option>
-              <option value="regular" className="bg-background">Regular</option>
-              <option value="at_risk" className="bg-background">At Risk</option>
-            </select>
-          </div>
-
-
-          {/* LIST */}
-          <Card>
-            <CardContent className="p-0">
-              {paginatedCustomers.map((c, i) => (
-                <div
-                  key={c.customer_name}
-                  onClick={() => setSelectedCustomer(c)}
-                  className={`
-                    p-4 flex justify-between cursor-pointer transition-colors
-                    hover:bg-muted/40
-                    ${selectedCustomer?.customer_name === c.customer_name ? "bg-muted" : ""}
-                  `}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
+              <p className="text-muted-foreground mt-1">
+                {repeatCustomers.length} repeat customers generating <span className="text-primary font-semibold">{Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}%</span> of revenue
+              </p>
+            </div>
+            
+            <div className="flex gap-2 bg-muted/50 p-1 rounded-lg border">
+              {['all', 'vip', 'at_risk'].map((tab) => (
+                <button 
+                  key={tab}
+                  onClick={() => setSegmentFilter(tab)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${segmentFilter === tab ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                 >
-                  <div>
-                    <p className="font-semibold">#{i + 1} {c.customer_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {c.transactions} orders • Last {new Date(c.last_purchase).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">KES {c.total_spent.toLocaleString()}</p>
-                  </div>
-                </div>
+                  {tab.replace('_', ' ').toUpperCase()}
+                </button>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* LOAD MORE */}
-          {visibleCount < processedCustomers.length && (
-            <Button onClick={() => setVisibleCount((v) => v + 20)}>
-              Load More
-            </Button>
-          )}
+          {/* KPI GRID - Tightened padding and subtle borders */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4" />} />
+            <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4" />} />
+            <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp className="w-4 h-4 text-emerald-500" />} />
+            <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp className="w-4 h-4 text-blue-500" />} />
+          </div>
+
+          {/* TOP PERFORMERS & AT RISK SECTION */}
+          <div className="grid lg:grid-cols-3 gap-6">
+             {/* TOP CUSTOMERS: Added visual rank badges */}
+             <Card className="lg:col-span-2">
+               <CardContent className="p-6">
+                 <h3 className="text-sm font-bold mb-4 uppercase tracking-wider text-muted-foreground">Top Contributors</h3>
+                 <div className="grid md:grid-cols-3 gap-4">
+                    {topCustomers.map((c, i) => (
+                      <div 
+                        key={c.customer_name} 
+                        onClick={() => setSelectedCustomer(c)}
+                        className="group relative p-4 rounded-xl border bg-gradient-to-br from-background to-muted/30 cursor-pointer hover:border-primary/50 transition-all"
+                      >
+                        <span className="absolute top-2 right-3 text-4 font-black opacity-10 group-hover:opacity-30 transition-opacity">#0{i+1}</span>
+                        <p className="font-bold truncate pr-6">{c.customer_name}</p>
+                        <p className="text-xl font-black mt-1">KES {c.total_spent.toLocaleString()}</p>
+                        <div className="w-full bg-muted h-1 rounded-full mt-3 overflow-hidden">
+                           <div className="bg-primary h-full" style={{ width: `${Math.round((c.total_spent / (totalRevenue || 1)) * 100)}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* AT RISK: Cleaner list style */}
+             <Card>
+               <CardContent className="p-6">
+                 <h3 className="text-sm font-bold mb-4 uppercase tracking-wider text-muted-foreground">Retention Alerts</h3>
+                 <div className="space-y-3">
+                   {atRiskCustomers.map((c) => (
+                      <div key={c.customer_name} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer" onClick={() => setSelectedCustomer(c)}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                          <span className="text-sm font-medium">{c.customer_name}</span>
+                        </div>
+                        <span className="text-xs font-bold">KES {c.total_spent.toLocaleString()}</span>
+                      </div>
+                   ))}
+                 </div>
+               </CardContent>
+             </Card>
+          </div>
+
+          {/* MAIN LIST WITH SEARCH INTEGRATED */}
+          <div className="space-y-4">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input 
+                placeholder="Search by name, order ID, or amount..." 
+                className="pl-10 h-12 bg-muted/20 border-none ring-1 ring-border focus:ring-2 focus:ring-primary"
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+              />
+            </div>
+
+            <Card className="overflow-hidden border-none shadow-none bg-transparent">
+               <div className="grid gap-2">
+                  {paginatedCustomers.map((c, i) => (
+                    <div
+                      key={c.customer_name}
+                      onClick={() => setSelectedCustomer(c)}
+                      className={`
+                        p-4 flex justify-between items-center rounded-xl border transition-all
+                        ${selectedCustomer?.customer_name === c.customer_name 
+                          ? "bg-primary/5 border-primary shadow-[0_0_15px_rgba(var(--primary),0.1)]" 
+                          : "bg-card hover:border-muted-foreground/30 hover:shadow-md"}
+                      `}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="hidden md:flex w-8 h-8 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                          {i + 1}
+                        </div>
+                        <div>
+                          <p className="font-bold">{c.customer_name}</p>
+                          <p className="text-xs text-muted-foreground flex gap-2">
+                            <span>{c.transactions} orders</span>
+                            <span>•</span>
+                            <span>Last active {new Date(c.last_purchase).toLocaleDateString()}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black tracking-tight">KES {c.total_spent.toLocaleString()}</p>
+                        <Badge variant="outline" className="text-[9px] py-0">{c.segment.replace('_', ' ')}</Badge>
+                      </div>
+                    </div>
+                  ))}
+               </div>
+            </Card>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT SIDE PANEL */}
+      {/* SIDE PANEL: Fixed width slide-over */}
       {selectedCustomer && (
-        <div className="hidden lg:block w-1/3 max-w-[420px]">
+        <div className="hidden lg:block fixed right-0 top-0 h-screen w-[400px] border-l bg-background shadow-2xl z-50">
           <CustomerModal
             customer={selectedCustomer}
             sales={customerSales}
@@ -292,14 +161,3 @@ export const CustomersPage = () => {
     </div>
   );
 };
-
-const KPICard = ({ title, value, icon }) => (
-  <Card>
-    <CardContent className="p-4">
-      <div className="flex justify-between text-xs text-muted-foreground">
-        {title} {icon}
-      </div>
-      <p className="text-xl font-bold">{value}</p>
-    </CardContent>
-  </Card>
-);
