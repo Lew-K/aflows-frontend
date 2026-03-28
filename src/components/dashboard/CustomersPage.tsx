@@ -202,7 +202,7 @@ export const CustomersPage = () => {
       {/* RIGHT SIDE PANEL */}
       {selectedCustomer && (
         <div className="hidden lg:block w-1/3 max-w-[420px]">
-          <CustomerPanel
+          <CustomerModal
             customer={selectedCustomer}
             sales={customerSales}
             onClose={() => setSelectedCustomer(null)}
