@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 // import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
-- import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
-+ import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 
 export const SettingsPage = () => {
   const { user } = useAuth();
@@ -368,7 +367,7 @@ export const SettingsPage = () => {
             </CardHeader>
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                openSections.password ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"
+                openSections.password ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
               }`}
             >
               <CardContent className="space-y-4">
@@ -443,7 +442,7 @@ export const SettingsPage = () => {
           
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                openSections.access ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"
+                openSections.access ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
               }`}
             >
               <CardContent className="space-y-6">
