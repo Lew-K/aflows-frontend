@@ -232,10 +232,68 @@ export const SettingsPage = () => {
                 onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); }}
                 className={`border-2 border-dashed rounded-xl p-6 text-center ${isDragging ? "border-primary" : ""}`}
               >
-                {logoPreview ? (
-                  <img src={logoPreview} className="w-24 mx-auto" />
+                {(logoPreview || settings.business_logo_url) ? (
+                  <div className="relative group">
+                    <img
+                      src={logoPreview || settings.business_logo_url}
+                      className="w-24 h-24 object-contain mx-auto rounded-lg border bg-white"
+                    />
+                
+                    {/* Hover Actions */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition rounded-lg">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Replace
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setLogoPreview(null)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
-                  <p>Upload Logo</p>
+                  <div className="text-center space-y-3">
+                
+                    {/* Initials Logo */}
+                    <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">
+                      {settings.business_name
+                        ?.split(" ")
+                        .map(word => word[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase() || "B"}
+                    </div>
+                
+                    {/* Business Name */}
+                    <p className="font-semibold">
+                      {settings.business_name || "Your Business"}
+                    </p>
+                
+                    {/* Helper Text */}
+                    <p className="text-xs text-muted-foreground">
+                      Your logo will appear on receipts and customer documents
+                    </p>
+                
+                    {/* Upload Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload Logo
+                    </Button>
+                
+                    <p className="text-xs text-muted-foreground">
+                      or drag & drop (PNG, JPG up to 5MB)
+                    </p>
+                
+                  </div>
                 )}
 
                 <Button onClick={() => fileInputRef.current?.click()} className="mt-4">
@@ -301,6 +359,66 @@ export const SettingsPage = () => {
                 Update Password
               </Button>
 
+            </CardContent>
+          </Card>
+
+          {/* ACCESS & SESSIONS */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Access & Sessions</CardTitle>
+              <CardDescription>
+                Manage who can access your business and active sessions
+              </CardDescription>
+            </CardHeader>
+          
+            <CardContent className="space-y-6">
+          
+              {/* Owner */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-semibold">Owner</p>
+                  <p className="text-xs text-muted-foreground">
+                    {user?.email || "Owner account"}
+                  </p>
+                </div>
+                <span className="text-xs text-green-600 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Active
+                </span>
+              </div>
+          
+              {/* Team Access */}
+              <div className="flex justify-between items-center border-t pt-4">
+                <div>
+                  <p className="text-sm font-semibold">Team Members</p>
+                  <p className="text-xs text-muted-foreground">
+                    Give staff access with controlled permissions
+                  </p>
+                </div>
+                <Button size="sm" variant="outline">
+                  Invite / Manage
+                </Button>
+              </div>
+          
+              {/* Sessions */}
+              <div className="flex justify-between items-center border-t pt-4">
+                <div>
+                  <p className="text-sm font-semibold">Active Sessions</p>
+                  <p className="text-xs text-muted-foreground">
+                    You're currently logged in on this device
+                  </p>
+                </div>
+                <Button size="sm" variant="outline">
+                  View
+                </Button>
+              </div>
+          
+              {/* Danger Zone */}
+              <div className="pt-4 border-t">
+                <Button variant="destructive" className="w-full" size="sm">
+                  Sign Out of All Devices
+                </Button>
+              </div>
+          
             </CardContent>
           </Card>
 
