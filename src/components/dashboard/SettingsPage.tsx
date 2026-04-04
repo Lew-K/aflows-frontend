@@ -1,215 +1,227 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Settings, Upload, Pencil, Check, X, Save } from "lucide-react";
+import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
 
 export const SettingsPage = () => {
+  const { user } = useAuth();
+
   /* ---------------- STATE ---------------- */
   const [settings, setSettings] = useState({
-    business_name: "My Business",
-    phone: "+254 700 000 000",
+    business_name: "",
+    phone: "",
     location: "Nairobi, Kenya",
     currency: "KES",
     receipt_prefix: "RCT",
     receipt_footer: "Thank you for your business",
-    tax_rate: "16", // Changed to string for input consistency
+    tax_rate: "16",
     business_logo_url: "",
   });
 
+  const [originalSettings, setOriginalSettings] = useState(null);
+
   const [logoPreview, setLogoPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // Added loading state
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [editingFields, setEditingFields] = useState({
-    business_name: false,
-    phone: false,
+  /* ---------------- PASSWORD STATE ---------------- */
+  const [passwordData, setPasswordData] = useState({
+    current: "",
+    new: "",
+    confirm: "",
   });
 
-  const fileInputRef = useRef(null);
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
-  /* ---------------- EFFECTS ---------------- */
-  // Cleanup preview URL to prevent memory leaks
+  /* ---------------- INIT FROM AUTH ---------------- */
   useEffect(() => {
-    return () => {
-      if (logoPreview) URL.revokeObjectURL(logoPreview);
-    };
-  }, [logoPreview]);
+    if (user) {
+      const initial = {
+        business_name: user.businessName || "",
+        phone: "",
+        location: "Nairobi, Kenya",
+        currency: "KES",
+        receipt_prefix: "RCT",
+        receipt_footer: "Thank you for your business",
+        tax_rate: "16",
+        business_logo_url: "",
+      };
+
+      setSettings(initial);
+      setOriginalSettings(initial);
+    }
+  }, [user]);
+
+  /* ---------------- CHANGE DETECTION ---------------- */
+  const hasChanges = useMemo(() => {
+    return JSON.stringify(settings) !== JSON.stringify(originalSettings);
+  }, [settings, originalSettings]);
 
   /* ---------------- HANDLERS ---------------- */
   const handleChange = (field, value) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleEdit = (field) => {
-    setEditingFields((prev) => ({ ...prev, [field]: !prev[field] }));
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    console.log("Saving settings:", settings);
+
+    setTimeout(() => {
+      setIsSaving(false);
+      setOriginalSettings(settings);
+    }, 1000);
   };
+
+  /* ---------------- LOGO ---------------- */
+  const fileInputRef = useRef(null);
 
   const processFile = (file) => {
     if (!file || !file.type.startsWith("image/")) return;
-    
-    // Revoke old preview before creating new one
-    if (logoPreview) URL.revokeObjectURL(logoPreview);
-    
     const preview = URL.createObjectURL(file);
     setLogoPreview(preview);
   };
 
-  const handleLogoUpload = (e) => processFile(e.target.files[0]);
+  /* ---------------- PASSWORD LOGIC ---------------- */
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    // Simulate API Call
-    console.log("Saving settings:", settings);
-    setTimeout(() => {
-      setIsSaving(false);
-      // Here you'd trigger a Toast notification
-      setEditingFields({ business_name: false, phone: false });
-    }, 1000);
+  const getPasswordStrength = (password) => {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 1) return { label: "Weak", value: 25 };
+    if (score === 2) return { label: "Medium", value: 50 };
+    if (score === 3) return { label: "Strong", value: 75 };
+    return { label: "Very Strong", value: 100 };
   };
 
-  /* ---------------- UI HELPERS ---------------- */
-  const EditableField = ({ label, field, value, placeholder }) => (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <Label className="text-sm font-semibold">{label}</Label>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => toggleEdit(field)}
-          className="h-8 px-2"
-        >
-          {editingFields[field] ? (
-            <span className="flex items-center gap-1 text-green-600 font-medium">
-              <Check className="w-4 h-4" /> Save
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-primary">
-              <Pencil className="w-3 h-3" /> Change
-            </span>
-          )}
-        </Button>
-      </div>
-      <Input
-        readOnly={!editingFields[field]}
-        value={value}
-        onChange={(e) => handleChange(field, e.target.value)}
-        placeholder={placeholder}
-        className={`${!editingFields[field] ? "bg-muted/30 cursor-not-allowed" : "ring-2 ring-primary/20"}`}
-      />
-    </div>
-  );
+  const strength = getPasswordStrength(passwordData.new);
 
+  const passwordError = useMemo(() => {
+    if (!passwordData.new) return "";
+    if (passwordData.new.length < 8) return "Password must be at least 8 characters";
+    if (passwordData.new !== passwordData.confirm) return "Passwords do not match";
+    return "";
+  }, [passwordData]);
+
+  const handlePasswordUpdate = () => {
+    if (passwordError) return;
+
+    console.log("Updating password...");
+    setPasswordData({ current: "", new: "", confirm: "" });
+  };
+
+  /* ---------------- UI ---------------- */
   return (
-    // Changed max-w-7xl to max-w-full and added padding
     <div className="w-full max-w-full mx-auto px-4 md:px-8 lg:px-12 py-6 space-y-8">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
+      <div className="flex justify-between items-center border-b pb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Settings className="w-6 h-6 text-primary" />
-          </div>
+          <Settings className="w-6 h-6 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-            <p className="text-muted-foreground">
-              Configure your business profile and application preferences.
-            </p>
+            <h1 className="text-3xl font-bold">Settings</h1>
+            <p className="text-muted-foreground">Manage your business settings</p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="w-full md:w-auto">
-          {isSaving ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
-        </Button>
+
+        <div className="flex items-center gap-4">
+          {hasChanges && <span className="text-sm text-orange-500">● Unsaved changes</span>}
+          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
+            {isSaving ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+          </Button>
+        </div>
       </div>
 
-      {/* GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* LEFT COLUMN - Primary Settings */}
+        {/* LEFT */}
         <div className="lg:col-span-8 space-y-8">
-          
-          <Card className="shadow-sm">
+
+          {/* BUSINESS */}
+          <Card>
             <CardHeader>
               <CardTitle>Business Profile</CardTitle>
-              <CardDescription>Public information about your company.</CardDescription>
+              <CardDescription>Your business details</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <EditableField
-                  label="Business Name"
-                  field="business_name"
-                  value={settings.business_name}
-                  placeholder="Enter business name"
-                />
-                <EditableField
-                  label="Phone Number"
-                  field="phone"
-                  value={settings.phone}
-                  placeholder="+254..."
-                />
-              </div>
 
-              <div className="space-y-2">
-                <Label className="font-semibold">Location</Label>
-                <Input
-                  value={settings.location}
-                  onChange={(e) => handleChange("location", e.target.value)}
-                  placeholder="Physical Address"
-                />
-              </div>
+              <Input
+                value={settings.business_name}
+                onChange={(e) => handleChange("business_name", e.target.value)}
+                placeholder="Business Name"
+              />
 
-              <div className="space-y-2">
-                <Label className="font-semibold">Currency</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary"
-                  value={settings.currency}
-                  onChange={(e) => handleChange("currency", e.target.value)}
-                >
-                  <option value="KES text-black">KES (Kenyan Shilling)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="UGX">UGX (Ugandan Shilling)</option>
-                </select>
-              </div>
+              <Input
+                value={settings.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                placeholder="+254..."
+              />
+
+              <Input
+                value={settings.location}
+                onChange={(e) => handleChange("location", e.target.value)}
+                placeholder="Location"
+              />
+
+              <select
+                value={settings.currency}
+                onChange={(e) => handleChange("currency", e.target.value)}
+                className="h-10 border rounded-md px-3"
+              >
+                <option value="KES">KES</option>
+                <option value="USD">USD</option>
+                <option value="UGX">UGX</option>
+              </select>
+
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm">
+          {/* RECEIPT */}
+          <Card>
             <CardHeader>
               <CardTitle>Receipt Customization</CardTitle>
-              <CardDescription>How your customers see their invoices.</CardDescription>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-semibold">Receipt Prefix</Label>
-                <Input
-                  value={settings.receipt_prefix}
-                  onChange={(e) => handleChange("receipt_prefix", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-semibold">Tax Rate (%)</Label>
+            <CardContent className="grid gap-6">
+
+              <Input
+                value={settings.receipt_prefix}
+                onChange={(e) => handleChange("receipt_prefix", e.target.value)}
+              />
+
+              <div className="flex items-center gap-2">
                 <Input
                   type="number"
                   value={settings.tax_rate}
                   onChange={(e) => handleChange("tax_rate", e.target.value)}
                 />
+                <span>%</span>
               </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label className="font-semibold">Footer Message</Label>
-                <Input
-                  value={settings.receipt_footer}
-                  onChange={(e) => handleChange("receipt_footer", e.target.value)}
-                />
-              </div>
+
+              <Input
+                value={settings.receipt_footer}
+                onChange={(e) => handleChange("receipt_footer", e.target.value)}
+              />
+
             </CardContent>
           </Card>
+
         </div>
 
-        {/* RIGHT COLUMN - Assets & Security */}
+        {/* RIGHT */}
         <div className="lg:col-span-4 space-y-8">
-          
-          <Card className="shadow-sm border-dashed">
+
+          {/* BRANDING */}
+          <Card>
             <CardHeader>
               <CardTitle>Branding</CardTitle>
             </CardHeader>
@@ -218,37 +230,15 @@ export const SettingsPage = () => {
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); }}
-                className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-colors ${
-                  isDragging ? "border-primary bg-primary/5" : "border-muted"
-                }`}
+                className={`border-2 border-dashed rounded-xl p-6 text-center ${isDragging ? "border-primary" : ""}`}
               >
-                { (logoPreview || settings.business_logo_url) ? (
-                  <div className="relative group">
-                    <img
-                      src={logoPreview || settings.business_logo_url}
-                      className="w-32 h-32 object-contain border rounded-lg bg-white"
-                      alt="Logo"
-                    />
-                    <button 
-                      onClick={() => setLogoPreview(null)}
-                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+                {logoPreview ? (
+                  <img src={logoPreview} className="w-24 mx-auto" />
                 ) : (
-                  <div className="text-center">
-                    <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-xs text-muted-foreground mb-4">PNG, JPG up to 5MB</p>
-                  </div>
+                  <p>Upload Logo</p>
                 )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-4"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <Button onClick={() => fileInputRef.current?.click()} className="mt-4">
                   Choose File
                 </Button>
 
@@ -256,34 +246,64 @@ export const SettingsPage = () => {
                   ref={fileInputRef}
                   type="file"
                   className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
+                  onChange={(e) => processFile(e.target.files[0])}
                 />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm">
+          {/* PASSWORD */}
+          <Card>
             <CardHeader>
-              <CardTitle>Security & Access</CardTitle>
+              <CardTitle>Change Password</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm font-semibold">Owner Access</p>
-                  <p className="text-xs text-muted-foreground text-green-600 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Active Session
-                  </p>
+            <CardContent className="space-y-4">
+
+              {["current", "new", "confirm"].map((field) => (
+                <div key={field} className="relative">
+                  <Input
+                    type={showPassword[field] ? "text" : "password"}
+                    placeholder={field + " password"}
+                    value={passwordData[field]}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({ ...prev, [field]: e.target.value }))
+                    }
+                  />
+                  <button
+                    onClick={() =>
+                      setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }))
+                    }
+                    className="absolute right-3 top-2"
+                  >
+                    {showPassword[field] ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-                <Button size="sm" variant="outline">Manage</Button>
-              </div>
-              <div className="pt-4 border-t">
-                <Button variant="destructive" className="w-full" size="sm">
-                  Sign Out of All Devices
-                </Button>
-              </div>
+              ))}
+
+              {/* STRENGTH */}
+              {passwordData.new && (
+                <div>
+                  <div className="h-2 bg-muted rounded">
+                    <div
+                      className="h-2 bg-primary rounded"
+                      style={{ width: `${strength.value}%` }}
+                    />
+                  </div>
+                  <p className="text-xs mt-1">{strength.label}</p>
+                </div>
+              )}
+
+              {passwordError && (
+                <p className="text-xs text-red-500">{passwordError}</p>
+              )}
+
+              <Button onClick={handlePasswordUpdate} disabled={!!passwordError}>
+                Update Password
+              </Button>
+
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>
