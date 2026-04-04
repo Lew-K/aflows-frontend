@@ -114,7 +114,7 @@ export function OperationsPage() {
   // ================= UI =================
 
   return (
-    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 space-y-8 w-full px-8 xl:px-12 2xl:px-16">
       <div>
         <h1 className="text-4xl font-extrabold">Operations</h1>
         <p className="text-muted-foreground mt-1">
@@ -122,7 +122,7 @@ export function OperationsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-8">
 
         {/* LEFT COLUMN */}
         <div className="lg:col-span-2 space-y-6">
@@ -146,15 +146,29 @@ export function OperationsPage() {
                 variant="ghost"
                 onClick={() => setShowAdvancedAdd(!showAdvancedAdd)}
               >
-                {showAdvancedAdd ? "Close" : "Advanced"}
+                {showAdvancedAdd ? "Hide Options" : "More Options"}
               </Button>
             </CardHeader>
-
-            {showAdvancedAdd && (
-              <CardContent>
+          
+            <CardContent className="space-y-4">
+              {/* QUICK ADD */}
+              <Input
+                placeholder="What needs to be done?"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const value = (e.target as HTMLInputElement).value
+                    if (!value.trim()) return
+                    addOneOffTask(value, "medium")
+                    ;(e.target as HTMLInputElement).value = ""
+                  }
+                }}
+              />
+          
+              {/* ADVANCED */}
+              {showAdvancedAdd && (
                 <AdvancedAdd onAdd={addOneOffTask} />
-              </CardContent>
-            )}
+              )}
+            </CardContent>
           </Card>
 
           {/* TABS */}
@@ -168,7 +182,9 @@ export function OperationsPage() {
               <Card>
                 {activeTasks.length === 0 ? (
                   <div className="p-16 text-center opacity-50">
-                    Add tasks to stay on top of your business operations.
+                    No active tasks.
+
+                    Start by adding a task or creating an automation.
                   </div>
                 ) : (
                   activeTasks.map(task => (
@@ -191,13 +207,28 @@ export function OperationsPage() {
                         </div>
                       </div>
 
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => completeTask(task.id)}
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => completeTask(task.id)}
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                        </Button>
+                      
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => {
+                            const updated = tasks.filter(t => t.id !== task.id)
+                            setTasks(updated)
+                            syncStorage(updated, recurringTemplates)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -210,6 +241,14 @@ export function OperationsPage() {
                   <div key={task.id} className="p-4 flex justify-between border-b">
                     <div>
                       <p className="line-through opacity-60">
+                        {task.title}
+                      </p>
+                      
+                      <p className="text-xs text-muted-foreground">
+                        Completed on{" "}
+                        {task.completedAt &&
+                          new Date(task.completedAt).toLocaleDateString()}
+                      </p>
                         {task.title}
                       </p>
                     </div>
@@ -229,7 +268,7 @@ export function OperationsPage() {
         </div>
 
         {/* RIGHT SIDEBAR */}
-        <div className="space-y-6">
+        <div className="space-y-6 sticky top-6 h-fit">
         
           {/* RECURRING CREATION CARD */}
           <Card>
