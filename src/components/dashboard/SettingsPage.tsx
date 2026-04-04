@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
+// import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
+- import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
++ import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 
 export const SettingsPage = () => {
   const { user } = useAuth();
@@ -357,12 +359,19 @@ export const SettingsPage = () => {
             >
               <div className="flex justify-between items-center">
                 <CardTitle>Change Password</CardTitle>
-                <span className="text-xs text-muted-foreground">
-                  {openSections.password ? "Hide" : "Show"}
-                </span>
+                {openSections.password ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                openSections.password ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"
+              }`}
+            >
+              <CardContent className="space-y-4">
 
               {["current", "new", "confirm"].map((field) => (
                 <div key={field} className="relative">
@@ -407,18 +416,37 @@ export const SettingsPage = () => {
               </Button>
 
             </CardContent>
+          </div>
           </Card>
 
           {/* ACCESS & SESSIONS */}
           <Card>
-            <CardHeader>
-              <CardTitle>Access & Sessions</CardTitle>
-              <CardDescription>
-                Manage who can access your business and active sessions
-              </CardDescription>
+            <CardHeader
+              className="cursor-pointer"
+              onClick={() => toggleSection("access")}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Access & Sessions</CardTitle>
+                  <CardDescription>
+                    Manage who can access your business and active sessions
+                  </CardDescription>
+                </div>
+            
+                {openSections.access ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+              </div>
             </CardHeader>
           
-            <CardContent className="space-y-6">
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                openSections.access ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"
+              }`}
+            >
+              <CardContent className="space-y-6">
           
               {/* Owner */}
               <div className="flex justify-between items-center">
@@ -467,6 +495,7 @@ export const SettingsPage = () => {
               </div>
           
             </CardContent>
+            </div>
           </Card>
 
         </div>
