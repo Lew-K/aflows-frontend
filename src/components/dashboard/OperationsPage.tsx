@@ -243,16 +243,14 @@ export function OperationsPage() {
                       <p className="line-through opacity-60">
                         {task.title}
                       </p>
-                      
+                  
                       <p className="text-xs text-muted-foreground">
                         Completed on{" "}
                         {task.completedAt &&
                           new Date(task.completedAt).toLocaleDateString()}
                       </p>
-                        {task.title}
-                      </p>
                     </div>
-
+                  
                     <Button
                       variant="ghost"
                       size="icon"
