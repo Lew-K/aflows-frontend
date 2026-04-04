@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Users, Search, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
 import { CustomerModal } from "./modals/CustomerModal"; // ← USE PANEL (NOT MODAL)
 
 export const CustomersPage = () => {
