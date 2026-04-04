@@ -154,134 +154,99 @@ export const CustomersPage = () => {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex h-full min-h-screen bg-background/50 gap-0">
       {/* LEFT SIDE (MAIN PAGE) */}
       <div
         className={`
-          transition-all duration-300 ease-in-out
-          ${selectedCustomer ? "w-full lg:w-2/3" : "w-full"}
+          transition-all duration-500 ease-in-out p-6
+          ${selectedCustomer ? "w-full lg:w-[60%] opacity-90 scale-[0.99] origin-left" : "w-full"}
         `}
       >
-        <div className="space-y-8">
-          {/* HEADER */}
-          <div>
-            <h1 className="text-2xl font-bold">Customers</h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor customer loyalty and spending habits.
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {repeatCustomers.length} repeat customers generating {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue
-            </p>
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* HEADER - Increased spacing and better typography */}
+          <div className="flex justify-between items-end">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
+              <p className="text-muted-foreground mt-1">
+                {repeatCustomers.length} repeat customers driving {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue.
+              </p>
+            </div>
           </div>
 
-          {/* KPIs */}
+          {/* KPIs - Grid refinement */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="Total Customers" value={customers.length} icon={<Users />} />
-            <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar />} />
-            <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp />} />
-            <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<TrendingUp />} />
+             {/* Using a custom variant for KPICards for more 'pop' */}
+            <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4 text-blue-500" />} />
+            <KPICard title="Active Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4 text-green-500" />} />
+            <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp className="w-4 h-4 text-orange-500" />} />
+            <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<Users className="w-4 h-4 text-purple-500" />} />
           </div>
 
-          {/* SEGMENTS */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {Object.entries(segmentStats).map(([key, val]) => (
-              <Card key={key}>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground uppercase">{key.replace("_", " ")}</p>
-                  <p className="text-lg font-bold">{val.count}</p>
-                  <p className="text-xs text-muted-foreground">KES {val.revenue.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-    
-          {/* TOP CUSTOMERS */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {topCustomers.map((c, i) => (
-              <Card key={c.customer_name} onClick={() => setSelectedCustomer(c)} className="cursor-pointer">
-                <CardContent className="p-4">
-                  <p className="font-bold">#{i + 1} {c.customer_name}</p>
-                  <p className="text-sm">KES {c.total_spent.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {Math.round((c.total_spent / (totalRevenue || 1)) * 100)}% revenue
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-    
-          {/* AT RISK */}
-          {atRiskCustomers.length > 0 && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm font-semibold mb-2">At Risk Customers</p>
-                {atRiskCustomers.map((c) => (
-                  <div key={c.customer_name} className="flex justify-between text-sm py-1">
-                    <span>{c.customer_name}</span>
-                    <span>KES {c.total_spent.toLocaleString()}</span>
+          {/* LIST SECTION - Better Search Bar styling */}
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search by name..." 
+                  value={search} 
+                  onChange={(e) => setSearch(e.target.value)} 
+                  className="pl-9 border-none bg-transparent focus-visible:ring-0"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Filter by:</span>
+                <select 
+                  value={segmentFilter} 
+                  onChange={(e) => setSegmentFilter(e.target.value)}
+                  className="bg-muted border-none text-sm rounded-md px-3 py-1.5 focus:ring-1 focus:ring-primary"
+                >
+                  <option value="all">All Segments</option>
+                  <option value="vip">VIP</option>
+                  <option value="regular">Regular</option>
+                  <option value="at_risk">At Risk</option>
+                </select>
+              </div>
+            </div>
+
+            <Card className="border-none shadow-md overflow-hidden">
+              <CardContent className="p-0 divide-y">
+                {paginatedCustomers.map((c, i) => (
+                  <div
+                    key={c.customer_name}
+                    onClick={() => setSelectedCustomer(c)}
+                    className={`
+                      p-5 flex justify-between items-center cursor-pointer transition-all
+                      hover:bg-primary/5 group
+                      ${selectedCustomer?.customer_name === c.customer_name ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"}
+                    `}
+                  >
+                    <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                        {c.customer_name.substring(0,2).toUpperCase()}
+                       </div>
+                       <div>
+                        <p className="font-semibold text-sm">{c.customer_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.transactions} orders <span className="mx-1">•</span> Last {new Date(c.last_purchase).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-sm">KES {c.total_spent.toLocaleString()}</p>
+                      <Badge variant="outline" className="text-[9px] uppercase">{c.segment}</Badge>
+                    </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
-          )}
-
-
-          {/* SEARCH */}
-          <div className="sticky top-0 bg-background backdrop-blur p-3 rounded-xl flex flex-col md:flex-row gap-3">
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-    
-            <select 
-              value={segmentFilter} 
-              onChange={(e) => setSegmentFilter(e.target.value)} 
-              className="bg-background text-foreground border-input rounded-md px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="all" className="bg-background">All</option>
-              <option value="vip" className="bg-background">VIP</option>
-              <option value="regular" className="bg-background">Regular</option>
-              <option value="at_risk" className="bg-background">At Risk</option>
-            </select>
           </div>
-
-
-          {/* LIST */}
-          <Card>
-            <CardContent className="p-0">
-              {paginatedCustomers.map((c, i) => (
-                <div
-                  key={c.customer_name}
-                  onClick={() => setSelectedCustomer(c)}
-                  className={`
-                    p-4 flex justify-between cursor-pointer transition-colors
-                    hover:bg-muted/40
-                    ${selectedCustomer?.customer_name === c.customer_name ? "bg-muted" : ""}
-                  `}
-                >
-                  <div>
-                    <p className="font-semibold">#{i + 1} {c.customer_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {c.transactions} orders • Last {new Date(c.last_purchase).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">KES {c.total_spent.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* LOAD MORE */}
-          {visibleCount < processedCustomers.length && (
-            <Button onClick={() => setVisibleCount((v) => v + 20)}>
-              Load More
-            </Button>
-          )}
         </div>
       </div>
 
-      {/* RIGHT SIDE PANEL */}
+      {/* RIGHT SIDE PANEL - Fixed positioning and height */}
       {selectedCustomer && (
-        <div className="hidden lg:block w-1/3 max-w-[420px]">
+        <div className="hidden lg:block w-[40%] max-w-[480px] sticky top-0 h-screen border-l bg-card shadow-2xl">
           <CustomerModal
             customer={selectedCustomer}
             sales={customerSales}
