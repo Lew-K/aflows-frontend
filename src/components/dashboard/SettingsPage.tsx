@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 // import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
 import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const SettingsPage = () => {
   const { user } = useAuth();
@@ -201,15 +208,19 @@ export const SettingsPage = () => {
               {/* Currency */}
               <div>
                 <p className="text-sm text-muted-foreground">Currency</p>
-                <select
+                <Select
                   value={settings.currency}
-                  onChange={(e) => handleChange("currency", e.target.value)}
-                  className="h-10 border rounded-md px-3 mt-1 w-full"
+                  onValueChange={(value) => handleChange("currency", value)}
                 >
-                  <option value="KES">KES (Kenyan Shilling)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="UGX">UGX (Ugandan Shilling)</option>
-                </select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="KES">KES (Kenyan Shilling)</SelectItem>
+                    <SelectItem value="USD">USD (US Dollar)</SelectItem>
+                    <SelectItem value="UGX">UGX (Ugandan Shilling)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             
             </CardContent>
