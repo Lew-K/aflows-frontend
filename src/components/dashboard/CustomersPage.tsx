@@ -164,7 +164,7 @@ export const CustomersPage = () => {
           ${selectedCustomer ? "w-full lg:w-[60%] opacity-90 scale-[0.99] origin-left" : "w-full"}
         `}
       >
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="w-full space-y-8">
           {/* HEADER - Increased spacing and better typography */}
           <div className="flex justify-between items-end">
             <div>
