@@ -278,10 +278,17 @@ export const SettingsPage = () => {
             </CardHeader>
             <CardContent>
               <div
+                onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); }}
-                className={`border-2 border-dashed rounded-xl p-6 text-center ${isDragging ? "border-primary" : ""}`}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  processFile(e.dataTransfer.files[0]);
+                }}
+                className={`cursor-pointer border-2 border-dashed rounded-xl p-6 text-center transition ${
+                  isDragging ? "border-primary bg-primary/5" : "hover:border-primary/50"
+                }`}
               >
                 {(logoPreview || settings.business_logo_url) ? (
                   <div className="relative group">
@@ -347,9 +354,7 @@ export const SettingsPage = () => {
                   </div>
                 )}
 
-                <Button onClick={() => fileInputRef.current?.click()} className="mt-4">
-                  Choose File
-                </Button>
+                
 
                 <input
                   ref={fileInputRef}
