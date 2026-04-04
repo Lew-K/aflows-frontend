@@ -9,6 +9,18 @@ import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
 export const SettingsPage = () => {
   const { user } = useAuth();
 
+  const [openSections, setOpenSections] = useState({
+    password: false,
+    access: false,
+  });
+
+  const toggleSection = (section) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
   /* ---------------- STATE ---------------- */
   const [settings, setSettings] = useState({
     business_name: "",
@@ -153,36 +165,52 @@ export const SettingsPage = () => {
               <CardTitle>Business Profile</CardTitle>
               <CardDescription>Your business details</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-6">
+            <CardContent className="space-y-6">
 
-              <Input
-                value={settings.business_name}
-                onChange={(e) => handleChange("business_name", e.target.value)}
-                placeholder="Business Name"
-              />
-
-              <Input
-                value={settings.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                placeholder="+254..."
-              />
-
-              <Input
-                value={settings.location}
-                onChange={(e) => handleChange("location", e.target.value)}
-                placeholder="Location"
-              />
-
-              <select
-                value={settings.currency}
-                onChange={(e) => handleChange("currency", e.target.value)}
-                className="h-10 border rounded-md px-3"
-              >
-                <option value="KES">KES</option>
-                <option value="USD">USD</option>
-                <option value="UGX">UGX</option>
-              </select>
-
+              {/* Business Name */}
+              <div>
+                <p className="text-sm text-muted-foreground">Business Name</p>
+                <Input
+                  value={settings.business_name}
+                  onChange={(e) => handleChange("business_name", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            
+              {/* Phone */}
+              <div>
+                <p className="text-sm text-muted-foreground">Phone Number</p>
+                <Input
+                  value={settings.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            
+              {/* Location */}
+              <div>
+                <p className="text-sm text-muted-foreground">Location</p>
+                <Input
+                  value={settings.location}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            
+              {/* Currency */}
+              <div>
+                <p className="text-sm text-muted-foreground">Currency</p>
+                <select
+                  value={settings.currency}
+                  onChange={(e) => handleChange("currency", e.target.value)}
+                  className="h-10 border rounded-md px-3 mt-1 w-full"
+                >
+                  <option value="KES">KES (Kenyan Shilling)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="UGX">UGX (Ugandan Shilling)</option>
+                </select>
+              </div>
+            
             </CardContent>
           </Card>
 
@@ -191,27 +219,38 @@ export const SettingsPage = () => {
             <CardHeader>
               <CardTitle>Receipt Customization</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-6">
+            <CardContent className="space-y-6">
 
-              <Input
-                value={settings.receipt_prefix}
-                onChange={(e) => handleChange("receipt_prefix", e.target.value)}
-              />
-
-              <div className="flex items-center gap-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Receipt Prefix</p>
                 <Input
-                  type="number"
-                  value={settings.tax_rate}
-                  onChange={(e) => handleChange("tax_rate", e.target.value)}
+                  value={settings.receipt_prefix}
+                  onChange={(e) => handleChange("receipt_prefix", e.target.value)}
+                  className="mt-1"
                 />
-                <span>%</span>
               </div>
-
-              <Input
-                value={settings.receipt_footer}
-                onChange={(e) => handleChange("receipt_footer", e.target.value)}
-              />
-
+            
+              <div>
+                <p className="text-sm text-muted-foreground">Tax Rate (%)</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    type="number"
+                    value={settings.tax_rate}
+                    onChange={(e) => handleChange("tax_rate", e.target.value)}
+                  />
+                  <span>%</span>
+                </div>
+              </div>
+            
+              <div>
+                <p className="text-sm text-muted-foreground">Footer Message</p>
+                <Input
+                  value={settings.receipt_footer}
+                  onChange={(e) => handleChange("receipt_footer", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            
             </CardContent>
           </Card>
 
@@ -312,8 +351,16 @@ export const SettingsPage = () => {
 
           {/* PASSWORD */}
           <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
+            <CardHeader
+              className="cursor-pointer"
+              onClick={() => toggleSection("password")}
+            >
+              <div className="flex justify-between items-center">
+                <CardTitle>Change Password</CardTitle>
+                <span className="text-xs text-muted-foreground">
+                  {openSections.password ? "Hide" : "Show"}
+                </span>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
 
