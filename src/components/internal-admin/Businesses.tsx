@@ -102,31 +102,63 @@ const Businesses = () => {
   const openDB = (id: string) => window.open(`/internal-admin/db/${id}`, "_blank");
   
   const impersonateUser = async (id: string) => {
+    const adminPassword = prompt("Enter admin password to impersonate");
+    if (!adminPassword) return;
+  
     try {
-      // Logic: Generate token and redirect
-      // const { token } = await adminApi.impersonate(id);
-      alert("Generating session for business: " + id);
-      window.open(`/dashboard?impersonate=${id}`, "_blank");
-    } catch (err) { alert("Impersonation failed"); }
+      const { token } = await adminApi.impersonate(id);
+  
+      // Store impersonation token temporarily
+      localStorage.setItem("impersonation_token", token);
+  
+      window.open(`/dashboard?impersonate=true`, "_blank");
+    } catch (err) {
+      alert("Impersonation failed");
+    }
   };
 
   const resetPassword = async (id: string) => {
+    const adminPassword = prompt("Enter admin password");
+    if (!adminPassword) return;
+  
     const newPassword = prompt("Enter new password");
     if (!newPassword) return;
+  
     try {
-      await adminApi.resetPassword(id, newPassword);
+      await adminApi.resetPassword(id, newPassword, adminPassword);
       alert("Password updated");
       setOpenMenu(null);
-    } catch (err) { alert("Reset failed"); }
+    } catch (err) {
+      alert("Reset failed");
+    }
   };
 
   const deactivateBusiness = async (id: string) => {
+    const adminPassword = prompt("Enter admin password to deactivate");
+    if (!adminPassword) return;
+  
     if (!confirm("Deactivate this business?")) return;
+  
     try {
-      await adminApi.deactivateBusiness(id);
+      await adminApi.deactivateBusiness(id, adminPassword);
       updateBusinessState(id, { status: "inactive" });
       setOpenMenu(null);
-    } catch (err) { console.error("Deactivate failed", err); }
+    } catch (err) {
+      console.error("Deactivate failed", err);
+    }
+  };
+
+  const activateBusiness = async (id: string) => {
+    const adminPassword = prompt("Enter admin password to activate");
+    if (!adminPassword) return;
+  
+    try {
+      await adminApi.activateBusiness(id, adminPassword);
+      updateBusinessState(id, { status: "active" });
+      setOpenMenu(null);
+    } catch (err) {
+      console.error("Activate failed", err);
+    }
   };
 
   const confirmDelete = async (id: string) => {
@@ -216,7 +248,25 @@ const Businesses = () => {
                         <button onClick={() => impersonateUser(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-purple-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>✨ Impersonate</button>
                         <div className={`border-t my-1 ${darkMode ? "border-slate-700" : "border-slate-100"}`}></div>
                         <button onClick={() => resetPassword(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-blue-500 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Reset Password</button>
-                        <button onClick={() => deactivateBusiness(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-orange-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Deactivate</button>
+                        {b.status === "inactive" ? (
+                          <button
+                            onClick={() => activateBusiness(b.id)}
+                            className={`block w-full text-left px-4 py-2 text-sm font-medium text-green-600 ${
+                              darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"
+                            }`}
+                          >
+                            Activate
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => deactivateBusiness(b.id)}
+                            className={`block w-full text-left px-4 py-2 text-sm font-medium text-orange-600 ${
+                              darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"
+                            }`}
+                          >
+                            Deactivate
+                          </button>
+                        )}
                         <button onClick={() => confirmDelete(b.id)} className={`block w-full text-left px-4 py-2 text-sm font-medium text-red-600 ${darkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"}`}>Delete Business</button>
                       </div>
                     )}
