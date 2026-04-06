@@ -61,16 +61,16 @@ export const adminApi = {
       body: JSON.stringify({ business_id })
     }),
 
-  deactivateBusiness: (business_id: string) =>
+  deactivateBusiness: (business_id: string, admin_password: string) =>
     request("/admin/deactivate-business", {
       method: "POST",
-      body: JSON.stringify({ business_id })
+      body: JSON.stringify({ business_id, admin_password })
     }),
 
-  activateBusiness: (business_id: string) =>
+  activateBusiness: (business_id: string, admin_password: string) =>
     request("/admin/activate-business", {
       method: "POST",
-      body: JSON.stringify({ business_id })
+      body: JSON.stringify({ business_id, admin_password })
     }),
 
   deleteBusiness: (business_id: string, admin_password: string) =>
@@ -78,6 +78,11 @@ export const adminApi = {
       method: "POST",
       body: JSON.stringify({ business_id, admin_password })
     }),
+  resetPassword: (business_id: string, new_password: string, admin_password: string) =>
+  request("/admin/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ business_id, new_password, admin_password })
+  }),
 
   getReceipts: (businessId: string) =>
     request(`/dace6a4c-1876-47cd-9af0-138dc1103cf4/api/admin/business/${businessId}/receipts`),
