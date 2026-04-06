@@ -55,10 +55,10 @@ export const adminApi = {
   getBusinesses: () =>
     request("/api/admin/businesses"),
 
-  impersonate: (business_id: string) =>
+  impersonate: (business_id: string, admin_password: string) =>
     request("/api/admin/impersonate", {
       method: "POST",
-      body: JSON.stringify({ business_id })
+      body: JSON.stringify({ business_id, admin_password })
     }),
 
   deactivateBusiness: (business_id: string, admin_password: string) =>
