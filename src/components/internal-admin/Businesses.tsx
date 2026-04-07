@@ -4,7 +4,7 @@ import { adminApi } from "@/lib/adminApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   MoreVertical, Search, ArrowLeft, Sun, Moon, 
-  ExternalLink, Key, Power, Trash2, Database, Receipt 
+  ExternalLink,ShieldCheck, Key, Power, Trash2, Database, Receipt 
 } from "lucide-react"; // Highly recommend adding Lucide for a polished look
 
 // ... Business type stays the same
@@ -40,6 +40,16 @@ const Businesses = () => {
 
     return () => { isMounted = false; };
   }, []);
+
+  // ---------- HELPERS ----------
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   // ---------- CLICK OUTSIDE ----------
   useEffect(() => {
@@ -176,7 +186,7 @@ const Businesses = () => {
                             
                             <div className={`border-t my-1 ${darkMode ? "border-slate-700" : "border-slate-100"}`}></div>
                             
-                            <MenuButton onClick={() => impersonateUser(b.id)} icon={<UserShield size={14}/>} label="Impersonate" color="text-purple-500" darkMode={darkMode} />
+                            <MenuButton onClick={() => impersonateUser(b.id)} icon={<ShieldCheck size={14}/>} label="Impersonate" color="text-purple-500" darkMode={darkMode} />
                             <MenuButton onClick={() => resetPassword(b.id)} icon={<Key size={14}/>} label="Reset Password" color="text-blue-500" darkMode={darkMode} />
                             
                             {b.status === "inactive" ? (
