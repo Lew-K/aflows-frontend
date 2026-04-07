@@ -106,12 +106,25 @@ const Businesses = () => {
     if (!adminPassword) return;
   
     try {
-      const { token } = await adminApi.impersonate(id);
+      const res = await adminApi.impersonate(id, adminPassword);
   
-      // Store impersonation token temporarily
-      localStorage.setItem("impersonation_token", token);
+      const {
+        access_token,
+        refresh_token,
+        business_id
+      } = res;
   
-      window.open(`/dashboard?impersonate=true`, "_blank");
+      // 🔥 CRITICAL: overwrite session
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
+      localStorage.setItem("business_id", business_id);
+  
+      // optional: mark session as impersonation
+      localStorage.setItem("is_impersonating", "true");
+  
+      // open dashboard AFTER setting tokens
+      window.open(`/dashboard`, "_blank");
+  
     } catch (err) {
       alert("Impersonation failed");
     }
