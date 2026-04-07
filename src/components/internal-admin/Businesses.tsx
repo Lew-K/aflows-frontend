@@ -96,6 +96,15 @@ const Businesses = () => {
     });
   };
 
+  const params = new URLSearchParams(window.location.search);
+  const urlBusinessId = params.get("business_id");
+  
+  if (urlBusinessId) {
+    localStorage.setItem("business_id", urlBusinessId);
+  }
+
+  const businessId = localStorage.getItem("business_id");
+
   // ---------- ACTIONS ----------
   const openDashboard = (id: string) => window.open(`/dashboard?business_id=${id}`, "_blank");
   const openReceipts = (id: string) => window.open(`/internal-admin/business/${id}/receipts`, "_blank");
@@ -108,24 +117,31 @@ const Businesses = () => {
     try {
       const res = await adminApi.impersonate(id, adminPassword);
   
-      const {
-        access_token,
-        refresh_token,
-        business_id
-      } = res;
+      const { access_token, refresh_token } = res;
   
-      // 🔥 CRITICAL: overwrite session
+      // 🔥 Decode token
+      const decoded = parseJwt(access_token);
+  
+      const businessId = decoded?.business_id;
+  
+      if (!businessId) {
+        throw new Error("Invalid token");
+      }
+  
+      // 🔥 CLEAR OLD SESSION (VERY IMPORTANT)
+      localStorage.clear();
+  
+      // 🔥 SET NEW SESSION
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("business_id", business_id);
-  
-      // optional: mark session as impersonation
+      localStorage.setItem("business_id", businessId);
       localStorage.setItem("is_impersonating", "true");
   
-      // open dashboard AFTER setting tokens
-      window.open(`/dashboard`, "_blank");
+      // 🔥 FORCE correct business
+      window.open(`/dashboard?business_id=${businessId}`, "_blank");
   
     } catch (err) {
+      console.error(err);
       alert("Impersonation failed");
     }
   };
