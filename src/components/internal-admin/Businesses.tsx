@@ -4,7 +4,7 @@ import { adminApi } from "@/lib/adminApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   MoreVertical, Search, ArrowLeft, Sun, Moon, 
-  ExternalLink, UserShield, Key, Power, Trash2, Database, Receipt 
+  ExternalLink, Key, Power, Trash2, Database, Receipt 
 } from "lucide-react"; // Highly recommend adding Lucide for a polished look
 
 // ... Business type stays the same
