@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminApi } from "@/lib/adminApi";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Business = {
   id: string;
@@ -13,6 +14,7 @@ type Business = {
 
 const Businesses = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -121,23 +123,23 @@ const Businesses = () => {
   
       const { access_token, refresh_token, user } = res;
   
-      const businessId = user?.businessId;
-  
-      if (!businessId) {
-        throw new Error("Missing business ID in response");
+      if (!user?.businessId) {
+        throw new Error("Invalid response");
       }
   
-      // 🔥 CLEAR OLD SESSION
-      localStorage.clear();
+      // 🔥 THIS IS THE KEY FIX
+      login(access_token, refresh_token, {
+        businessId: user.businessId,
+        businessName: user.businessName || "",
+        ownerName: user.ownerName || "",
+        email: user.email || "", // fallback if missing
+      });
   
-      // 🔥 SET NEW SESSION
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("business_id", businessId);
+      // Optional: mark impersonation
       localStorage.setItem("is_impersonating", "true");
   
-      // 🔥 OPEN CORRECT BUSINESS
-      window.open(`/dashboard?business_id=${businessId}`, "_blank");
+      // 🔥 Navigate instead of window.open (important)
+      window.location.href = `/dashboard?business_id=${user.businessId}`;
   
     } catch (err) {
       console.error("Impersonation error:", err);
