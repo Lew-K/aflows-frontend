@@ -96,14 +96,14 @@ const Businesses = () => {
     });
   };
 
-  const params = new URLSearchParams(window.location.search);
-  const urlBusinessId = params.get("business_id");
+  // const params = new URLSearchParams(window.location.search);
+  // const urlBusinessId = params.get("business_id");
   
-  if (urlBusinessId) {
-    localStorage.setItem("business_id", urlBusinessId);
-  }
+  // if (urlBusinessId) {
+  //   localStorage.setItem("business_id", urlBusinessId);
+  // }
 
-  const businessId = localStorage.getItem("business_id");
+  // const businessId = localStorage.getItem("business_id");
 
   // ---------- ACTIONS ----------
   const openDashboard = (id: string) => window.open(`/dashboard?business_id=${id}`, "_blank");
@@ -117,18 +117,17 @@ const Businesses = () => {
     try {
       const res = await adminApi.impersonate(id, adminPassword);
   
-      const { access_token, refresh_token } = res;
+      console.log("Impersonation response:", res);
   
-      // 🔥 Decode token
-      const decoded = parseJwt(access_token);
+      const { access_token, refresh_token, user } = res;
   
-      const businessId = decoded?.business_id;
+      const businessId = user?.businessId;
   
       if (!businessId) {
-        throw new Error("Invalid token");
+        throw new Error("Missing business ID in response");
       }
   
-      // 🔥 CLEAR OLD SESSION (VERY IMPORTANT)
+      // 🔥 CLEAR OLD SESSION
       localStorage.clear();
   
       // 🔥 SET NEW SESSION
@@ -137,11 +136,11 @@ const Businesses = () => {
       localStorage.setItem("business_id", businessId);
       localStorage.setItem("is_impersonating", "true");
   
-      // 🔥 FORCE correct business
+      // 🔥 OPEN CORRECT BUSINESS
       window.open(`/dashboard?business_id=${businessId}`, "_blank");
   
     } catch (err) {
-      console.error(err);
+      console.error("Impersonation error:", err);
       alert("Impersonation failed");
     }
   };
