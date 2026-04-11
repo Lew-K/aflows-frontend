@@ -46,6 +46,8 @@ export const SettingsPage = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   /* ---------------- PASSWORD STATE ---------------- */
   const [passwordData, setPasswordData] = useState({
@@ -103,10 +105,61 @@ export const SettingsPage = () => {
   /* ---------------- LOGO ---------------- */
   const fileInputRef = useRef(null);
 
-  const processFile = (file) => {
+  const processFile = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
+  
+    // instant preview (UX)
     const preview = URL.createObjectURL(file);
     setLogoPreview(preview);
+  
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("businessId", user?.businessId);
+  
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+  
+      const xhr = new XMLHttpRequest();
+  
+      xhr.open("POST", "https://n8n.aflows.uk/webhook/upload-logo");
+  
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+  
+      xhr.onload = () => {
+        setIsUploading(false);
+  
+        if (xhr.status === 200) {
+          const res = JSON.parse(xhr.responseText);
+  
+          // ✅ AUTO REFRESH LOGO FROM SERVER
+          setSettings((prev) => ({
+            ...prev,
+            business_logo_url: res.logoUrl,
+          }));
+  
+          setLogoPreview(null); // clear temp preview
+        } else {
+          console.error("Upload failed");
+        }
+      };
+  
+      xhr.onerror = () => {
+        setIsUploading(false);
+        console.error("Upload error");
+      };
+  
+      xhr.send(formData);
+  
+    } catch (err) {
+      setIsUploading(false);
+      console.error(err);
+    }
   };
 
   /* ---------------- PASSWORD LOGIC ---------------- */
@@ -309,7 +362,13 @@ export const SettingsPage = () => {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => setLogoPreview(null)}
+                        onClick={() => {
+                          setLogoPreview(null);
+                          setSettings((prev) => ({
+                            ...prev,
+                            business_logo_url: "",
+                          }));
+                        }}
                       >
                         Remove
                       </Button>
@@ -351,6 +410,21 @@ export const SettingsPage = () => {
                       or drag & drop (PNG, JPG up to 5MB)
                     </p>
                 
+                  </div>
+                )}
+
+                {/* ✅Progress Bar */}
+                {isUploading && (
+                  <div className="mt-4">
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs mt-1 text-muted-foreground">
+                      Uploading... {uploadProgress}%
+                    </p>
                   </div>
                 )}
 
