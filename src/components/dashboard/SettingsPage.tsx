@@ -1,3 +1,5 @@
+import { changePassword } from '@/lib/api';
+
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -15,7 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export const SettingsPage = () => {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [openSections, setOpenSections] = useState({
     password: false,
@@ -186,11 +188,33 @@ export const SettingsPage = () => {
     return "";
   }, [passwordData]);
 
-  const handlePasswordUpdate = () => {
+  const handlePasswordUpdate = async () => {
     if (passwordError) return;
-
-    console.log("Updating password...");
-    setPasswordData({ current: "", new: "", confirm: "" });
+  
+    if (!accessToken) {
+      console.error("No access token");
+      return;
+    }
+  
+    try {
+      console.log("Sending request...");
+  
+      const res = await changePassword(
+        passwordData.current,
+        passwordData.new,
+        accessToken
+      );
+  
+      console.log("Response:", res);
+  
+      setPasswordData({ current: "", new: "", confirm: "" });
+  
+      toast.success(res.message || "Password updated successfully");
+  
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update password");
+    }
   };
 
   /* ---------------- UI ---------------- */
