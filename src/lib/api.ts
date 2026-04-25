@@ -147,3 +147,35 @@ export const recordSale = async (data: SaleData, token: string): Promise<{ succe
 
   return response.json();
 };
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${BASE_URL}/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      currentPassword: hashPassword(currentPassword),
+      newPassword: hashPassword(newPassword),
+    }),
+  });
+
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("Empty response from server");
+  }
+
+  const parsed = JSON.parse(text);
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Failed to change password');
+  }
+
+  return parsed;
+};
