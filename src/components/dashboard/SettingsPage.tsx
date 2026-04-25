@@ -1,4 +1,5 @@
 import { changePassword } from '@/lib/api';
+import { toast } from 'sonner';
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
