@@ -39,6 +39,18 @@ import {
   LabelList
 } from 'recharts';
 
+// Add these back at the top of your file below the imports
+const formatCurrency = (value) => {
+  if (value == null) return 'KES 0';
+  return `KES ${Math.round(value).toLocaleString()}`;
+};
+
+const formatPercentage = (value, prefix = true) => {
+  if (value == null) return '0%';
+  const sign = prefix && value >= 0 ? '+' : '';
+  return `${sign}${Number(value).toFixed(1)}%`;
+};
+
 // --- Polished Stat Card Component ---
 const StatCard = ({
   icon: Icon,
