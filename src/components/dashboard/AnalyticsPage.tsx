@@ -19,6 +19,8 @@ import {
   Target,
   Activity,
   Info,
+  Zap,
+  Users,
 } from 'lucide-react';
 
 import {
@@ -75,9 +77,6 @@ const formatPercentage = (value: number | null | undefined, prefix = true): stri
   const sign = prefix && value >= 0 ? '+' : '';
   return `${sign}${value.toFixed(1)}%`;
 }
-  
-// const monthlyRevenue = analytics.monthlyRevenue || [];
-// const revenueData = monthlyRevenue; // Define this so the prop isn't undefined;
 
 // Stat Card Component
 const StatCard = ({
@@ -100,21 +99,21 @@ const StatCard = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
   >
-    <Card className="hover:shadow-soft transition-shadow">
+    <Card className="hover:shadow-soft transition-shadow h-full">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-            <Icon className="w-6 h-6 text-primary" />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Icon className="w-5 h-5 text-primary" />
           </div>
         </div>
         
-        <p className="text-2xl font-bold text-foreground">
+        <p className="text-3xl font-black text-foreground">
           {isLoading ? '...' : value}
         </p>
         
         {percentageChange && (
           <div
-            className={`flex items-center gap-1 text-sm font-medium ${
+            className={`flex items-center gap-1 text-sm font-medium mt-2 ${
               trend === 'up'
                 ? 'text-success'
                 : trend === 'down'
@@ -128,7 +127,7 @@ const StatCard = ({
           </div>
         )}
         
-        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">{title}</p>
       </CardContent>
     </Card>
   </motion.div>
@@ -208,19 +207,19 @@ const PaymentBreakdown = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
   >
-    <Card className="hover:shadow-soft transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+    <Card className="hover:shadow-soft transition-shadow h-full">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <DollarSign className="w-5 h-5 text-primary" />
           </div>
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Payment Breakdown
           </p>
         </div>
 
         <div
-          className="mt-2"
+          className="mt-4"
           style={{
             height: `${paymentChartData.length * 28}px`,
             minHeight: "56px",
@@ -291,22 +290,157 @@ const PaymentBreakdown = ({
           )}
         </div>
 
-        <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
           <div className="flex items-center gap-2">
             <Receipt className="w-4 h-4 text-primary" />
-            <p className="text-xs text-muted-foreground font-medium">
-              Receipts Generated
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Top Payment Method
             </p>
           </div>
           <div className="flex items-center gap-1">
-            <p className="text-sm font-bold text-foreground">{totalSales}</p>
-            <span className="text-xs font-medium text-success">↑ 12%</span>
+            <p className="text-sm font-black text-foreground">
+              {paymentChartData.length > 0 ? paymentChartData[0].name : '—'}
+            </p>
+            {paymentChartData.length > 0 && (
+              <span className="text-xs font-medium text-success">{paymentChartData[0].percentage}%</span>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
   </motion.div>
 );
+
+// Top Customer Card Component (NEW)
+const TopCustomerCard = ({
+  topCustomer,
+  receiptsCount,
+  isLoading = false,
+}: {
+  topCustomer: { name: string; totalSpend: number } | null;
+  receiptsCount: number;
+  isLoading?: boolean;
+}) => (
+  <motion.div
+    initial={ANIMATION_VARIANTS.card.initial}
+    animate={ANIMATION_VARIANTS.card.animate}
+    transition={{ duration: 0.4, delay: 0.1 }}
+  >
+    <Card className="hover:shadow-soft transition-shadow h-full">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+        </div>
+        
+        <p className="text-3xl font-black text-foreground truncate">
+          {isLoading ? '...' : topCustomer?.name || 'N/A'}
+        </p>
+        
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">Top Customer</p>
+
+        <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Spend</span>
+            <span className="text-sm font-black text-foreground">
+              {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Receipts</span>
+            <span className="text-sm font-black text-foreground">{isLoading ? '...' : receiptsCount}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
+);
+
+// Smart Recommendation Card Component (NEW)
+const SmartRecommendationCard = ({
+  topItems,
+  salesPace,
+  totalRevenue,
+  isLoading = false,
+}: {
+  topItems: any[];
+  salesPace: number | null;
+  totalRevenue: number;
+  isLoading?: boolean;
+}) => {
+  const getRecommendation = () => {
+    if (isLoading) {
+      return { title: 'Analyzing...', message: 'Gathering insights', icon: 'zap', color: 'bg-yellow-500/5 border-l-yellow-500/50' };
+    }
+
+    // Check top selling item
+    if (topItems.length > 0 && topItems[0].quantity > 50) {
+      return {
+        title: 'Stock Up',
+        message: `Your "${topItems[0].item}" is flying off the shelves with ${topItems[0].quantity} units sold.`,
+        icon: 'zap',
+        color: 'bg-success/5 border-l-success/50',
+      };
+    }
+
+    // Check sales pace
+    if (salesPace !== null && salesPace > 0.2) {
+      return {
+        title: 'Great Pace',
+        message: `You're ${Math.round(salesPace * 100)}% above your daily average—keep it up!`,
+        icon: 'zap',
+        color: 'bg-success/5 border-l-success/50',
+      };
+    }
+
+    if (salesPace !== null && salesPace < -0.3) {
+      return {
+        title: 'Sales Dip',
+        message: `Sales are ${Math.abs(Math.round(salesPace * 100))}% below average. Consider a promotion.`,
+        icon: 'zap',
+        color: 'bg-yellow-500/5 border-l-yellow-500/50',
+      };
+    }
+
+    return {
+      title: 'Business as Usual',
+      message: 'Your sales are tracking normally. Keep monitoring for opportunities.',
+      icon: 'zap',
+      color: 'bg-blue-500/5 border-l-blue-500/50',
+    };
+  };
+
+  const rec = getRecommendation();
+
+  return (
+    <motion.div
+      initial={ANIMATION_VARIANTS.card.initial}
+      animate={ANIMATION_VARIANTS.card.animate}
+      transition={{ duration: 0.4, delay: 0.2 }}
+    >
+      <Card className={`hover:shadow-soft transition-shadow h-full border-l-4 ${rec.color}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
+          </div>
+          
+          <p className="text-lg font-black text-foreground">
+            {rec.title}
+          </p>
+          
+          <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+            {rec.message}
+          </p>
+          
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-4">Smart Insight</p>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
 // Revenue Trend Component
 const RevenueTrend = ({
@@ -330,7 +464,7 @@ const RevenueTrend = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.4 }}
   >
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
@@ -361,11 +495,11 @@ const RevenueTrend = ({
             <div className="flex flex-col items-center justify-center h-full space-y-6">
         
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Revenue This Month
                 </p>
         
-                <p className="text-3xl font-bold">
+                <p className="text-4xl font-black mt-2">
                   KES {revenueData?.[0]?.revenue?.toLocaleString() ?? 0}
                 </p>
               </div>
@@ -460,7 +594,7 @@ const TopSellingItems = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.5 }}
   >
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
@@ -505,9 +639,10 @@ const TopSellingItems = ({
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
         ) : chartTopItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-72 text-center text-muted-foreground">
-            <p>No sales data for this period</p>
-            <p className="text-sm">Try changing the date range or period above</p>
+          <div className="flex flex-col items-center justify-center h-72 text-center text-muted-foreground border-2 border-dashed border-border rounded-lg">
+            <BarChart3 className="w-12 h-12 text-muted-foreground/30 mb-3" />
+            <p className="font-medium">No sales data for this period</p>
+            <p className="text-xs mt-1">Try changing the date range or period above</p>
           </div>
         ) : (
           <div className="h-72">
@@ -592,8 +727,7 @@ const TopSellingItems = ({
   </motion.div>
 );
 
-// Today Snapshot and Monthly projection Component
-// Helper for consistent row styling
+// Today Snapshot Component
 const TodaySnapshotCard = ({
   todayRevenue,
   todayTransactions,
@@ -617,7 +751,7 @@ const TodaySnapshotCard = ({
     >
       <Card className="h-full shadow-sm hover:shadow-md transition-all border-l-4 border-l-primary">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Today Snapshot
           </CardTitle>
           <Activity className="h-4 w-4 text-muted-foreground" />
@@ -625,7 +759,7 @@ const TodaySnapshotCard = ({
         
         <CardContent>
           <div className="mb-6">
-            <div className="text-3xl font-bold tracking-tight">
+            <div className="text-3xl font-black tracking-tight">
               {isLoading ? '...' : formatCurrency(todayRevenue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Total revenue today</p>
@@ -674,8 +808,9 @@ const TodaySnapshotCard = ({
   );
 };
 
-import { CalendarDays, BarChart3, Info } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 
+// Monthly Projection Component
 const MonthlyProjectionCard = ({
   monthRevenue,
   projectedRevenue,
@@ -697,9 +832,9 @@ const MonthlyProjectionCard = ({
       initial={ANIMATION_VARIANTS.card.initial}
       animate={ANIMATION_VARIANTS.card.animate}
     >
-      <Card className="h-full shadow-sm hover:shadow-md transition-all border-l-4 border-l-muted-foreground">
+      <Card className="h-full shadow-sm hover:shadow-md transition-all border-l-4 border-l-success">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Monthly Projection
           </CardTitle>
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -716,11 +851,11 @@ const MonthlyProjectionCard = ({
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Revenue So Far</p>
-                  <p className="text-xl font-bold">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
+                  <p className="text-xl font-black">{isLoading ? '...' : formatCurrency(monthRevenue)}</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center justify-end gap-1 mb-1">
-                    <p className="text-xs font-bold text-primary uppercase tracking-tighter">Projected</p>
+                    <p className="text-xs font-bold text-success uppercase tracking-tighter">Projected</p>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
@@ -730,7 +865,7 @@ const MonthlyProjectionCard = ({
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-2xl font-black text-primary">
+                  <p className="text-2xl font-black text-success">
                     {isLoading ? '...' : formatCurrency(projectedRevenue)}
                   </p>
                 </div>
@@ -745,7 +880,7 @@ const MonthlyProjectionCard = ({
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
-                    className="h-full bg-primary"
+                    className="h-full bg-success"
                   />
                 </div>
               </div>
@@ -779,15 +914,13 @@ export const AnalyticsPage = () => {
   const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
   const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+  const [topCustomer, setTopCustomer] = useState<{ name: string; totalSpend: number } | null>(null);
+  const [receiptsCount, setReceiptsCount] = useState(0);
+  const [fetchingReceipts, setFetchingReceipts] = useState(false);
 
-  // useEffect(() => {
-  //   if (businessId) {
-  //     setFetchKey(prev => prev + 1);
-  //   }
-  // }, [businessId, period]);
+  const { getSales, fetchSales, isFetching, getRevenueAnalytics, fetchRevenueAnalytics } = useData();
 
-  const { getSales, fetchSales, isFetching } = useData();
-
+  // Fetch sales for the selected period
   useEffect(() => {
     if (businessId) {
       fetchSales(businessId, period, customStart, customEnd);
@@ -797,11 +930,7 @@ export const AnalyticsPage = () => {
   const sales = getSales(businessId, period, customStart, customEnd);
   const loading = isFetching(`${businessId}-${period}-${customStart || ""}-${customEnd || ""}`);
 
-  const {
-    getRevenueAnalytics,
-    fetchRevenueAnalytics,
-  } = useData();
-  
+  // Fetch analytics for the selected period
   useEffect(() => {
     if (businessId) {
       fetchRevenueAnalytics(businessId, period, customStart, customEnd);
@@ -820,7 +949,55 @@ export const AnalyticsPage = () => {
     `${businessId}-${period}-${customStart || ""}-${customEnd || ""}`
   );
 
+  // Fetch full month analytics independently (for projection - DECOUPLED)
+  useEffect(() => {
+    if (businessId) {
+      fetchRevenueAnalytics(businessId, 'this_month');
+    }
+  }, [businessId]);
   
+  const monthAnalytics = getRevenueAnalytics(businessId, 'this_month');
+
+  // Fetch receipts and top customer data from webhook
+  useEffect(() => {
+    const fetchReceiptsAndTopCustomer = async () => {
+      if (!businessId) return;
+      
+      setFetchingReceipts(true);
+      try {
+        const url = new URL('https://n8n.aflows.uk/webhook/get-sales');
+        url.searchParams.append('business_id', businessId);
+        url.searchParams.append('period', 'this_month');
+
+        const response = await fetch(url.toString());
+        const data = await response.json();
+        
+        const allSales = data?.sales?.sales || [];
+        setReceiptsCount(allSales.length);
+
+        // Calculate top customer
+        const customerSpends: Record<string, { name: string; total: number }> = {};
+        allSales.forEach((sale: any) => {
+          const customerName = sale.customer_name || 'Walk-in Customer';
+          if (!customerSpends[customerName]) {
+            customerSpends[customerName] = { name: customerName, total: 0 };
+          }
+          customerSpends[customerName].total += Number(sale.total_amount ?? 0);
+        });
+
+        const topCust = Object.values(customerSpends).sort((a, b) => b.total - a.total)[0];
+        if (topCust) {
+          setTopCustomer({ name: topCust.name, totalSpend: topCust.total });
+        }
+      } catch (error) {
+        console.error('Failed to fetch receipts and top customer:', error);
+      } finally {
+        setFetchingReceipts(false);
+      }
+    };
+
+    fetchReceiptsAndTopCustomer();
+  }, [businessId]);
 
   const totalSales = sales?.length ?? 0;
 
@@ -838,38 +1015,34 @@ export const AnalyticsPage = () => {
     name: method.method,
     percentage: Number(method.percentageOfRevenue) || 0,
     revenue: Number(method.metrics?.revenue) || 0,
-  }));
+  })).sort((a, b) => b.percentage - a.percentage);
 
-  const currentMonthReceipts = revenueSummary?.salesCount ?? 0;
-  const receiptsGrowth = 12;
-
-  // Mock data
   const revenueData = monthlyRevenue ?? [];
 
   const hasMultipleMonths =
     revenueData.filter(m => m.revenue > 0).length > 1;
 
   // Get today's date
-const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const today = new Date().toISOString().slice(0, 10);
 
-// Filter sales for today
-const todaySales = useMemo(() => sales?.filter(s => s.created_at.startsWith(today)) ?? [], [sales, today]);
+  // Filter sales for today
+  const todaySales = useMemo(() => sales?.filter(s => s.created_at.startsWith(today)) ?? [], [sales, today]);
 
-// Today Snapshot
-const todayRevenue = todaySales.reduce((sum, s) => sum + (s.amount ?? 0), 0);
-const todayTransactions = todaySales.length;
-const avgSale = todayTransactions ? todayRevenue / todayTransactions : 0;
+  // Today Snapshot
+  const todayRevenue = todaySales.reduce((sum, s) => sum + (s.amount ?? 0), 0);
+  const todayTransactions = todaySales.length;
+  const avgSale = todayTransactions ? todayRevenue / todayTransactions : 0;
 
-// Monthly Projection
-const monthRevenue = revenueSummary?.totalRevenue ?? 0;
-const now = new Date();
-const daysElapsed = now.getDate();
-const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-const averageDailyRevenue = daysElapsed ? monthRevenue / daysElapsed : 0;
-const projectedRevenue = averageDailyRevenue * daysInMonth;
+  // Monthly Projection (using full month data, independent of period filter - DECOUPLED)
+  const monthRevenue = monthAnalytics.revenueSummary?.totalRevenue ?? 0;
+  const now = new Date();
+  const daysElapsed = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const averageDailyRevenue = daysElapsed ? monthRevenue / daysElapsed : 0;
+  const projectedRevenue = averageDailyRevenue * daysInMonth;
 
-// Sales pace = compare today's revenue vs avg day
-const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
+  // Sales pace = compare today's revenue vs avg day
+  const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -897,7 +1070,7 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
         />
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - 4 columns with balanced spacing */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={DollarSign}
@@ -921,21 +1094,20 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
           isLoading={loading}
         />
 
-        <StatCard
-          icon={Receipt}
-          title="Receipts Generated (This Month)"
-          value={currentMonthReceipts.toString()}
-          percentageChange={`↑ ${receiptsGrowth}%`}
-        />
-
         <PaymentBreakdown
           paymentChartData={paymentChartData}
           totalSales={totalSales}
           isLoading={revenueLoading}
         />
+
+        <TopCustomerCard
+          topCustomer={topCustomer}
+          receiptsCount={receiptsCount}
+          isLoading={fetchingReceipts}
+        />
       </div>
 
-      {/* Charts */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueTrend
           revenueData={revenueData}
@@ -956,9 +1128,15 @@ const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / a
         />
       </div>
 
-      {/* Recent Activity */}
-      {/* Today Snapshot & Monthly Projection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Smart Recommendation, Today Snapshot & Monthly Projection */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <SmartRecommendationCard
+          topItems={topSellingItems}
+          salesPace={salesPace}
+          totalRevenue={revenueSummary?.totalRevenue ?? 0}
+          isLoading={loading}
+        />
+
         <TodaySnapshotCard
           todayRevenue={todayRevenue}
           todayTransactions={todayTransactions}
