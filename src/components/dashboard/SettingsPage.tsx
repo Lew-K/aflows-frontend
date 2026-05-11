@@ -54,7 +54,7 @@ const ReceiptPreview = ({ settings }) => {
   );
 
   return (
-    <div className="bg-background rounded-xl border shadow-sm p-4 font-mono text-xs text-gray-800 max-w-xs mx-auto select-none">
+    <div className="bg-background rounded-xl border shadow-sm p-4 font-mono text-xs text-foreground max-w-xs mx-auto select-none">
       {/* Header */}
       <div className="text-center space-y-1 mb-3">
         {settings.business_logo_url ? (
