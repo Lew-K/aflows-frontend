@@ -6,8 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp, Receipt, Tag } from "lucide-react";
+import { Settings, Save, Eye, EyeOff, Check, ChevronDown, ChevronUp, Receipt, Tag } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -48,9 +47,7 @@ const ReceiptPreview = ({ settings }) => {
   const taxAmount = (discountedSubtotal * taxRate) / 100;
   const total = discountedSubtotal + taxAmount;
 
-  const currencySymbols = { KES: "KES", USD: "$", UGX: "UGX" };
-  const sym = currencySymbols[settings.currency] || settings.currency;
-  const fmt = (n) => `${sym} ${n.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
+  const fmt = (n) => `KES ${n.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
 
   const Divider = () => (
     <div className="border-t border-dashed border-gray-300 my-2" />
@@ -164,7 +161,7 @@ export const SettingsPage = () => {
   const [openSections, setOpenSections] = useState({
     password: false,
     access: false,
-    receiptPreview: false,
+    receiptPreview: true,  // open by default so live changes are visible
   });
 
   const toggleSection = (section) => {
@@ -176,12 +173,10 @@ export const SettingsPage = () => {
     business_name: "",
     phone: "",
     location: "Nairobi, Kenya",
-    currency: "KES",
     receipt_prefix: "RCT",
     receipt_footer: "Thank you for your business",
     tax_rate: "16",
     business_logo_url: "",
-    /* NEW: discount fields */
     discount_type: "percentage",   // "percentage" | "fixed"
     discount_value: "",
   });
@@ -233,7 +228,6 @@ export const SettingsPage = () => {
             business_name: data.business_name || user.businessName || "",
             phone: data.phone || "",
             location: data.location || "Nairobi, Kenya",
-            currency: data.currency || "KES",
             receipt_prefix: data.receipt_prefix || "RCT",
             receipt_footer: data.receipt_footer || "Thank you for your business",
             tax_rate: data.tax_rate ?? "16",
@@ -255,7 +249,6 @@ export const SettingsPage = () => {
         business_name: user.businessName || "",
         phone: "",
         location: "Nairobi, Kenya",
-        currency: "KES",
         receipt_prefix: "RCT",
         receipt_footer: "Thank you for your business",
         tax_rate: "16",
@@ -452,22 +445,6 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Currency</p>
-                <Select
-                  value={settings.currency}
-                  onValueChange={(value) => handleChange("currency", value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="KES">KES (Kenyan Shilling)</SelectItem>
-                    <SelectItem value="USD">USD (US Dollar)</SelectItem>
-                    <SelectItem value="UGX">UGX (Ugandan Shilling)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </Card>
 
@@ -547,7 +524,7 @@ export const SettingsPage = () => {
                   {/* Discount Value */}
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
-                      {settings.discount_type === "percentage" ? "Discount %" : `Amount (${settings.currency})`}
+                      {settings.discount_type === "percentage" ? "Discount %" : "Amount (KES)"}
                     </p>
                     <div className="flex items-center gap-2">
                       <Input
@@ -559,42 +536,9 @@ export const SettingsPage = () => {
                         onChange={(e) => handleChange("discount_value", e.target.value)}
                       />
                       <span className="text-sm text-muted-foreground whitespace-nowrap">
-                        {settings.discount_type === "percentage" ? "%" : settings.currency}
+                        {settings.discount_type === "percentage" ? "%" : "KES"}
                       </span>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── NEW: Receipt Preview Toggle ── */}
-              <div className="border rounded-lg overflow-hidden">
-                <button
-                  className="w-full flex justify-between items-center px-4 py-3 hover:bg-muted/40 transition-colors"
-                  onClick={() => toggleSection("receiptPreview")}
-                >
-                  <div className="flex items-center gap-2">
-                    <Receipt className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">Live Receipt Preview</span>
-                  </div>
-                  {openSections.receiptPreview ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-
-                <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    openSections.receiptPreview
-                      ? "max-h-[800px] opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="bg-muted/20 px-4 py-6">
-                    <p className="text-xs text-center text-muted-foreground mb-4">
-                      Sample receipt — updates as you edit fields above
-                    </p>
-                    <ReceiptPreview settings={settings} />
                   </div>
                 </div>
               </div>
@@ -715,6 +659,42 @@ export const SettingsPage = () => {
                 />
               </div>
             </CardContent>
+          </Card>
+
+          {/* LIVE RECEIPT PREVIEW */}
+          <Card>
+            <CardHeader
+              className="cursor-pointer"
+              onClick={() => toggleSection("receiptPreview")}
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-primary" />
+                  <CardTitle>Receipt Preview</CardTitle>
+                </div>
+                {openSections.receiptPreview ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+              </div>
+              <CardDescription>
+                Updates live as you edit receipt settings
+              </CardDescription>
+            </CardHeader>
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                openSections.receiptPreview
+                  ? "max-h-[900px] opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              <CardContent>
+                <div className="bg-muted/20 rounded-lg px-2 py-4">
+                  <ReceiptPreview settings={settings} />
+                </div>
+              </CardContent>
+            </div>
           </Card>
 
           {/* CHANGE PASSWORD */}
