@@ -7,8 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-// import { Settings, Upload, Save, Eye, EyeOff, Check, X } from "lucide-react";
-import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Settings, Upload, Save, Eye, EyeOff, Check, X, ChevronDown, ChevronUp, Receipt, Tag } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,22 +16,162 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+/* ─────────────────────────────────────────────
+   Inline Receipt Preview Component
+───────────────────────────────────────────── */
+const ReceiptPreview = ({ settings }) => {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-KE", {
+    day: "2-digit", month: "short", year: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("en-KE", {
+    hour: "2-digit", minute: "2-digit",
+  });
+
+  const sampleItems = [
+    { name: "Product A", qty: 2, price: 500 },
+    { name: "Product B", qty: 1, price: 1200 },
+    { name: "Service C", qty: 3, price: 350 },
+  ];
+
+  const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
+  const taxRate = parseFloat(settings.tax_rate) || 0;
+
+  /* ── Discount calculation ── */
+  const discountValue = parseFloat(settings.discount_value) || 0;
+  const discountAmount =
+    settings.discount_type === "percentage"
+      ? (subtotal * discountValue) / 100
+      : discountValue;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+
+  const taxAmount = (discountedSubtotal * taxRate) / 100;
+  const total = discountedSubtotal + taxAmount;
+
+  const currencySymbols = { KES: "KES", USD: "$", UGX: "UGX" };
+  const sym = currencySymbols[settings.currency] || settings.currency;
+  const fmt = (n) => `${sym} ${n.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
+
+  const Divider = () => (
+    <div className="border-t border-dashed border-gray-300 my-2" />
+  );
+
+  return (
+    <div className="bg-white rounded-xl border shadow-sm p-4 font-mono text-xs text-gray-800 max-w-xs mx-auto select-none">
+      {/* Header */}
+      <div className="text-center space-y-1 mb-3">
+        {settings.business_logo_url ? (
+          <img
+            src={settings.business_logo_url}
+            alt="logo"
+            className="w-12 h-12 object-contain mx-auto"
+          />
+        ) : (
+          <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-base font-bold text-primary">
+            {settings.business_name?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "B"}
+          </div>
+        )}
+        <p className="font-bold text-sm text-gray-900">
+          {settings.business_name || "Your Business"}
+        </p>
+        {settings.location && (
+          <p className="text-gray-500 text-[10px]">{settings.location}</p>
+        )}
+        {settings.phone && (
+          <p className="text-gray-500 text-[10px]">{settings.phone}</p>
+        )}
+      </div>
+
+      <Divider />
+
+      {/* Receipt Meta */}
+      <div className="flex justify-between text-[10px] text-gray-500 mb-2">
+        <span>Receipt #{settings.receipt_prefix || "RCT"}-0042</span>
+        <span>{dateStr}</span>
+      </div>
+      <div className="text-[10px] text-gray-400 mb-2 text-right">{timeStr}</div>
+
+      <Divider />
+
+      {/* Items */}
+      <div className="space-y-1 mb-2">
+        <div className="flex justify-between text-[10px] font-semibold text-gray-500 uppercase mb-1">
+          <span className="flex-1">Item</span>
+          <span className="w-8 text-center">Qty</span>
+          <span className="w-20 text-right">Amount</span>
+        </div>
+        {sampleItems.map((item, i) => (
+          <div key={i} className="flex justify-between">
+            <span className="flex-1 truncate">{item.name}</span>
+            <span className="w-8 text-center">{item.qty}</span>
+            <span className="w-20 text-right">{fmt(item.qty * item.price)}</span>
+          </div>
+        ))}
+      </div>
+
+      <Divider />
+
+      {/* Totals */}
+      <div className="space-y-1">
+        <div className="flex justify-between text-[10px]">
+          <span>Subtotal</span>
+          <span>{fmt(subtotal)}</span>
+        </div>
+
+        {discountAmount > 0 && (
+          <div className="flex justify-between text-[10px] text-green-600">
+            <span>
+              Discount{" "}
+              {settings.discount_type === "percentage"
+                ? `(${discountValue}%)`
+                : "(Fixed)"}
+            </span>
+            <span>- {fmt(discountAmount)}</span>
+          </div>
+        )}
+
+        {taxRate > 0 && (
+          <div className="flex justify-between text-[10px] text-gray-500">
+            <span>VAT ({taxRate}%)</span>
+            <span>{fmt(taxAmount)}</span>
+          </div>
+        )}
+
+        <Divider />
+
+        <div className="flex justify-between font-bold text-sm">
+          <span>TOTAL</span>
+          <span>{fmt(total)}</span>
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* Footer */}
+      <p className="text-center text-[10px] text-gray-400 italic mt-2">
+        {settings.receipt_footer || "Thank you for your business"}
+      </p>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   Main Settings Page
+───────────────────────────────────────────── */
 export const SettingsPage = () => {
   const { user, accessToken } = useAuth();
 
   const [openSections, setOpenSections] = useState({
     password: false,
     access: false,
+    receiptPreview: false,
   });
 
   const toggleSection = (section) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  /* ---------------- STATE ---------------- */
+  /* ── STATE ── */
   const [settings, setSettings] = useState({
     business_name: "",
     phone: "",
@@ -42,6 +181,9 @@ export const SettingsPage = () => {
     receipt_footer: "Thank you for your business",
     tax_rate: "16",
     business_logo_url: "",
+    /* NEW: discount fields */
+    discount_type: "percentage",   // "percentage" | "fixed"
+    discount_value: "",
   });
 
   const [originalSettings, setOriginalSettings] = useState(null);
@@ -52,7 +194,7 @@ export const SettingsPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
-  /* ---------------- PASSWORD STATE ---------------- */
+  /* ── PASSWORD STATE ── */
   const [passwordData, setPasswordData] = useState({
     current: "",
     new: "",
@@ -65,9 +207,50 @@ export const SettingsPage = () => {
     confirm: false,
   });
 
-  /* ---------------- INIT FROM AUTH ---------------- */
+  /* ── INIT FROM AUTH + FETCH SAVED SETTINGS ──
+     FIX: populate business_logo_url from your API so the
+     logo persists across page loads.
+     Replace the fetch URL / response shape to match your API.
+  ── */
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+
+    const fetchBusinessSettings = async () => {
+      try {
+        // Adjust this endpoint to your actual API
+        const res = await fetch(
+          `https://n8n.aflows.uk/webhook/business-settings?businessId=${user.businessId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          const loaded = {
+            business_name: data.business_name || user.businessName || "",
+            phone: data.phone || "",
+            location: data.location || "Nairobi, Kenya",
+            currency: data.currency || "KES",
+            receipt_prefix: data.receipt_prefix || "RCT",
+            receipt_footer: data.receipt_footer || "Thank you for your business",
+            tax_rate: data.tax_rate ?? "16",
+            business_logo_url: data.business_logo_url || "",
+            discount_type: data.discount_type || "percentage",
+            discount_value: data.discount_value ?? "",
+          };
+          setSettings(loaded);
+          setOriginalSettings(loaded);
+          return;
+        }
+      } catch (err) {
+        // Silently fall through to defaults if the fetch fails
+        console.warn("Could not fetch business settings:", err);
+      }
+
+      // Fallback: initialise from auth context only
       const initial = {
         business_name: user.businessName || "",
         phone: "",
@@ -77,107 +260,113 @@ export const SettingsPage = () => {
         receipt_footer: "Thank you for your business",
         tax_rate: "16",
         business_logo_url: "",
+        discount_type: "percentage",
+        discount_value: "",
       };
-
       setSettings(initial);
       setOriginalSettings(initial);
-    }
+    };
+
+    fetchBusinessSettings();
   }, [user]);
 
-  /* ---------------- CHANGE DETECTION ---------------- */
+  /* ── CHANGE DETECTION ── */
   const hasChanges = useMemo(() => {
     return JSON.stringify(settings) !== JSON.stringify(originalSettings);
   }, [settings, originalSettings]);
 
-  /* ---------------- HANDLERS ---------------- */
+  /* ── HANDLERS ── */
   const handleChange = (field, value) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-
-    console.log("Saving settings:", settings);
-
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      // Wire up your real API call here
+      console.log("Saving settings:", settings);
+      await new Promise((r) => setTimeout(r, 800)); // replace with actual API call
       setOriginalSettings(settings);
-    }, 1000);
+      toast.success("Settings saved successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  /* ---------------- LOGO ---------------- */
+  /* ── LOGO ──
+     FIX: stopPropagation is handled at call-sites of fileInputRef.current.click()
+     inside the logo overlay buttons, so the outer div's onClick doesn't double-fire.
+  ── */
   const fileInputRef = useRef(null);
 
   const processFile = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
-  
-    // instant preview (UX)
+
+    // File size guard (5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5 MB");
+      return;
+    }
+
     const preview = URL.createObjectURL(file);
     setLogoPreview(preview);
-  
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("businessId", user?.businessId);
-  
+
     try {
       setIsUploading(true);
       setUploadProgress(0);
-  
+
       const xhr = new XMLHttpRequest();
-  
       xhr.open("POST", "https://n8n.aflows.uk/webhook/upload-logo");
-  
+
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(percent);
         }
       };
-  
+
       xhr.onload = () => {
         setIsUploading(false);
-  
         if (xhr.status === 200) {
           const res = JSON.parse(xhr.responseText);
-  
-          // ✅ AUTO REFRESH LOGO FROM SERVER
-          setSettings((prev) => ({
-            ...prev,
-            business_logo_url: res.logoUrl,
-          }));
-  
-          setLogoPreview(null); // clear temp preview
+          setSettings((prev) => ({ ...prev, business_logo_url: res.logoUrl }));
+          setLogoPreview(null); // server URL takes over
+          toast.success("Logo uploaded successfully");
         } else {
-          console.error("Upload failed");
+          toast.error("Logo upload failed");
         }
       };
-  
+
       xhr.onerror = () => {
         setIsUploading(false);
-        console.error("Upload error");
+        toast.error("Logo upload error");
       };
-  
+
       xhr.send(formData);
-  
     } catch (err) {
       setIsUploading(false);
       console.error(err);
     }
   };
 
-  /* ---------------- PASSWORD LOGIC ---------------- */
-
+  /* ── PASSWORD ── */
   const getPasswordStrength = (password) => {
     let score = 0;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
-
-    if (score <= 1) return { label: "Weak", value: 25 };
-    if (score === 2) return { label: "Medium", value: 50 };
-    if (score === 3) return { label: "Strong", value: 75 };
-    return { label: "Very Strong", value: 100 };
+    if (score <= 1) return { label: "Weak", value: 25, color: "bg-red-400" };
+    if (score === 2) return { label: "Medium", value: 50, color: "bg-yellow-400" };
+    if (score === 3) return { label: "Strong", value: 75, color: "bg-blue-400" };
+    return { label: "Very Strong", value: 100, color: "bg-green-500" };
   };
 
   const strength = getPasswordStrength(passwordData.new);
@@ -191,34 +380,20 @@ export const SettingsPage = () => {
 
   const handlePasswordUpdate = async () => {
     if (passwordError) return;
-  
-    if (!accessToken) {
-      console.error("No access token");
-      return;
-    }
-  
+    if (!accessToken) { console.error("No access token"); return; }
     try {
-      console.log("Sending request...");
-  
-      const res = await changePassword(
-        passwordData.current,
-        passwordData.new,
-        accessToken
-      );
-  
-      console.log("Response:", res);
-  
+      const res = await changePassword(passwordData.current, passwordData.new, accessToken);
       setPasswordData({ current: "", new: "", confirm: "" });
-  
       toast.success(res.message || "Password updated successfully");
-  
     } catch (err) {
       console.error(err);
       toast.error("Failed to update password");
     }
   };
 
-  /* ---------------- UI ---------------- */
+  /* ─────────────────────────────────────────────
+     UI
+  ───────────────────────────────────────────── */
   return (
     <div className="w-full max-w-full mx-auto px-4 md:px-8 lg:px-12 py-6 space-y-8">
 
@@ -231,29 +406,28 @@ export const SettingsPage = () => {
             <p className="text-muted-foreground">Manage your business settings</p>
           </div>
         </div>
-
         <div className="flex items-center gap-4">
-          {hasChanges && <span className="text-sm text-orange-500">● Unsaved changes</span>}
+          {hasChanges && (
+            <span className="text-sm text-orange-500">● Unsaved changes</span>
+          )}
           <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
-            {isSaving ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+            {isSaving ? "Saving..." : <><Save className="w-4 h-4 mr-2" />Save Changes</>}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* LEFT */}
+        {/* ── LEFT COLUMN ── */}
         <div className="lg:col-span-8 space-y-8">
 
-          {/* BUSINESS */}
+          {/* BUSINESS PROFILE */}
           <Card>
             <CardHeader>
               <CardTitle>Business Profile</CardTitle>
               <CardDescription>Your business details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-
-              {/* Business Name */}
               <div>
                 <p className="text-sm text-muted-foreground">Business Name</p>
                 <Input
@@ -262,8 +436,6 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-            
-              {/* Phone */}
               <div>
                 <p className="text-sm text-muted-foreground">Phone Number</p>
                 <Input
@@ -272,8 +444,6 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-            
-              {/* Location */}
               <div>
                 <p className="text-sm text-muted-foreground">Location</p>
                 <Input
@@ -282,8 +452,6 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-            
-              {/* Currency */}
               <div>
                 <p className="text-sm text-muted-foreground">Currency</p>
                 <Select
@@ -300,17 +468,20 @@ export const SettingsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-            
             </CardContent>
           </Card>
 
-          {/* RECEIPT */}
+          {/* RECEIPT CUSTOMIZATION */}
           <Card>
             <CardHeader>
               <CardTitle>Receipt Customization</CardTitle>
+              <CardDescription>
+                Configure how your receipts look. Toggle the preview to see changes live.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
 
+              {/* Receipt Prefix */}
               <div>
                 <p className="text-sm text-muted-foreground">Receipt Prefix</p>
                 <Input
@@ -319,19 +490,23 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-            
+
+              {/* Tax Rate */}
               <div>
                 <p className="text-sm text-muted-foreground">Tax Rate (%)</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Input
                     type="number"
+                    min="0"
+                    max="100"
                     value={settings.tax_rate}
                     onChange={(e) => handleChange("tax_rate", e.target.value)}
                   />
                   <span>%</span>
                 </div>
               </div>
-            
+
+              {/* Footer Message */}
               <div>
                 <p className="text-sm text-muted-foreground">Footer Message</p>
                 <Input
@@ -340,21 +515,109 @@ export const SettingsPage = () => {
                   className="mt-1"
                 />
               </div>
-            
+
+              {/* ── NEW: Discount Settings ── */}
+              <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">Default Discount</p>
+                </div>
+                <p className="text-xs text-muted-foreground -mt-2">
+                  Set a default discount applied to all receipts. You can override this per transaction.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Discount Type */}
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Discount Type</p>
+                    <Select
+                      value={settings.discount_type}
+                      onValueChange={(value) => handleChange("discount_type", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                        <SelectItem value="fixed">Fixed Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Discount Value */}
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {settings.discount_type === "percentage" ? "Discount %" : `Amount (${settings.currency})`}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        max={settings.discount_type === "percentage" ? "100" : undefined}
+                        placeholder={settings.discount_type === "percentage" ? "e.g. 10" : "e.g. 200"}
+                        value={settings.discount_value}
+                        onChange={(e) => handleChange("discount_value", e.target.value)}
+                      />
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">
+                        {settings.discount_type === "percentage" ? "%" : settings.currency}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── NEW: Receipt Preview Toggle ── */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  className="w-full flex justify-between items-center px-4 py-3 hover:bg-muted/40 transition-colors"
+                  onClick={() => toggleSection("receiptPreview")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Receipt className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">Live Receipt Preview</span>
+                  </div>
+                  {openSections.receiptPreview ? (
+                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    openSections.receiptPreview
+                      ? "max-h-[800px] opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="bg-muted/20 px-4 py-6">
+                    <p className="text-xs text-center text-muted-foreground mb-4">
+                      Sample receipt — updates as you edit fields above
+                    </p>
+                    <ReceiptPreview settings={settings} />
+                  </div>
+                </div>
+              </div>
+
             </CardContent>
           </Card>
 
         </div>
 
-        {/* RIGHT */}
+        {/* ── RIGHT COLUMN ── */}
         <div className="lg:col-span-4 space-y-8">
 
-          {/* BRANDING */}
+          {/* BRANDING / LOGO */}
           <Card>
             <CardHeader>
               <CardTitle>Branding</CardTitle>
             </CardHeader>
             <CardContent>
+              {/*
+                FIX: The outer div handles drag-and-drop and clicks on the
+                *empty* area only. Inner buttons call e.stopPropagation()
+                so the outer onClick never double-fires the file dialog.
+              */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -372,27 +635,28 @@ export const SettingsPage = () => {
                   <div className="relative group">
                     <img
                       src={logoPreview || settings.business_logo_url}
+                      alt="Business logo"
                       className="w-24 h-24 object-contain mx-auto rounded-lg border bg-white"
                     />
-                
-                    {/* Hover Actions */}
+                    {/* Hover Actions — stopPropagation prevents double dialog */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition rounded-lg">
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={(e) => {
+                          e.stopPropagation(); // FIX: prevent outer div onClick
+                          fileInputRef.current?.click();
+                        }}
                       >
                         Replace
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation(); // FIX: prevent outer div onClick
                           setLogoPreview(null);
-                          setSettings((prev) => ({
-                            ...prev,
-                            business_logo_url: "",
-                          }));
+                          setSettings((prev) => ({ ...prev, business_logo_url: "" }));
                         }}
                       >
                         Remove
@@ -401,44 +665,33 @@ export const SettingsPage = () => {
                   </div>
                 ) : (
                   <div className="text-center space-y-3">
-                
-                    {/* Initials Logo */}
                     <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">
                       {settings.business_name
-                        ?.split(" ")
-                        .map(word => word[0])
-                        .slice(0, 2)
-                        .join("")
-                        .toUpperCase() || "B"}
+                        ?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "B"}
                     </div>
-                
-                    {/* Business Name */}
                     <p className="font-semibold">
                       {settings.business_name || "Your Business"}
                     </p>
-                
-                    {/* Helper Text */}
                     <p className="text-xs text-muted-foreground">
                       Your logo will appear on receipts and customer documents
                     </p>
-                
-                    {/* Upload Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={(e) => {
+                        e.stopPropagation(); // FIX: prevent outer div onClick
+                        fileInputRef.current?.click();
+                      }}
                     >
                       Upload Logo
                     </Button>
-                
                     <p className="text-xs text-muted-foreground">
                       or drag & drop (PNG, JPG up to 5MB)
                     </p>
-                
                   </div>
                 )}
 
-                {/* ✅Progress Bar */}
+                {/* Upload Progress Bar */}
                 {isUploading && (
                   <div className="mt-4">
                     <div className="w-full bg-muted rounded-full h-2">
@@ -453,11 +706,10 @@ export const SettingsPage = () => {
                   </div>
                 )}
 
-                
-
                 <input
                   ref={fileInputRef}
                   type="file"
+                  accept="image/*"
                   className="hidden"
                   onChange={(e) => processFile(e.target.files[0])}
                 />
@@ -465,7 +717,7 @@ export const SettingsPage = () => {
             </CardContent>
           </Card>
 
-          {/* PASSWORD */}
+          {/* CHANGE PASSWORD */}
           <Card>
             <CardHeader
               className="cursor-pointer"
@@ -486,51 +738,53 @@ export const SettingsPage = () => {
               }`}
             >
               <CardContent className="space-y-4">
-
-              {["current", "new", "confirm"].map((field) => (
-                <div key={field} className="relative">
-                  <Input
-                    type={showPassword[field] ? "text" : "password"}
-                    placeholder={field + " password"}
-                    value={passwordData[field]}
-                    onChange={(e) =>
-                      setPasswordData((prev) => ({ ...prev, [field]: e.target.value }))
-                    }
-                  />
-                  <button
-                    onClick={() =>
-                      setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }))
-                    }
-                    className="absolute right-3 top-2"
-                  >
-                    {showPassword[field] ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              ))}
-
-              {/* STRENGTH */}
-              {passwordData.new && (
-                <div>
-                  <div className="h-2 bg-muted rounded">
-                    <div
-                      className="h-2 bg-primary rounded"
-                      style={{ width: `${strength.value}%` }}
+                {["current", "new", "confirm"].map((field) => (
+                  <div key={field} className="relative">
+                    <Input
+                      type={showPassword[field] ? "text" : "password"}
+                      placeholder={field + " password"}
+                      value={passwordData[field]}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({ ...prev, [field]: e.target.value }))
+                      }
                     />
+                    <button
+                      aria-label={showPassword[field] ? "Hide password" : "Show password"}
+                      onClick={() =>
+                        setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }))
+                      }
+                      className="absolute right-3 top-2"
+                    >
+                      {showPassword[field] ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
-                  <p className="text-xs mt-1">{strength.label}</p>
-                </div>
-              )}
+                ))}
 
-              {passwordError && (
-                <p className="text-xs text-red-500">{passwordError}</p>
-              )}
+                {/* Strength Meter */}
+                {passwordData.new && (
+                  <div>
+                    <div className="h-2 bg-muted rounded">
+                      <div
+                        className={`h-2 rounded transition-all ${strength.color}`}
+                        style={{ width: `${strength.value}%` }}
+                      />
+                    </div>
+                    <p className="text-xs mt-1">{strength.label}</p>
+                  </div>
+                )}
 
-              <Button onClick={handlePasswordUpdate} disabled={!!passwordError}>
-                Update Password
-              </Button>
+                {passwordError && (
+                  <p className="text-xs text-red-500">{passwordError}</p>
+                )}
 
-            </CardContent>
-          </div>
+                <Button
+                  onClick={handlePasswordUpdate}
+                  disabled={!!passwordError || !passwordData.current || !passwordData.new}
+                >
+                  Update Password
+                </Button>
+              </CardContent>
+            </div>
           </Card>
 
           {/* ACCESS & SESSIONS */}
@@ -546,7 +800,6 @@ export const SettingsPage = () => {
                     Manage who can access your business and active sessions
                   </CardDescription>
                 </div>
-            
                 {openSections.access ? (
                   <ChevronUp className="w-4 h-4 text-muted-foreground" />
                 ) : (
@@ -554,61 +807,58 @@ export const SettingsPage = () => {
                 )}
               </div>
             </CardHeader>
-          
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
                 openSections.access ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
               }`}
             >
               <CardContent className="space-y-6">
-          
-              {/* Owner */}
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm font-semibold">Owner</p>
-                  <p className="text-xs text-muted-foreground">
-                    {user?.email || "Owner account"}
-                  </p>
+                {/* Owner */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-semibold">Owner</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email || "Owner account"}
+                    </p>
+                  </div>
+                  <span className="text-xs text-green-600 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Active
+                  </span>
                 </div>
-                <span className="text-xs text-green-600 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Active
-                </span>
-              </div>
-          
-              {/* Team Access */}
-              <div className="flex justify-between items-center border-t pt-4">
-                <div>
-                  <p className="text-sm font-semibold">Team Members</p>
-                  <p className="text-xs text-muted-foreground">
-                    Give staff access with controlled permissions
-                  </p>
+
+                {/* Team Access */}
+                <div className="flex justify-between items-center border-t pt-4">
+                  <div>
+                    <p className="text-sm font-semibold">Team Members</p>
+                    <p className="text-xs text-muted-foreground">
+                      Give staff access with controlled permissions
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline">
+                    Invite / Manage
+                  </Button>
                 </div>
-                <Button size="sm" variant="outline">
-                  Invite / Manage
-                </Button>
-              </div>
-          
-              {/* Sessions */}
-              <div className="flex justify-between items-center border-t pt-4">
-                <div>
-                  <p className="text-sm font-semibold">Active Sessions</p>
-                  <p className="text-xs text-muted-foreground">
-                    You're currently logged in on this device
-                  </p>
+
+                {/* Sessions */}
+                <div className="flex justify-between items-center border-t pt-4">
+                  <div>
+                    <p className="text-sm font-semibold">Active Sessions</p>
+                    <p className="text-xs text-muted-foreground">
+                      You're currently logged in on this device
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline">
+                    View
+                  </Button>
                 </div>
-                <Button size="sm" variant="outline">
-                  View
-                </Button>
-              </div>
-          
-              {/* Danger Zone */}
-              <div className="pt-4 border-t">
-                <Button variant="destructive" className="w-full" size="sm">
-                  Sign Out of All Devices
-                </Button>
-              </div>
-          
-            </CardContent>
+
+                {/* Danger Zone */}
+                <div className="pt-4 border-t">
+                  <Button variant="destructive" className="w-full" size="sm">
+                    Sign Out of All Devices
+                  </Button>
+                </div>
+              </CardContent>
             </div>
           </Card>
 
