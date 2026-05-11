@@ -54,7 +54,7 @@ const ReceiptPreview = ({ settings }) => {
   );
 
   return (
-    <div className="bg-background rounded-xl border shadow-sm p-4 font-mono text-xs text-foreground max-w-xs mx-auto select-none">
+    <div className="bg-white rounded-xl border shadow-sm p-4 font-mono text-xs text-slate-950 max-w-xs mx-auto select-none">
       {/* Header */}
       <div className="text-center space-y-1 mb-3">
         {settings.business_logo_url ? (
@@ -499,7 +499,7 @@ export const SettingsPage = () => {
                   <Tag className="w-4 h-4 text-primary" />
                   <p className="text-sm font-medium">Default Discount</p>
                 </div>
-                <p className="text-xs text-muted-foreground -mt-2">
+                <span className="text-sm text-foreground whitespace-nowrap">
                   Set a default discount applied to all receipts. You can override this per transaction.
                 </p>
 
