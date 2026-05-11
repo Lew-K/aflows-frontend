@@ -499,7 +499,7 @@ export const SettingsPage = () => {
                   <Tag className="w-4 h-4 text-primary" />
                   <p className="text-sm font-medium">Default Discount</p>
                 </div>
-                <span className="text-sm text-foreground whitespace-nowrap">
+                <p className="text-xs text-foreground -mt-2">
                   Set a default discount applied to all receipts. You can override this per transaction.
                 </p>
 
