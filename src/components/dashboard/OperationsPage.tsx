@@ -22,7 +22,9 @@ import {
   Filter,
   Link2,
   FileText,
-  Clock
+  Clock,
+  Plus,
+  ChevronDown
 } from "lucide-react"
 import { Task, RecurringTemplate, generateRecurringTasks, calculateKPIs, isTaskOverdue, getBumpedPriority } from "@/lib/taskEngine"
 import { cn } from "@/lib/utils"
@@ -40,6 +42,8 @@ export function OperationsPage() {
   const [focusMode, setFocusMode] = useState<"all" | "high" | "today">("all")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [kpis, setKpis] = useState(calculateKPIs([], []))
+  const [showAdvancedAdd, setShowAdvancedAdd] = useState(false)
+  const [showRecurringForm, setShowRecurringForm] = useState(false)
 
   // ================= ENGINE SYNC =================
   useEffect(() => {
@@ -119,6 +123,8 @@ export function OperationsPage() {
       title: "Task Created",
       description: title
     })
+
+    setShowAdvancedAdd(false)
   }
 
   const completeTask = (id: string) => {
@@ -182,18 +188,48 @@ export function OperationsPage() {
   // ================= UI =================
 
   return (
-    <div className="w-screen min-h-screen bg-background">
-      <div className="p-6 space-y-6 mx-auto">
-        {/* HEADER */}
-        <div>
-          <h1 className="text-4xl font-extrabold">Operations</h1>
-          <p className="text-muted-foreground mt-1">
-            Your business, on autopilot.
-          </p>
+    <div className="w-full min-h-screen bg-background">
+      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        {/* HEADER WITH FOCUS BUTTONS */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold">Operations</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+              Your business, on autopilot.
+            </p>
+          </div>
+
+          {/* FOCUS MODE BUTTONS - TOP RIGHT */}
+          <div className="flex flex-wrap gap-2 sm:flex-col">
+            <Button
+              variant={focusMode === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFocusMode("all")}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              All
+            </Button>
+            <Button
+              variant={focusMode === "high" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFocusMode("high")}
+            >
+              <Flame className="h-4 w-4 mr-2" />
+              Urgent
+            </Button>
+            <Button
+              variant={focusMode === "today" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFocusMode("today")}
+            >
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              Today
+            </Button>
+          </div>
         </div>
 
         {/* KPI BAR */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <KPICard
             icon={<AlertCircle className="h-4 w-4" />}
             label="Overdue"
@@ -223,22 +259,42 @@ export function OperationsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
           {/* MAIN CONTENT */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-4">
 
-            {/* SEARCH & FILTERS */}
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="task-search"
-                  placeholder="Search tasks... (⌘K)"
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            {/* SEARCH */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="task-search"
+                placeholder="Search tasks... (⌘K)"
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-              {/* TAG FILTERS */}
+            {/* QUICK ADD BUTTON */}
+            <Button
+              onClick={() => setShowAdvancedAdd(!showAdvancedAdd)}
+              className="w-full"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+
+            {/* ADVANCED ADD FORM */}
+            {showAdvancedAdd && (
+              <Card>
+                <CardContent className="pt-6">
+                  <AdvancedAdd onAdd={addOneOffTask} />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* TAG FILTERS */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">Filter by category</p>
               <div className="flex flex-wrap gap-2">
                 {AVAILABLE_TAGS.map(tag => (
                   <button
@@ -249,7 +305,7 @@ export function OperationsPage() {
                         : [...prev, tag]
                     )}
                     className={cn(
-                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                      "px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors",
                       selectedTags.includes(tag)
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -259,39 +315,11 @@ export function OperationsPage() {
                   </button>
                 ))}
               </div>
-
-              {/* FOCUS MODE */}
-              <div className="flex gap-2">
-                <Button
-                  variant={focusMode === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFocusMode("all")}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  All
-                </Button>
-                <Button
-                  variant={focusMode === "high" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFocusMode("high")}
-                >
-                  <Flame className="h-4 w-4 mr-2" />
-                  High Priority
-                </Button>
-                <Button
-                  variant={focusMode === "today" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFocusMode("today")}
-                >
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Due Today
-                </Button>
-              </div>
             </div>
 
             {/* TABS */}
             <Tabs defaultValue="active">
-              <TabsList>
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="active">
                   Active ({activeTasks.length})
                 </TabsTrigger>
@@ -303,8 +331,8 @@ export function OperationsPage() {
               <TabsContent value="active">
                 <Card>
                   {activeTasks.length === 0 ? (
-                    <div className="p-16 text-center opacity-50">
-                      {selectedTags.length > 0 ? "No active tasks match your filters." : "No active tasks. Start by adding a task or creating an automation."}
+                    <div className="p-8 sm:p-16 text-center opacity-50">
+                      <p className="text-sm">{selectedTags.length > 0 || focusMode !== "all" ? "No tasks match your filters." : "No active tasks. Start by adding a task or creating an automation."}</p>
                     </div>
                   ) : (
                     <div className="divide-y">
@@ -329,8 +357,8 @@ export function OperationsPage() {
               <TabsContent value="completed">
                 <Card>
                   {completedTasks.length === 0 ? (
-                    <div className="p-16 text-center opacity-50">
-                      No completed tasks yet.
+                    <div className="p-8 sm:p-16 text-center opacity-50">
+                      <p className="text-sm">No completed tasks yet.</p>
                     </div>
                   ) : (
                     <div className="divide-y">
@@ -348,168 +376,151 @@ export function OperationsPage() {
             </Tabs>
           </div>
 
-          {/* SIDEBAR */}
-          <div className="space-y-6 lg:sticky lg:top-6 lg:h-fit">
+          {/* RIGHT SIDEBAR */}
+          <div className="space-y-4 lg:col-span-1">
 
-            {/* QUICK ADD */}
+            {/* RECURRING CREATION CARD - COLLAPSIBLE */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quick Add</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Input
-                  placeholder="Task name... (Enter)"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const value = (e.target as HTMLInputElement).value
-                      if (!value.trim()) return
-                      addOneOffTask(value, "medium")
-                      ;(e.target as HTMLInputElement).value = ""
-                    }
-                  }}
-                />
-              </CardContent>
-            </Card>
-
-            {/* ADVANCED ADD */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Advanced Task</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AdvancedAdd onAdd={addOneOffTask} />
-              </CardContent>
-            </Card>
-
-            {/* RECURRING CREATION CARD */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Repeat className="h-4 w-4" />
-                  {editingTemplate ? "Edit Rule" : "New Automation"}
-                </CardTitle>
+              <CardHeader 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setShowRecurringForm(!showRecurringForm)}
+              >
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Repeat className="h-4 w-4" />
+                    {editingTemplate ? "Edit" : "New Automation"}
+                  </CardTitle>
+                  <ChevronDown className={cn(
+                    "h-4 w-4 transition-transform",
+                    showRecurringForm && "rotate-180"
+                  )} />
+                </div>
               </CardHeader>
 
-              <CardContent>
-                <RecurringFormView
-                  onSave={(title: string, frequency: any, priority: any) => {
-                    let updatedTemplates
+              {showRecurringForm && (
+                <CardContent>
+                  <RecurringFormView
+                    onSave={(title: string, frequency: any, priority: any) => {
+                      let updatedTemplates
 
-                    if (editingTemplate) {
-                      updatedTemplates = recurringTemplates.map(t =>
-                        t.id === editingTemplate.id
-                          ? { ...t, title, frequency, priority }
-                          : t
-                      )
-                      setEditingTemplate(null)
-                    } else {
-                      const newTemplate: RecurringTemplate = {
-                        id: crypto.randomUUID(),
-                        title,
-                        frequency,
-                        priority,
-                        nextDueDate: new Date().toISOString(),
-                        createdAt: new Date().toISOString(),
-                        lastFired: new Date().toISOString()
+                      if (editingTemplate) {
+                        updatedTemplates = recurringTemplates.map(t =>
+                          t.id === editingTemplate.id
+                            ? { ...t, title, frequency, priority }
+                            : t
+                        )
+                        setEditingTemplate(null)
+                      } else {
+                        const newTemplate: RecurringTemplate = {
+                          id: crypto.randomUUID(),
+                          title,
+                          frequency,
+                          priority,
+                          nextDueDate: new Date().toISOString(),
+                          createdAt: new Date().toISOString(),
+                          lastFired: new Date().toISOString()
+                        }
+
+                        updatedTemplates = [...recurringTemplates, newTemplate]
+
+                        toast({
+                          title: `Automation created: ${title}`
+                        })
                       }
 
-                      updatedTemplates = [...recurringTemplates, newTemplate]
+                      const { newTasks, updatedTemplates: engineTemplates } =
+                        generateRecurringTasks(updatedTemplates, tasks)
 
-                      toast({
-                        title: `Automation created: ${title}`
-                      })
-                    }
+                      const updatedTasks = [...tasks, ...newTasks]
 
-                    const { newTasks, updatedTemplates: engineTemplates } =
-                      generateRecurringTasks(updatedTemplates, tasks)
-
-                    const updatedTasks = [...tasks, ...newTasks]
-
-                    setRecurringTemplates(engineTemplates)
-                    setTasks(updatedTasks)
-                    setKpis(calculateKPIs(updatedTasks, engineTemplates))
-                    syncStorage(updatedTasks, engineTemplates)
-                  }}
-                  initialData={editingTemplate}
-                  onCancel={() => setEditingTemplate(null)}
-                />
-              </CardContent>
+                      setRecurringTemplates(engineTemplates)
+                      setTasks(updatedTasks)
+                      setKpis(calculateKPIs(updatedTasks, engineTemplates))
+                      syncStorage(updatedTasks, engineTemplates)
+                      setShowRecurringForm(false)
+                    }}
+                    initialData={editingTemplate}
+                    onCancel={() => setEditingTemplate(null)}
+                  />
+                </CardContent>
+              )}
             </Card>
 
             {/* ACTIVE AUTOMATIONS */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Active Automations</CardTitle>
+                <CardTitle className="text-base">Automations</CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 {recurringTemplates.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     No automations yet.
-                  </div>
+                  </p>
                 ) : (
-                  recurringTemplates.map(template => (
-                    <div
-                      key={template.id}
-                      className="p-3 border rounded-md space-y-2"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-semibold text-sm">{template.title}</p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {template.frequency}
-                          </p>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {recurringTemplates.map(template => (
+                      <div
+                        key={template.id}
+                        className="p-2 border rounded-md text-xs space-y-1"
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="font-semibold">{template.title}</p>
+                          <Badge variant="outline" className="text-xs">
+                            {template.priority}
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="ml-2">
-                          {template.priority}
-                        </Badge>
-                      </div>
 
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Next: {new Date(template.nextDueDate).toLocaleDateString()}
-                      </div>
+                        <p className="text-muted-foreground capitalize">
+                          {template.frequency}
+                        </p>
 
-                      {template.lastFired && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Zap className="h-3 w-3" />
-                          Last fired: {new Date(template.lastFired).toLocaleDateString()}
+                        <div className="text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{new Date(template.nextDueDate).toLocaleDateString()}</span>
                         </div>
-                      )}
 
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => setEditingTemplate(template)}
-                        >
-                          <Edit3 className="h-3 w-3" />
-                        </Button>
+                        {template.lastFired && (
+                          <div className="text-muted-foreground flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            <span>{new Date(template.lastFired).toLocaleDateString()}</span>
+                          </div>
+                        )}
 
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => {
-                            const updated = recurringTemplates.filter(
-                              t => t.id !== template.id
-                            )
-                            setRecurringTemplates(updated)
-                            setKpis(calculateKPIs(tasks, updated))
-                            syncStorage(tasks, updated)
+                        <div className="flex gap-1 pt-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => setEditingTemplate(template)}
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
 
-                            toast({
-                              variant: "destructive",
-                              title: "Automation deleted"
-                            })
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 text-destructive"
+                            onClick={() => {
+                              const updated = recurringTemplates.filter(
+                                t => t.id !== template.id
+                              )
+                              setRecurringTemplates(updated)
+                              setKpis(calculateKPIs(tasks, updated))
+                              syncStorage(tasks, updated)
+
+                              toast({
+                                variant: "destructive",
+                                title: "Automation deleted"
+                              })
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -535,20 +546,20 @@ function TaskRow({
     <>
       <div
         className={cn(
-          "p-4 flex justify-between items-center hover:bg-muted/50 transition-colors",
+          "p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center hover:bg-muted/50 transition-colors gap-3 sm:gap-0",
           task.priority === "high" && !task.completed && "border-l-4 border-l-destructive bg-destructive/5",
           task.isOverdue && !task.completed && "bg-orange-50 dark:bg-orange-950/20"
         )}
       >
         <div className="flex-1 cursor-pointer" onClick={() => setShowDetails(!showDetails)}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             {task.isOverdue && !task.completed && (
-              <Flame className="h-4 w-4 text-orange-500 flex-shrink-0" />
+              <Flame className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
             )}
-            <div>
-              <p className="font-semibold">{task.title}</p>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap">
-                <Badge variant={task.isOverdue && !task.completed ? "destructive" : "secondary"}>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm sm:text-base break-words">{task.title}</p>
+              <div className="flex items-center gap-2 mt-1 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                <Badge variant={task.isOverdue && !task.completed ? "destructive" : "secondary"} className="text-xs">
                   {task.priority}
                 </Badge>
                 <span className="flex items-center gap-1">
@@ -569,10 +580,11 @@ function TaskRow({
           </div>
         </div>
 
-        <div className="flex gap-2 ml-4">
+        <div className="flex gap-2 justify-end sm:ml-4">
           <Button
             variant="outline"
             size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => onComplete(task.id)}
           >
             <CheckCircle2 className="h-4 w-4" />
@@ -581,7 +593,7 @@ function TaskRow({
           <Button
             variant="ghost"
             size="icon"
-            className="text-destructive"
+            className="h-8 w-8 sm:h-9 sm:w-9 text-destructive"
             onClick={() => onDelete(task.id)}
           >
             <Trash2 className="h-4 w-4" />
@@ -590,7 +602,7 @@ function TaskRow({
       </div>
 
       {showDetails && (task.notes || task.externalLink) && (
-        <div className="p-4 bg-muted/30 border-t text-sm space-y-2">
+        <div className="p-3 sm:p-4 bg-muted/30 border-t text-xs sm:text-sm space-y-2">
           {task.notes && (
             <div className="flex gap-2">
               <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
@@ -622,9 +634,9 @@ function CompletedTaskRow({
   onUndo: (id: string) => void
 }) {
   return (
-    <div className="p-4 flex justify-between items-center hover:bg-muted/50 transition-colors">
-      <div>
-        <p className="line-through opacity-60">{task.title}</p>
+    <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center hover:bg-muted/50 transition-colors gap-3 sm:gap-0">
+      <div className="flex-1">
+        <p className="line-through opacity-60 text-sm sm:text-base break-words">{task.title}</p>
         <p className="text-xs text-muted-foreground mt-1">
           Completed on{" "}
           {task.completedAt &&
@@ -635,6 +647,7 @@ function CompletedTaskRow({
       <Button
         variant="ghost"
         size="icon"
+        className="h-8 w-8 sm:h-9 sm:w-9 justify-self-end"
         onClick={() => onUndo(task.id)}
       >
         <RotateCcw className="h-4 w-4" />
@@ -658,14 +671,14 @@ function KPICard({
     <Card className={cn(
       variant === "destructive" && "border-destructive/50 bg-destructive/5"
     )}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold mt-1">{value}</p>
+            <p className="text-xl sm:text-2xl font-bold mt-1">{value}</p>
           </div>
           <div className={cn(
-            "h-10 w-10 rounded-lg flex items-center justify-center",
+            "h-9 w-9 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0",
             variant === "destructive"
               ? "bg-destructive/10 text-destructive"
               : "bg-primary/10 text-primary"
@@ -709,6 +722,7 @@ function RecurringFormView({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Rule name..."
+        className="text-sm"
       />
 
       <div className="grid grid-cols-2 gap-2">
@@ -779,6 +793,7 @@ function AdvancedAdd({ onAdd }: { onAdd: any }) {
         placeholder="Task title..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        className="text-sm"
       />
 
       <select
@@ -805,6 +820,7 @@ function AdvancedAdd({ onAdd }: { onAdd: any }) {
         value={link}
         onChange={(e) => setLink(e.target.value)}
         type="url"
+        className="text-sm"
       />
 
       <textarea
@@ -839,7 +855,7 @@ function AdvancedAdd({ onAdd }: { onAdd: any }) {
         </div>
       </div>
 
-      <Button onClick={handleAdd} className="w-full" size="sm">Create Task</Button>
+      <Button onClick={handleAdd} className="w-full">Create Task</Button>
     </div>
   )
 }
