@@ -50,11 +50,11 @@ const ReceiptPreview = ({ settings }) => {
   const fmt = (n) => `KES ${n.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
 
   const Divider = () => (
-    <div className="border-t border-dashed border-gray-300 my-2" />
+    <div className="border-t border-dashed border-input my-2" />
   );
 
   return (
-    <div className="bg-white rounded-xl border shadow-sm p-4 font-mono text-xs text-gray-800 max-w-xs mx-auto select-none">
+    <div className="bg-background rounded-xl border shadow-sm p-4 font-mono text-xs text-gray-800 max-w-xs mx-auto select-none">
       {/* Header */}
       <div className="text-center space-y-1 mb-3">
         {settings.business_logo_url ? (
@@ -161,7 +161,7 @@ export const SettingsPage = () => {
   const [openSections, setOpenSections] = useState({
     password: false,
     access: false,
-    receiptPreview: true,  // open by default so live changes are visible
+    receiptPreview: false,  // open by default so live changes are visible
   });
 
   const toggleSection = (section) => {
