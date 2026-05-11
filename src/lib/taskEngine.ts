@@ -12,6 +12,11 @@ export interface Task {
   createdAt: string;
   completedAt?: string;
   fromRecurring?: boolean;
+  notes?: string;
+  externalLink?: string;
+  tags?: string[];
+  blockedBy?: string[];
+  isOverdue?: boolean;
 }
 
 export interface RecurringTemplate {
@@ -22,16 +27,18 @@ export interface RecurringTemplate {
   nextDueDate: string;
   priority: TaskPriority;
   createdAt: string;
+  lastFired?: string;
 }
 
-/** * Helper to calculate the next date based on frequency 
+/**
+ * Helper to calculate the next date based on frequency
  */
 export const calculateNextDate = (currentDate: string, template: Partial<RecurringTemplate>): string => {
   const date = new Date(currentDate);
   switch (template.frequency) {
     case "daily":
       date.setDate(date.getDate() + 1);
-      break;  
+      break;
     case "weekly":
       date.setDate(date.getDate() + 7);
       break;
@@ -78,8 +85,49 @@ export const generateRecurringTasks = (
       tempTemplate.nextDueDate = nextDateStr;
       currentNextDue = new Date(nextDateStr);
     }
-    return tempTemplate;
+    return { ...tempTemplate, lastFired: new Date().toISOString() };
   });
 
   return { newTasks, updatedTemplates };
+};
+
+/**
+ * Check if a task is overdue
+ */
+export const isTaskOverdue = (task: Task): boolean => {
+  if (task.completed) return false;
+  return new Date(task.dueDate) < new Date();
+};
+
+/**
+ * Bump priority for overdue tasks
+ */
+export const getBumpedPriority = (task: Task): TaskPriority => {
+  if (!isTaskOverdue(task)) return task.priority;
+  if (task.priority === "high") return "high";
+  if (task.priority === "medium") return "high";
+  return "medium";
+};
+
+/**
+ * Calculate operational KPIs
+ */
+export const calculateKPIs = (tasks: Task[], templates: RecurringTemplate[]) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const overdueTasks = tasks.filter(t => !t.completed && new Date(t.dueDate) < today);
+  const dueTodayTasks = tasks.filter(t => !t.completed && new Date(t.dueDate).toDateString() === today.toDateString());
+  const completedToday = tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt).toDateString() === today.toDateString());
+  const tasksFromAutomation = tasks.filter(t => t.fromRecurring);
+
+  const totalTasksToday = dueTodayTasks.length + completedToday.length;
+  const completionRate = totalTasksToday > 0 ? Math.round((completedToday.length / totalTasksToday) * 100) : 0;
+
+  return {
+    overdue: overdueTasks.length,
+    dueToday: dueTodayTasks.length,
+    completionRate,
+    automationPulse: tasksFromAutomation.length,
+  };
 };
