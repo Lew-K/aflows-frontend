@@ -932,9 +932,22 @@ export const AnalyticsPage = () => {
   const thisMonthSales = getSales(businessId, 'this_month');
 
   const { topCustomer, receiptsCount } = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+  
+    // Filter to only this month's sales client-side — guards against webhook returning all-time data
+    const filteredSales = thisMonthSales.filter((sale: any) => {
+      const saleDate = new Date(sale.created_at);
+      return (
+        saleDate.getMonth() === currentMonth &&
+        saleDate.getFullYear() === currentYear
+      );
+    });
+  
     const customerSpends: Record<string, { name: string; total: number }> = {};
   
-    thisMonthSales.forEach((sale: any) => {
+    filteredSales.forEach((sale: any) => {
       const name = sale.customer_name || 'Walk-in Customer';
       if (!customerSpends[name]) customerSpends[name] = { name, total: 0 };
       customerSpends[name].total += Number(sale.total_amount ?? 0);
@@ -944,9 +957,10 @@ export const AnalyticsPage = () => {
   
     return {
       topCustomer: sorted[0] ? { name: sorted[0].name, totalSpend: sorted[0].total } : null,
-      receiptsCount: thisMonthSales.length,
+      receiptsCount: filteredSales.length,
     };
   }, [thisMonthSales]);
+  
   const loading = isFetching(`${businessId}-${period}-${customStart || ""}-${customEnd || ""}`);
 
   // Fetch analytics for the selected period
