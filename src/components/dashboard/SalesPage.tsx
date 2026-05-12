@@ -34,7 +34,7 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const { user, accessToken } = useAuth();
-  const { getSales, fetchSales, isFetching } = useData();
+  const { getSales, fetchSales, refreshSales, isFetching } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
@@ -217,7 +217,7 @@ export const SalesPage = () => {
             affects_stock: false
           }
         ]);
-        await fetchSales(businessId, period);
+        await refreshSales(businessId, period);
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
