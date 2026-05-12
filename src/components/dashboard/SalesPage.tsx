@@ -3,7 +3,7 @@ import { useData } from '@/contexts/DataContext';
 import { useInventory } from "@/hooks/useInventory";
 
 
-import React, { useState, useEffect ,useMemo } from 'react';
+import React, { useState, useEffect ,useMemo ,useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,14 +34,39 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const { user, accessToken } = useAuth();
-  const { getSales, fetchSales, refreshSales, isFetching } = useData();
+  const { getSales, fetchSales, refreshSales, refreshInventory, isFetching } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(7);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.affects_stock ? item : { ...item, item: item.item }
+          )
+        );
+        // Close all dropdowns by blurring — we track this via a separate state
+        setOpenDropdownIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+  
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
+
+  
   const businessId = user?.businessId;
   const period = "this_month"; 
+  const weeklySales = getSales(businessId, "this_week");
 
-  const allSales = getSales(businessId, period) || [];
+  const cachedSales = getSales(businessId, period) || [];
+  const [optimisticSales, setOptimisticSales] = useState<any[]>([]);
+  const allSales = optimisticSales.length ? optimisticSales : cachedSales;
 
   const isLoadingSales = isFetching(`${businessId}-${period}`);
   const { items: inventoryItems = [] } = useInventory(businessId || "");
@@ -57,33 +82,20 @@ export const SalesPage = () => {
   ]);
 
 
-  const weeklySummary = React.useMemo(() => {
-    if (!Array.isArray(allSales)) {
-      return { totalSales: 0, totalValue: 0 };
-    }
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const weeklySales = allSales.filter(
-      (sale) => new Date(sale.created_at) >= startOfWeek
-    );
-
-    return {
-      totalSales: weeklySales.length,
-      totalValue: weeklySales.reduce(
-        (sum, sale) => sum + Number(sale.total_amount || 0),
-        0
-      ),
-    };
-  }, [allSales]);
+  const weeklySummary = {
+    totalSales: weeklySales.length,
+    totalValue: weeklySales.reduce(
+      (sum, sale) => sum + Number(sale.total_amount || 0),
+      0
+    ),
+  };
 
 
   useEffect(() => {
     if (!businessId) return;
     fetchSales(businessId, period);
-  }, [businessId, period]);
+    fetchSales(businessId, "this_week");
+  }, [businessId, period, fetchSales]);
 
   const {
     register,
@@ -175,6 +187,15 @@ export const SalesPage = () => {
     }
     
     setIsLoading(true);
+    const optimisticSale = {
+      id: `optimistic-${Date.now()}`,
+      customer_name: data.customerName || null,
+      item_sold: items.map(i => i.item).join(", "),
+      total_amount: calculatedAmount,
+      payment_method: data.paymentMethod,
+      created_at: new Date().toISOString(),
+    };
+    setOptimisticSales([optimisticSale, ...cachedSales]);
     try {
       const response = await apiFetch(
         'https://n8n.aflows.uk/webhook/record-sales',
@@ -217,11 +238,14 @@ export const SalesPage = () => {
             affects_stock: false
           }
         ]);
+        setOptimisticSales([]);
         await refreshSales(businessId, period);
+        await refreshInventory(businessId);
       } else {
         toast.error(result.message || 'Failed to record sale');
       }
     } catch (error) {
+      setOptimisticSales([]);
       toast.error('Something went wrong!');
     } finally {
       setIsLoading(false);
@@ -390,12 +414,13 @@ export const SalesPage = () => {
                                 
                                       return updated;
                                     });
+                                    setOpenDropdownIndex(index);
                                   }}
                                 />
                               
                                 {/* Suggestions dropdown */}
-                                {entry.item && !entry.affects_stock && (
-                                  <div className="border rounded-md bg-background shadow-sm max-h-40 overflow-y-auto text-sm">
+                                {entry.item && !entry.affects_stock && openDropdownIndex === index && (
+                                  <div ref={dropdownRef} className="border rounded-md bg-background shadow-sm max-h-40 overflow-y-auto text-sm">
                                     {inventoryItems
                                       .filter(i =>
                                         i.name.toLowerCase().includes(entry.item.toLowerCase())
@@ -413,8 +438,8 @@ export const SalesPage = () => {
                                                 : "hover:bg-muted"
                                             }`}
                                          onClick={() => {
-                                            if (isOutOfStock) return; // 🚫 block click
-                                    
+                                            if (isOutOfStock) return;
+                                          
                                             setItems(prev => {
                                               const updated = [...prev];
                                               updated[index] = {
@@ -426,6 +451,7 @@ export const SalesPage = () => {
                                               };
                                               return updated;
                                             });
+                                            setOpenDropdownIndex(null);
                                           }}
                                         >
                                           <span>{i.name}</span>
@@ -654,7 +680,7 @@ export const SalesPage = () => {
                 ) : (
                   [...allSales]
                     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .slice(0, 7)
+                    .slice(0, visibleCount)
                     .map((sale) => (
                       <div key={sale.id ?? sale.created_at} className="p-3 rounded-lg border bg-card/50 flex items-center justify-between group hover:border-primary/50 transition-all">
                         <div className="min-w-0 flex-1">
@@ -681,6 +707,16 @@ export const SalesPage = () => {
                         </div>
                       </div>
                     ))
+                )}
+                {allSales.length > visibleCount && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-4"
+                    onClick={() => setVisibleCount((prev) => prev + 7)}
+                  >
+                    Load More
+                  </Button>
                 )}
               </div>
             </CardContent>
