@@ -17,6 +17,13 @@ interface RevenueAnalytics {
   paymentMethods: any[];
 }
 
+interface Business {
+  business_id: string;
+  business_name: string;
+  phone: string;
+  logo_url: string;
+}
+
 interface DataContextType {
   inventory: any[];
   customers: any[];
@@ -60,6 +67,8 @@ interface DataContextType {
   prefetchAll: (businessId: string) => Promise<void>;
   refreshInventory: (businessId: string) => Promise<void>;
   refreshCustomers: (businessId: string) => Promise<void>;
+  business: Business | null;
+  fetchBusiness: (businessId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -73,6 +82,7 @@ export const DataProvider = ({ children }: any) => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [salesCache, setSalesCache] = useState<Record<string, Sale[]>>({});
   const [lastFetched, setLastFetched] = useState<Record<string, number>>({});
+  const [business, setBusiness] = useState<Business | null>(null);
   
   const [analyticsCache, setAnalyticsCache] = useState<
     Record<string, RevenueAnalytics>
@@ -108,6 +118,19 @@ export const DataProvider = ({ children }: any) => {
     setCustomers(data || []);
   };
 
+  // BUSINESS
+  const fetchBusiness = async (businessId: string) => {
+    const res = await apiFetch(
+      `https://n8n.aflows.uk/webhook/business-settings?businessId=${businessId}`
+    );
+    const data = await res.json();
+    const result = Array.isArray(data) ? data[0] : data;
+    if (result?.success) {
+      setBusiness(result);
+    }
+  };
+ 
+  
   // SALES (🔥 cache + loading safe)
   const fetchSales = async (
     businessId: string,
@@ -254,6 +277,7 @@ export const DataProvider = ({ children }: any) => {
         fetchSales(businessId, "this_month"),
         fetchRevenueAnalytics(businessId, "this_month"),
         fetchRevenue(businessId),
+        fetchBusiness(businessId),
       ]);
     } catch (err) {
       console.error("Prefetch failed:", err);
@@ -317,6 +341,8 @@ export const DataProvider = ({ children }: any) => {
         prefetchAll,
         refreshInventory,
         refreshCustomers,
+        business,
+        fetchBusiness,
       }}
     >
       {children}
