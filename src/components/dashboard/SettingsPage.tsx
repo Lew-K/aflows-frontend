@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useData } from "@/contexts/DataContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -157,6 +158,7 @@ const ReceiptPreview = ({ settings }) => {
 ───────────────────────────────────────────── */
 export const SettingsPage = () => {
   const { user, accessToken } = useAuth();
+  const { business } = useData();
 
   const [openSections, setOpenSections] = useState({
     password: false,
@@ -208,60 +210,22 @@ export const SettingsPage = () => {
      Replace the fetch URL / response shape to match your API.
   ── */
   useEffect(() => {
-    if (!user) return;
+    if (!business) return;
 
-    const fetchBusinessSettings = async () => {
-      try {
-        // Adjust this endpoint to your actual API
-        const res = await fetch(
-          `https://n8n.aflows.uk/webhook/business-settings?businessId=${user.businessId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          const loaded = {
-            business_name: data.business_name || user.businessName || "",
-            phone: data.phone || "",
-            location: data.location || "Nairobi, Kenya",
-            receipt_prefix: data.receipt_prefix || "RCT",
-            receipt_footer: data.receipt_footer || "Thank you for your business",
-            tax_rate: data.tax_rate ?? "16",
-            business_logo_url: data.business_logo_url || "",
-            discount_type: data.discount_type || "percentage",
-            discount_value: data.discount_value ?? "",
-          };
-          setSettings(loaded);
-          setOriginalSettings(loaded);
-          return;
-        }
-      } catch (err) {
-        // Silently fall through to defaults if the fetch fails
-        console.warn("Could not fetch business settings:", err);
-      }
-
-      // Fallback: initialise from auth context only
-      const initial = {
-        business_name: user.businessName || "",
-        phone: "",
-        location: "Nairobi, Kenya",
-        receipt_prefix: "RCT",
-        receipt_footer: "Thank you for your business",
-        tax_rate: "16",
-        business_logo_url: "",
-        discount_type: "percentage",
-        discount_value: "",
-      };
-      setSettings(initial);
-      setOriginalSettings(initial);
+    const loaded = {
+      business_name: business.business_name || "",
+      phone: business.phone || "",
+      location: business.location || "Nairobi, Kenya",
+      receipt_prefix: business.receipt_prefix || "RCT",
+      receipt_footer: business.receipt_footer || "Thank you for your business",
+      tax_rate: business.tax_rate ?? "16",
+      business_logo_url: business.logo_url || "",   // note: your API returns logo_url not business_logo_url
+      discount_type: business.discount_type || "percentage",
+      discount_value: business.discount_value ?? "",
     };
-
-    fetchBusinessSettings();
-  }, [user]);
+    setSettings(loaded);
+    setOriginalSettings(loaded);
+  }, [business]);
 
   /* ── CHANGE DETECTION ── */
   const hasChanges = useMemo(() => {
