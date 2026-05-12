@@ -67,6 +67,7 @@ interface DataContextType {
   prefetchAll: (businessId: string) => Promise<void>;
   refreshInventory: (businessId: string) => Promise<void>;
   refreshCustomers: (businessId: string) => Promise<void>;
+  refreshSales: (businessId: string, period: string, start?: string, end?: string) => Promise<void>;
   business: Business | null;
   fetchBusiness: (businessId: string) => Promise<void>;
 }
@@ -318,6 +319,27 @@ export const DataProvider = ({ children }: any) => {
 
   const isFetching = (key: string) => !!fetchingKeys[key];
 
+  const refreshSales = async (
+    businessId: string,
+    period: string,
+    start?: string,
+    end?: string
+  ) => {
+    const key = getKey(businessId, period, start, end);
+    setSalesCache((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setLastFetched((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    await fetchSales(businessId, period, start, end);
+  };
+
+  
   const refreshInventory = async (businessId: string) => {
     await fetchInventory(businessId);
   };
@@ -341,6 +363,7 @@ export const DataProvider = ({ children }: any) => {
         prefetchAll,
         refreshInventory,
         refreshCustomers,
+        refreshSales,
         business,
         fetchBusiness,
       }}
