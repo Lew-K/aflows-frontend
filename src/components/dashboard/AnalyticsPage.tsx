@@ -214,7 +214,7 @@ const PaymentBreakdown = ({
             <DollarSign className="w-5 h-5 text-primary" />
           </div>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Payment Breakdown
+            Payment Breakdown (This Month)
           </p>
         </div>
 
@@ -338,7 +338,7 @@ const TopCustomerCard = ({
           {isLoading ? '...' : topCustomer?.name || 'N/A'}
         </p>
         
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">Top Customer</p>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">Top Customer (This Month)</p>
 
         <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between">
@@ -914,9 +914,9 @@ export const AnalyticsPage = () => {
   const [chartMetric, setChartMetric] = useState<'quantity' | 'revenue'>('quantity');
   const [revenueView, setRevenueView] = useState<'monthly' | 'daily'>('monthly');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
-  const [topCustomer, setTopCustomer] = useState<{ name: string; totalSpend: number } | null>(null);
-  const [receiptsCount, setReceiptsCount] = useState(0);
-  const [fetchingReceipts, setFetchingReceipts] = useState(false);
+  // const [topCustomer, setTopCustomer] = useState<{ name: string; totalSpend: number } | null>(null);
+  // const [receiptsCount, setReceiptsCount] = useState(0);
+  // const [fetchingReceipts, setFetchingReceipts] = useState(false);
 
   const { getSales, fetchSales, isFetching, getRevenueAnalytics, fetchRevenueAnalytics } = useData();
 
@@ -928,6 +928,25 @@ export const AnalyticsPage = () => {
   }, [businessId, period, customStart, customEnd, fetchKey]);
   
   const sales = getSales(businessId, period, customStart, customEnd);
+
+  const thisMonthSales = getSales(businessId, 'this_month');
+
+  const { topCustomer, receiptsCount } = useMemo(() => {
+    const customerSpends: Record<string, { name: string; total: number }> = {};
+  
+    thisMonthSales.forEach((sale: any) => {
+      const name = sale.customer_name || 'Walk-in Customer';
+      if (!customerSpends[name]) customerSpends[name] = { name, total: 0 };
+      customerSpends[name].total += Number(sale.total_amount ?? 0);
+    });
+  
+    const sorted = Object.values(customerSpends).sort((a, b) => b.total - a.total);
+  
+    return {
+      topCustomer: sorted[0] ? { name: sorted[0].name, totalSpend: sorted[0].total } : null,
+      receiptsCount: thisMonthSales.length,
+    };
+  }, [thisMonthSales]);
   const loading = isFetching(`${businessId}-${period}-${customStart || ""}-${customEnd || ""}`);
 
   // Fetch analytics for the selected period
@@ -959,45 +978,45 @@ export const AnalyticsPage = () => {
   const monthAnalytics = getRevenueAnalytics(businessId, 'this_month');
 
   // Fetch receipts and top customer data from webhook
-  useEffect(() => {
-    const fetchReceiptsAndTopCustomer = async () => {
-      if (!businessId) return;
+  // useEffect(() => {
+  //   const fetchReceiptsAndTopCustomer = async () => {
+  //     if (!businessId) return;
       
-      setFetchingReceipts(true);
-      try {
-        const url = new URL('https://n8n.aflows.uk/webhook/get-sales');
-        url.searchParams.append('business_id', businessId);
-        url.searchParams.append('period', 'this_month');
+  //     setFetchingReceipts(true);
+  //     try {
+  //       const url = new URL('https://n8n.aflows.uk/webhook/get-sales');
+  //       url.searchParams.append('business_id', businessId);
+  //       url.searchParams.append('period', 'this_month');
 
-        const response = await fetch(url.toString());
-        const data = await response.json();
+  //       const response = await fetch(url.toString());
+  //       const data = await response.json();
         
-        const allSales = data?.sales?.sales || [];
-        setReceiptsCount(allSales.length);
+  //       const allSales = data?.sales?.sales || [];
+  //       setReceiptsCount(allSales.length);
 
-        // Calculate top customer
-        const customerSpends: Record<string, { name: string; total: number }> = {};
-        allSales.forEach((sale: any) => {
-          const customerName = sale.customer_name || 'Walk-in Customer';
-          if (!customerSpends[customerName]) {
-            customerSpends[customerName] = { name: customerName, total: 0 };
-          }
-          customerSpends[customerName].total += Number(sale.total_amount ?? 0);
-        });
+  //       // Calculate top customer
+  //       const customerSpends: Record<string, { name: string; total: number }> = {};
+  //       allSales.forEach((sale: any) => {
+  //         const customerName = sale.customer_name || 'Walk-in Customer';
+  //         if (!customerSpends[customerName]) {
+  //           customerSpends[customerName] = { name: customerName, total: 0 };
+  //         }
+  //         customerSpends[customerName].total += Number(sale.total_amount ?? 0);
+  //       });
 
-        const topCust = Object.values(customerSpends).sort((a, b) => b.total - a.total)[0];
-        if (topCust) {
-          setTopCustomer({ name: topCust.name, totalSpend: topCust.total });
-        }
-      } catch (error) {
-        console.error('Failed to fetch receipts and top customer:', error);
-      } finally {
-        setFetchingReceipts(false);
-      }
-    };
+  //       const topCust = Object.values(customerSpends).sort((a, b) => b.total - a.total)[0];
+  //       if (topCust) {
+  //         setTopCustomer({ name: topCust.name, totalSpend: topCust.total });
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch receipts and top customer:', error);
+  //     } finally {
+  //       setFetchingReceipts(false);
+  //     }
+  //   };
 
-    fetchReceiptsAndTopCustomer();
-  }, [businessId]);
+  //   fetchReceiptsAndTopCustomer();
+  // }, [businessId]);
 
   const totalSales = sales?.length ?? 0;
 
@@ -1103,7 +1122,7 @@ export const AnalyticsPage = () => {
         <TopCustomerCard
           topCustomer={topCustomer}
           receiptsCount={receiptsCount}
-          isLoading={fetchingReceipts}
+          isLoading={isFetching(`${businessId}-this_month--`)}
         />
       </div>
 
