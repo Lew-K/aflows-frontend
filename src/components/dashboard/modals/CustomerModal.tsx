@@ -93,11 +93,6 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                       Ref: {sale.payment_reference}
                     </p>
                   )}
-                  {sale.source && (
-                    <p className="text-[10px] text-muted-foreground capitalize">
-                      via {sale.source}
-                    </p>
-                  )}
                 </div>
               </div>
             ))}
