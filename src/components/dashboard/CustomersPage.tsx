@@ -29,6 +29,10 @@ export const CustomersPage = () => {
     fetchSales(businessId, "all");
   }, [businessId]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, segmentFilter, sortBy]);
+
   const sales = getSales(businessId, "all");
 
   const getKey = (businessId, period) => `${businessId}-${period}`;
@@ -37,8 +41,9 @@ export const CustomersPage = () => {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("total_spent");
   const [segmentFilter, setSegmentFilter] = useState("all");
-  const [visibleCount, setVisibleCount] = useState(20);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const now = useMemo(() => new Date(), []);
 
@@ -146,7 +151,12 @@ export const CustomersPage = () => {
     return filtered;
   }, [segmentedCustomers, search, sortBy, segmentFilter]);
 
-  const paginatedCustomers = processedCustomers.slice(0, visibleCount);
+  const totalPages = Math.ceil(processedCustomers.length / PAGE_SIZE);
+  const paginatedCustomers = processedCustomers.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
 
   /* ---------------- CUSTOMER SALES ---------------- */
   const customerSales = useMemo(() => {
