@@ -185,8 +185,7 @@ export const CustomersPage = () => {
 
   return (
     <div className="flex h-screen bg-background/50 gap-0 overflow-hidden">
-
-      {/* LEFT SIDE */}
+      {/* LEFT SIDE (MAIN PAGE) */}
       <div
         className={`
           transition-all duration-500 ease-in-out flex flex-col h-screen
@@ -195,6 +194,7 @@ export const CustomersPage = () => {
       >
         {/* PINNED — header + KPIs */}
         <div className="w-full space-y-6 px-6 pt-4 pb-2 flex-shrink-0">
+          {/* HEADER */}
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
@@ -204,6 +204,7 @@ export const CustomersPage = () => {
             </div>
           </div>
 
+          {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4 text-blue-500" />} />
             <KPICard title="Active Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4 text-green-500" />} />
@@ -212,8 +213,8 @@ export const CustomersPage = () => {
           </div>
         </div>
 
-        {/* SCROLLABLE — search + list + pagination */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 pt-2">
+        {/* SCROLLABLE — search bar + list + pagination */}
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
           <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -242,7 +243,7 @@ export const CustomersPage = () => {
 
           <Card className="border-none shadow-md overflow-hidden">
             <CardContent className="p-0 divide-y">
-              {paginatedCustomers.map((c) => (
+              {paginatedCustomers.map((c, i) => (
                 <div
                   key={c.customer_name}
                   onClick={() => setSelectedCustomer(c)}
@@ -303,7 +304,7 @@ export const CustomersPage = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE PANEL */}
+      {/* RIGHT SIDE PANEL - Fixed positioning and height */}
       {selectedCustomer && (
         <div className="hidden lg:block w-[40%] sticky top-0 h-screen border-l bg-card shadow-2xl">
           <CustomerModal
@@ -313,9 +314,9 @@ export const CustomersPage = () => {
           />
         </div>
       )}
-
     </div>
   );
+};
 
 const KPICard = ({ title, value, icon }) => (
   <Card>
