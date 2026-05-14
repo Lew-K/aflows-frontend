@@ -184,15 +184,15 @@ export const CustomersPage = () => {
   }
 
   return (
-    <div className="flex h-full min-h-screen bg-background/50 gap-0">
+    <div className="flex h-screen bg-background/50 gap-0 overflow-hidden">
       {/* LEFT SIDE (MAIN PAGE) */}
       <div
         className={`
-          transition-all duration-500 ease-in-out p-6
+          transition-all duration-500 ease-in-out flex flex-col h-screen
           ${selectedCustomer ? "w-full lg:w-[60%] scale-[0.99] origin-left" : "w-full"}
         `}
       >
-        <div className="w-full space-y-8">
+        <div className="w-full space-y-6 px-6 pt-4 pb-2 flex-shrink-0">
           {/* HEADER - Increased spacing and better typography */}
           <div className="flex justify-between items-end">
             <div>
@@ -213,7 +213,7 @@ export const CustomersPage = () => {
           </div>
 
           {/* LIST SECTION - Better Search Bar styling */}
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 overflow-y-auto px-6 pb-6">
             <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -273,38 +273,35 @@ export const CustomersPage = () => {
             </Card>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-2">
-                <p className="text-xs text-muted-foreground">
-                  Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, processedCustomers.length)} of {processedCustomers.length} customers
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm font-medium">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-xs text-muted-foreground">
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, processedCustomers.length)} of {processedCustomers.length} customers
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm font-medium">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
               </div>
-            )}
-
-          </div>
+            </div>
+          )}
         </div>
-      </div>
-
+          
       {/* RIGHT SIDE PANEL - Fixed positioning and height */}
       {selectedCustomer && (
         <div className="hidden lg:block w-[40%] sticky top-0 h-screen border-l bg-card shadow-2xl">
