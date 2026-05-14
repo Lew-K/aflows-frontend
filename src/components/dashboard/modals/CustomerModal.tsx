@@ -79,8 +79,25 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                   <span className="text-sm font-bold tracking-tight">KES {Number(sale.amount).toLocaleString()}</span>
                 </div>
                 {/* Visual indicator for items */}
-                <div className="mt-3 pt-3 border-t flex flex-wrap gap-1">
-                   {/* Mapping logic remains exactly same as your snippet */}
+                <div className="mt-3 pt-3 border-t space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      {sale.receipt_number || "—"}
+                    </span>
+                    <Badge variant="outline" className="text-[9px] uppercase">
+                      {sale.payment_method || "Unknown"}
+                    </Badge>
+                  </div>
+                  {sale.payment_reference && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Ref: {sale.payment_reference}
+                    </p>
+                  )}
+                  {sale.source && (
+                    <p className="text-[10px] text-muted-foreground capitalize">
+                      via {sale.source}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
