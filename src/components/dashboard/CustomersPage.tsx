@@ -177,7 +177,7 @@ export const CustomersPage = () => {
       <div
         className={`
           transition-all duration-500 ease-in-out p-6
-          ${selectedCustomer ? "w-full lg:w-[60%] opacity-90 scale-[0.99] origin-left" : "w-full"}
+          ${selectedCustomer ? "w-full lg:w-[60%] scale-[0.99] origin-left" : "w-full"}
         `}
       >
         <div className="w-full space-y-8">
@@ -265,7 +265,7 @@ export const CustomersPage = () => {
 
       {/* RIGHT SIDE PANEL - Fixed positioning and height */}
       {selectedCustomer && (
-        <div className="hidden lg:block w-[40%] max-w-[480px] sticky top-0 h-screen border-l bg-card shadow-2xl">
+        <div className="hidden lg:block w-[40%] sticky top-0 h-screen border-l bg-card shadow-2xl">
           <CustomerModal
             customer={selectedCustomer}
             sales={customerSales}
