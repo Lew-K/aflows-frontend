@@ -526,94 +526,96 @@ export const SettingsPage = () => {
                 *empty* area only. Inner buttons call e.stopPropagation()
                 so the outer onClick never double-fires the file dialog.
               */}
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
-                  processFile(e.dataTransfer.files[0]);
-                }}
-                className={`cursor-pointer border-2 border-dashed rounded-xl p-6 text-center transition ${
-                  isDragging ? "border-primary bg-primary/5" : "hover:border-primary/50"
-                }`}
-              >
-                {(logoPreview || settings.business_logo_url) ? (
-                  <div className="relative group">
+              <div className="space-y-4">
+
+                {/* Drop zone / preview area */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    processFile(e.dataTransfer.files[0]);
+                  }}
+                  className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition min-h-[220px] ${
+                    isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+                  }`}
+                >
+                  {(logoPreview || settings.business_logo_url) ? (
                     <img
                       src={logoPreview || settings.business_logo_url}
                       alt="Business logo"
-                      className="w-24 h-24 object-contain mx-auto rounded-lg border bg-white"
+                      className="w-48 h-48 object-contain rounded-lg border bg-white"
                     />
-                    {/* Hover Actions — stopPropagation prevents double dialog */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition rounded-lg">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation(); // FIX: prevent outer div onClick
-                          fileInputRef.current?.click();
-                        }}
-                      >
-                        Replace
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={(e) => {
-                          e.stopPropagation(); // FIX: prevent outer div onClick
-                          setLogoPreview(null);
-                          setSettings((prev) => ({ ...prev, business_logo_url: "" }));
-                        }}
-                      >
-                        Remove
-                      </Button>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-48 h-48 rounded-xl bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                        {settings.business_name
+                          ?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "B"}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Drag & drop or use the button below
+                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center space-y-3">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">
-                      {settings.business_name
-                        ?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "B"}
+                  )}
+              
+                  {/* Upload Progress Bar */}
+                  {isUploading && (
+                    <div className="absolute bottom-3 left-4 right-4">
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div
+                          className="bg-primary h-1.5 rounded-full transition-all"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs mt-1 text-center text-muted-foreground">
+                        Uploading... {uploadProgress}%
+                      </p>
                     </div>
-                    <p className="font-semibold">
-                      {settings.business_name || "Your Business"}
-                    </p>
+                  )}
+                </div>
+              
+                {/* Business name + file info */}
+                <div className="text-center space-y-0.5">
+                  <p className="text-sm font-medium">
+                    {settings.business_name || "Your Business"}
+                  </p>
+                  {(logoPreview || settings.business_logo_url) ? (
                     <p className="text-xs text-muted-foreground">
-                      Your logo will appear on receipts and customer documents
+                      Logo uploaded · tap Replace to change
                     </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      PNG or JPG · up to 5 MB
+                    </p>
+                  )}
+                </div>
+              
+                {/* Action buttons — always visible, no hover tricks */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {(logoPreview || settings.business_logo_url) ? "Replace Logo" : "Upload Logo"}
+                  </Button>
+              
+                  {(logoPreview || settings.business_logo_url) && (
                     <Button
-                      variant="outline"
+                      variant="destructive"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation(); // FIX: prevent outer div onClick
-                        fileInputRef.current?.click();
+                      onClick={() => {
+                        setLogoPreview(null);
+                        setSettings((prev) => ({ ...prev, business_logo_url: "" }));
                       }}
                     >
-                      Upload Logo
+                      Remove
                     </Button>
-                    <p className="text-xs text-muted-foreground">
-                      or drag & drop (PNG, JPG up to 5MB)
-                    </p>
-                  </div>
-                )}
-
-                {/* Upload Progress Bar */}
-                {isUploading && (
-                  <div className="mt-4">
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                    <p className="text-xs mt-1 text-muted-foreground">
-                      Uploading... {uploadProgress}%
-                    </p>
-                  </div>
-                )}
-
+                  )}
+                </div>
+              
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -621,6 +623,7 @@ export const SettingsPage = () => {
                   className="hidden"
                   onChange={(e) => processFile(e.target.files[0])}
                 />
+              
               </div>
             </CardContent>
           </Card>
@@ -654,7 +657,7 @@ export const SettingsPage = () => {
               }`}
             >
               <CardContent>
-                <div className="bg-muted/20 rounded-lg px-2 py-4">
+                <div className="bg-muted/20 rounded-lg px-2 py-8">
                   <ReceiptPreview settings={settings} />
                 </div>
               </CardContent>
