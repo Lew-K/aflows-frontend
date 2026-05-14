@@ -185,15 +185,16 @@ export const CustomersPage = () => {
 
   return (
     <div className="flex h-screen bg-background/50 gap-0 overflow-hidden">
-      {/* LEFT SIDE (MAIN PAGE) */}
+
+      {/* LEFT SIDE */}
       <div
         className={`
           transition-all duration-500 ease-in-out flex flex-col h-screen
           ${selectedCustomer ? "w-full lg:w-[60%] scale-[0.99] origin-left" : "w-full"}
         `}
       >
+        {/* PINNED — header + KPIs */}
         <div className="w-full space-y-6 px-6 pt-4 pb-2 flex-shrink-0">
-          {/* HEADER - Increased spacing and better typography */}
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
@@ -203,76 +204,75 @@ export const CustomersPage = () => {
             </div>
           </div>
 
-          {/* KPIs - Grid refinement */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-             {/* Using a custom variant for KPICards for more 'pop' */}
             <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4 text-blue-500" />} />
             <KPICard title="Active Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4 text-green-500" />} />
             <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp className="w-4 h-4 text-orange-500" />} />
             <KPICard title="Repeat Rate" value={`${Math.round(repeatRate)}%`} icon={<Users className="w-4 h-4 text-purple-500" />} />
           </div>
+        </div>
 
-          {/* LIST SECTION - Better Search Bar styling */}
-          <div className="space-y-4 flex-1 overflow-y-auto px-6 pb-6">
-            <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by name..." 
-                  value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
-                  className="pl-9 border-none bg-transparent focus-visible:ring-0"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Filter by:</span>
-                <Select value={segmentFilter} onValueChange={setSegmentFilter}>
-                  <SelectTrigger className="w-36 text-sm">
-                    <SelectValue placeholder="All Segments" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Segments</SelectItem>
-                    <SelectItem value="vip">VIP</SelectItem>
-                    <SelectItem value="regular">Regular</SelectItem>
-                    <SelectItem value="at_risk">At Risk</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* SCROLLABLE — search + list + pagination */}
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 pt-2">
+          <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 border-none bg-transparent focus-visible:ring-0"
+              />
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Filter by:</span>
+              <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+                <SelectTrigger className="w-36 text-sm">
+                  <SelectValue placeholder="All Segments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Segments</SelectItem>
+                  <SelectItem value="vip">VIP</SelectItem>
+                  <SelectItem value="regular">Regular</SelectItem>
+                  <SelectItem value="at_risk">At Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <Card className="border-none shadow-md overflow-hidden">
-              <CardContent className="p-0 divide-y">
-                {paginatedCustomers.map((c, i) => (
-                  <div
-                    key={c.customer_name}
-                    onClick={() => setSelectedCustomer(c)}
-                    className={`
-                      p-5 flex justify-between items-center cursor-pointer transition-all
-                      hover:bg-primary/5 group
-                      ${selectedCustomer?.customer_name === c.customer_name ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"}
-                    `}
-                  >
-                    <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                        {c.customer_name.substring(0,2).toUpperCase()}
-                       </div>
-                       <div>
-                        <p className="font-semibold text-sm">{c.customer_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {c.transactions} orders <span className="mx-1">•</span> Last {new Date(c.last_purchase).toLocaleDateString()}
-                        </p>
-                      </div>
+          <Card className="border-none shadow-md overflow-hidden">
+            <CardContent className="p-0 divide-y">
+              {paginatedCustomers.map((c) => (
+                <div
+                  key={c.customer_name}
+                  onClick={() => setSelectedCustomer(c)}
+                  className={`
+                    p-5 flex justify-between items-center cursor-pointer transition-all
+                    hover:bg-primary/5 group
+                    ${selectedCustomer?.customer_name === c.customer_name ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"}
+                  `}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                      {c.customer_name.substring(0, 2).toUpperCase()}
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">KES {c.total_spent.toLocaleString()}</p>
-                      <Badge variant="outline" className="text-[9px] uppercase">{c.segment}</Badge>
+                    <div>
+                      <p className="font-semibold text-sm">{c.customer_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {c.transactions} orders <span className="mx-1">•</span> Last {new Date(c.last_purchase).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  <div className="text-right">
+                    <p className="font-bold text-sm">KES {c.total_spent.toLocaleString()}</p>
+                    <Badge variant="outline" className="text-[9px] uppercase">{c.segment}</Badge>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-            {totalPages > 1 && (
+          {totalPages > 1 && (
             <div className="flex items-center justify-between pt-2">
               <p className="text-xs text-muted-foreground">
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, processedCustomers.length)} of {processedCustomers.length} customers
@@ -301,8 +301,9 @@ export const CustomersPage = () => {
             </div>
           )}
         </div>
-          
-      {/* RIGHT SIDE PANEL - Fixed positioning and height */}
+      </div>
+
+      {/* RIGHT SIDE PANEL */}
       {selectedCustomer && (
         <div className="hidden lg:block w-[40%] sticky top-0 h-screen border-l bg-card shadow-2xl">
           <CustomerModal
@@ -312,9 +313,9 @@ export const CustomersPage = () => {
           />
         </div>
       )}
+
     </div>
   );
-};
 
 const KPICard = ({ title, value, icon }) => (
   <Card>
