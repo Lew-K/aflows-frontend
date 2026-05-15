@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +19,8 @@ export const LoginSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionExpired = new URLSearchParams(location.search).get("reason") === "session-expired";
 
   // Logic Preserved: useForm with Zod
   const {
@@ -108,6 +111,18 @@ export const LoginSection = () => {
               <h3 className="text-2xl font-bold text-white mb-2">Welcome Back</h3>
               <p className="text-muted-foreground">Please enter your details to continue.</p>
             </div>
+
+            {sessionExpired && (
+              <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-start gap-3">
+                <span className="text-lg leading-none mt-0.5">⚠️</span>
+                <div>
+                  <p className="font-semibold mb-0.5">Session expired</p>
+                  <p className="text-amber-400/70 text-xs">
+                    You've been signed out. Sign in to pick up where you left off.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
