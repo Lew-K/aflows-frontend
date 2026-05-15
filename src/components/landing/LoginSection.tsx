@@ -178,7 +178,7 @@ export const LoginSection = () => {
                   New to Aflows? {' '}
                   <button 
                     type="button"
-                    onClick={() => document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => navigate('/register')}
                     className="text-primary font-bold hover:underline"
                   >
                     Create an account
