@@ -63,7 +63,7 @@ function forceLogout() {
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("aflows_user");
 
-  window.location.replace("/?reason=session-expired");
+  window.location.replace("/login?reason=session-expired");
 }
 
 async function refreshAccessToken(): Promise<string | null> {
