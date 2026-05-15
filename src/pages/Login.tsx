@@ -4,7 +4,6 @@ import { LoginSection } from '@/components/landing/LoginSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
-
 const Login = () => {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
