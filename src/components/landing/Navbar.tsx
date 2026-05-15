@@ -19,13 +19,7 @@ export const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setMobileMenuOpen(false);
-  };
+
 
   return (
     <motion.nav
@@ -52,15 +46,12 @@ export const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <div className="flex items-center gap-6">
-            {['how-it-works', 'faq', 'contact'].map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors capitalize"
-              >
-                {item.replace(/-/g, ' ')}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/about')}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              About
+            </button>
           </div>
           
           <div className="flex items-center gap-3 border-l border-white/10 pl-6">
@@ -78,7 +69,7 @@ export const Navbar = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={() => scrollToSection('login')}
+                  onClick={() => navigate('/login')}
                   variant="ghost"
                   size="sm"
                   className="text-white hover:text-primary transition-colors"
@@ -86,13 +77,13 @@ export const Navbar = () => {
                   Log In
                 </Button>
                 <Button
-                  onClick={() => scrollToSection('register')}
+                  onClick={() => navigate('/register')}
                   variant="hero"
                   size="sm"
                   className="rounded-full px-6 font-bold text-black shadow-lg shadow-primary/10"
                 >
                   Get Started
-                </Button>
+                </Button>>
               </div>
             )}
           </div>
@@ -104,7 +95,7 @@ export const Navbar = () => {
           
           {!isAuthenticated && (
             <button 
-              onClick={() => scrollToSection('login')}
+              onClick={() => navigate('/login')}
               className="text-sm font-bold text-primary px-2 py-1 active:scale-95 transition-transform"
             >
               Log In
@@ -130,19 +121,16 @@ export const Navbar = () => {
             className="md:hidden bg-background/95 backdrop-blur-2xl border-b border-white/5"
           >
             <div className="flex flex-col gap-4 p-6 pt-2">
-              {['how-it-works', 'faq', 'contact'].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => scrollToSection(item)}
-                  className="text-lg font-medium text-muted-foreground text-left py-2 border-b border-white/5"
-                >
-                  {item.replace(/-/g, ' ')}
-                </button>
-              ))}
+              <button
+                onClick={() => { navigate('/about'); setMobileMenuOpen(false); }}
+                className="text-lg font-medium text-muted-foreground text-left py-2 border-b border-white/5"
+              >
+                About
+              </button>
               
               {!isAuthenticated ? (
                 <Button
-                  onClick={() => scrollToSection('register')}
+                  onClick={() => navigate('/register')}
                   variant="hero"
                   className="w-full py-6 text-black font-bold mt-2"
                 >
