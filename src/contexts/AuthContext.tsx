@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAccessToken(null);
         setRefreshToken(null);
         setUser(null);
-        window.location.replace("/?reason=session-expired");
+        window.location.replace("/login?reason=session-expired");
       }
     };
 
