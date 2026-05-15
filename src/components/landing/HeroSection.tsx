@@ -1,16 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart3, FileUp, Receipt, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, FileUp, Receipt, Zap, ShoppingCart, Package, Users } from 'lucide-react';
 import heroBg from '@/assets/hero-bg.jpg';
+import { useNavigate } from 'react-router-dom';
+
 
 export const HeroSection = () => {
-  const scrollToRegister = () => {
-    const element = document.getElementById('register');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen flex flex-col items-center pt-32 pb-20 overflow-hidden bg-background">
@@ -61,15 +58,15 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"
           >
-            <Button onClick={scrollToRegister} variant="hero" size="xl" className="rounded-full px-10 h-14 text-lg shadow-lg shadow-primary/20 group">
+            <Button onClick={() => navigate('/register')} variant="hero" size="xl" className="rounded-full px-10 h-14 text-lg shadow-lg shadow-primary/20 group">
               Start Free Today
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button
-              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => navigate('/about')}
               variant="outline"
               size="xl"
-              className="rounded-full px-10 h-14 text-lg border-white/10 hover:bg-white/5"
+              className="rounded-full px-10 h-14 text-lg border-border hover:bg-muted/40"
             >
               See How It Works
             </Button>
@@ -80,16 +77,19 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-24"
           >
             {[
-              { icon: BarChart3, title: 'Real-time Analytics', desc: 'Track your sales and revenue with live dashboards' },
-              { icon: Receipt, title: 'Auto Receipts', desc: 'Generate professional receipts automatically' },
-              { icon: FileUp, title: 'Smart File Management', desc: 'Organize invoices, statements, and documents' },
+              { icon: BarChart3, title: 'Real-time Analytics', desc: 'Monitor revenue, sales trends and business insights live' },
+              { icon: Receipt, title: 'Auto Receipts', desc: 'Generate branded PDF receipts with your logo instantly' },
+              { icon: ShoppingCart, title: 'Sales Tracking', desc: 'Record every sale with payment method and customer details' },
+              { icon: Package, title: 'Inventory Management', desc: 'Track stock levels and manage your product catalogue' },
+              { icon: Users, title: 'Customer Management', desc: 'Build customer profiles and track purchase history' },
+              { icon: FileUp, title: 'Document Vault', desc: 'Upload and organize invoices, statements and business files' },
             ].map((f, i) => (
               <div
                 key={f.title}
-                className="group p-8 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-primary/50 hover:bg-white/[0.04] transition-all duration-500 text-left"
+                className="group p-8 rounded-3xl bg-card border border-border hover:border-primary/50 hover:bg-muted/40 transition-all duration-500 text-left"
               >
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <f.icon className="w-6 h-6 text-primary" />
