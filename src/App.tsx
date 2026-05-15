@@ -11,6 +11,10 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { initAuthGuard } from "@/lib/authGuard";
 import { DataProvider } from "@/contexts/DataContext";
 
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import About from "./pages/About";
+
 import AdminLogin from "@/components/internal-admin/AdminLogin";
 import AdminDashboard from "@/components/internal-admin/AdminDashboard";
 import Businesses from "@/components/internal-admin/Businesses";
@@ -43,9 +47,14 @@ const App = () => {
                 <Routes>
 
                   <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/about" element={<About />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
+
+                    
                     
                   </Route>
 
