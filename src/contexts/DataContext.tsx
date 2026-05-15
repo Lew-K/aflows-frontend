@@ -274,7 +274,6 @@ export const DataProvider = ({ children }: any) => {
     try {
       await Promise.all([
         fetchInventory(businessId),
-        fetchCustomers(businessId),
         fetchSales(businessId, "this_month"),
         fetchRevenueAnalytics(businessId, "this_month"),
         fetchRevenue(businessId),
