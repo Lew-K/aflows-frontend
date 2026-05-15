@@ -83,7 +83,7 @@ export const Navbar = () => {
                   className="rounded-full px-6 font-bold text-black shadow-lg shadow-primary/10"
                 >
                   Get Started
-                </Button>>
+                </Button>
               </div>
             )}
           </div>
