@@ -49,7 +49,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Track sales, generate receipts, upload documents, and gain powerful analytics insights — all in one platform designed for modern businesses.
+            One platform. Every tool your business needs. No complexity, no clutter.
           </motion.p>
 
           <motion.div
