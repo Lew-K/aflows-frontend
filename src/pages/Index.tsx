@@ -1,44 +1,70 @@
 import React from 'react';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { FAQSection } from '@/components/landing/FAQSection';
-import { ContactSection } from '@/components/landing/ContactSection';
-import { LoginSection } from '@/components/landing/LoginSection';
-import { RegisterSection } from '@/components/landing/RegisterSection';
 import { Footer } from '@/components/landing/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
-
 const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
-    if (isLoading) return null;
-
-    if (isAuthenticated) {
-      return <Navigate to="/dashboard" replace />;
-    }
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
-      
-      {/* Only show auth sections if not authenticated */}
-      {!isAuthenticated && (
-        <>
-          <LoginSection />
-          <RegisterSection />
-        </>
-      )}
-      
-      <HowItWorksSection />
-      <ContactSection />
-      <FAQSection />
-
       <Footer />
     </div>
   );
 };
-
 export default Index;
+
+
+
+
+
+// import React from 'react';
+// import { Navbar } from '@/components/landing/Navbar';
+// import { HeroSection } from '@/components/landing/HeroSection';
+// import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+// import { FAQSection } from '@/components/landing/FAQSection';
+// import { ContactSection } from '@/components/landing/ContactSection';
+// import { LoginSection } from '@/components/landing/LoginSection';
+// import { RegisterSection } from '@/components/landing/RegisterSection';
+// import { Footer } from '@/components/landing/Footer';
+// import { useAuth } from '@/contexts/AuthContext';
+// import { Navigate } from 'react-router-dom';
+
+
+// const Index = () => {
+//   const { isAuthenticated, isLoading } = useAuth();
+//     if (isLoading) return null;
+
+//     if (isAuthenticated) {
+//       return <Navigate to="/dashboard" replace />;
+//     }
+
+//   return (
+//     <div className="min-h-screen bg-background">
+//       <Navbar />
+//       <HeroSection />
+      
+//       {/* Only show auth sections if not authenticated */}
+//       {!isAuthenticated && (
+//         <>
+//           <LoginSection />
+//           <RegisterSection />
+//         </>
+//       )}
+      
+//       <HowItWorksSection />
+//       <ContactSection />
+//       <FAQSection />
+
+//       <Footer />
+//     </div>
+//   );
+// };
+
+// export default Index;
