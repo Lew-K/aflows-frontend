@@ -158,7 +158,7 @@ const ReceiptPreview = ({ settings }) => {
 ───────────────────────────────────────────── */
 export const SettingsPage = () => {
   const { user, accessToken } = useAuth();
-  const { business } = useData();
+  const { business, refreshBusiness } = useData();
 
   const [openSections, setOpenSections] = useState({
     password: false,
@@ -177,7 +177,7 @@ export const SettingsPage = () => {
     location: "Nairobi, Kenya",
     receipt_prefix: "RCT",
     receipt_footer: "Thank you for your business",
-    tax_rate: "16",
+    tax_rate: "0",
     business_logo_url: "",
     discount_type: "percentage",   // "percentage" | "fixed"
     discount_value: "",
@@ -218,7 +218,7 @@ export const SettingsPage = () => {
       location: business.location || "Nairobi, Kenya",
       receipt_prefix: business.receipt_prefix || "RCT",
       receipt_footer: business.receipt_footer || "Thank you for your business",
-      tax_rate: business.tax_rate ?? "16",
+      tax_rate: business.tax_rate ?? "0",
       business_logo_url: business.logo_url || "",   // note: your API returns logo_url not business_logo_url
       discount_type: business.discount_type || "percentage",
       discount_value: business.discount_value ?? "",
@@ -240,9 +240,37 @@ export const SettingsPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Wire up your real API call here
-      console.log("Saving settings:", settings);
-      await new Promise((r) => setTimeout(r, 800)); // replace with actual API call
+      const res = await fetch(
+        "https://n8n.aflows.uk/webhook/update-business-settings",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            business_name: settings.business_name,
+            phone: settings.phone,
+            location: settings.location,
+            receipt_prefix: settings.receipt_prefix,
+            tax_rate: settings.tax_rate,
+            receipt_footer: settings.receipt_footer,
+            discount_type: settings.discount_type,
+            discount_value: settings.discount_value,
+          }),
+        }
+      );
+  
+      const data = await res.json();
+  
+      if (!data.success) {
+        throw new Error(data.message || "Failed to save settings");
+      }
+  
+      if (user?.businessId) {
+        await refreshBusiness(user.businessId);
+      }
+  
       setOriginalSettings(settings);
       toast.success("Settings saved successfully");
     } catch (err) {
