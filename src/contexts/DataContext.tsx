@@ -19,9 +19,21 @@ interface RevenueAnalytics {
 
 interface Business {
   business_id: string;
+
   business_name: string;
   phone: string;
-  logo_url: string;
+  location?: string;
+
+  logo_url?: string;
+
+  // receipt settings
+  receipt_prefix?: string;
+  receipt_footer?: string;
+  tax_rate?: string | number;
+
+  // discount
+  discount_type?: "percentage" | "fixed";
+  discount_value?: string | number;
 }
 
 interface DataContextType {
@@ -66,6 +78,7 @@ interface DataContextType {
 
   prefetchAll: (businessId: string) => Promise<void>;
   refreshInventory: (businessId: string) => Promise<void>;
+  refreshBusiness: (businessId: string) => Promise<void>;
   refreshCustomers: (businessId: string) => Promise<void>;
   refreshSales: (businessId: string, period: string, start?: string, end?: string) => Promise<void>;
   business: Business | null;
@@ -343,6 +356,10 @@ export const DataProvider = ({ children }: any) => {
     await fetchInventory(businessId);
   };
 
+  const refreshBusiness = async (businessId: string) => {
+    await fetchBusiness(businessId);
+  };
+
   const refreshCustomers = async (businessId: string) => {
     await fetchCustomers(businessId);
   };
@@ -361,6 +378,7 @@ export const DataProvider = ({ children }: any) => {
         loading,
         prefetchAll,
         refreshInventory,
+        refreshBusiness,
         refreshCustomers,
         refreshSales,
         business,
