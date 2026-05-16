@@ -1,3 +1,4 @@
+import { useData } from '@/contexts/DataContext';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +38,7 @@ const navItems = [
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
+  const { business } = useData();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
@@ -137,13 +139,27 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             <ThemeToggle />
             <NotificationCenter />
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-foreground">{user?.businessName}</p>
+              <p className="text-sm font-medium text-foreground">
+                {business?.business_name || user?.businessName}
+              </p>
               <p className="text-xs text-muted-foreground">{user?.ownerName}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-medium text-primary-foreground">
-                {user?.businessName ? getInitials(user.businessName) : 'AF'}
-              </span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+              {business?.logo_url ? (
+                <img
+                  src={business.logo_url}
+                  alt="Business logo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-medium text-primary-foreground">
+                  {business?.business_name
+                    ? getInitials(business.business_name)
+                    : user?.businessName
+                    ? getInitials(user.businessName)
+                    : 'AF'}
+                </span>
+              )}
             </div>
           </div>
         </header>
