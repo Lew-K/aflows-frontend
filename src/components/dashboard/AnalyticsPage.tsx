@@ -331,47 +331,55 @@ const TopCustomerCard = ({
     transition={{ duration: 0.4, delay: 0.1 }}
   >
     <Card className="hover:shadow-soft transition-shadow h-full">
+      
+      
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Users className="w-5 h-5 text-primary" />
           </div>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            This Month
+          </p>
         </div>
-        
-        <p className="text-3xl font-black text-foreground truncate">
-          {isLoading ? '...' : topCustomer?.name || 'N/A'}
-        </p>
-        
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">Top Customer (This Month)</p>
-
-       <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Top Spend</span>
-            <span className="text-sm font-black text-foreground">
-              {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
-            </span>
-          </div>
-          <div className="border-t border-border/30 pt-3">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-              Customers This Month
+      
+        {/* Main — New vs Returning */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="text-center">
+            <p className="text-3xl font-black text-green-600">
+              {isLoading ? '...' : newCustomersCount}
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-green-500/10 rounded-lg p-2 text-center">
-                <p className="text-lg font-black text-green-600">
-                  {isLoading ? '...' : newCustomersCount}
-                </p>
-                <p className="text-[10px] font-bold text-green-600/70 uppercase">New</p>
-              </div>
-              <div className="bg-blue-500/10 rounded-lg p-2 text-center">
-                <p className="text-lg font-black text-blue-600">
-                  {isLoading ? '...' : returningCustomersCount}
-                </p>
-                <p className="text-[10px] font-bold text-blue-600/70 uppercase">Returning</p>
-              </div>
-            </div>
+            <p className="text-[10px] font-bold text-green-600/70 uppercase tracking-wider mt-1">
+              New
+            </p>
           </div>
+          <div className="text-center">
+            <p className="text-3xl font-black text-blue-600">
+              {isLoading ? '...' : returningCustomersCount}
+            </p>
+            <p className="text-[10px] font-bold text-blue-600/70 uppercase tracking-wider mt-1">
+              Returning
+            </p>
+          </div>
+        </div>
+      
+        {/* Secondary — Top customer */}
+        <div className="border-t border-border/50 pt-3 flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Top Customer
+            </p>
+            <p className="text-sm font-black text-foreground truncate mt-0.5">
+              {isLoading ? '...' : topCustomer?.name || 'N/A'}
+            </p>
+          </div>
+          <p className="text-sm font-bold text-foreground shrink-0 ml-2">
+            {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
+          </p>
         </div>
       </CardContent>
+
+      
     </Card>
   </motion.div>
 );
