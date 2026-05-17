@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { useRef } from "react";
+import { useNotifications } from '@/contexts/NotificationContext';
 
 
 // 🔥 Minimal useful types
@@ -89,6 +90,8 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: any) => {
 
+  const { addNotification } = useNotifications();
+
   const inFlight = useRef(new Map<string, Promise<void>>());
   
   
@@ -97,6 +100,7 @@ export const DataProvider = ({ children }: any) => {
   const [salesCache, setSalesCache] = useState<Record<string, Sale[]>>({});
   const [lastFetched, setLastFetched] = useState<Record<string, number>>({});
   const [business, setBusiness] = useState<Business | null>(null);
+  
   
   const [analyticsCache, setAnalyticsCache] = useState<
     Record<string, RevenueAnalytics>
@@ -122,7 +126,45 @@ export const DataProvider = ({ children }: any) => {
       `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
     );
     const data = await res.json();
-    setInventory(data?.items || []);
+    const items = data?.items || [];
+    setInventory(items);
+  
+    // Only check items that have had real movement
+    const activeItems = items.filter((item: any) => item.last_movement !== null);
+  
+    // Out of stock items
+    const outOfStock = activeItems.filter((item: any) => item.stock <= 0);
+  
+    // Low stock items (above 0 but at or below threshold)
+    const lowStock = activeItems.filter(
+      (item: any) => item.stock > 0 && item.stock <= item.low_stock_threshold
+    );
+  
+    if (outOfStock.length > 0) {
+      const names = outOfStock
+        .slice(0, 3)
+        .map((i: any) => i.name)
+        .join(', ');
+      const extra = outOfStock.length > 3 ? ` and ${outOfStock.length - 3} more` : '';
+      addNotification(
+        'error',
+        `${outOfStock.length} item${outOfStock.length > 1 ? 's' : ''} out of stock`,
+        `${names}${extra} need restocking immediately.`
+      );
+    }
+  
+    if (lowStock.length > 0) {
+      const names = lowStock
+        .slice(0, 3)
+        .map((i: any) => i.name)
+        .join(', ');
+      const extra = lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : '';
+      addNotification(
+        'warning',
+        `${lowStock.length} item${lowStock.length > 1 ? 's' : ''} running low`,
+        `${names}${extra} are below their stock threshold.`
+      );
+    }
   };
 
   // CUSTOMERS
