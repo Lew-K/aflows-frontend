@@ -24,18 +24,7 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    // Sample notifications for demo
-    {
-      id: '1',
-      type: 'success',
-      title: 'Welcome to Aflows!',
-      message: 'Your account is ready. Start exploring the dashboard.',
-      timestamp: new Date(),
-      read: false,
-    },
-  ]);
-
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const addNotification = useCallback((type: NotificationType, title: string, message: string) => {
