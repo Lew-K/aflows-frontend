@@ -129,28 +129,55 @@ export const DataProvider = ({ children }: any) => {
     const items = data?.items || [];
     setInventory(items);
   
-    // Only check items that have had real movement
+   // Only check items that have had real movement
     const activeItems = items.filter((item: any) => item.last_movement !== null);
-  
-    // Out of stock items
-    const outOfStock = activeItems.filter((item: any) => item.stock <= 0);
-  
-    // Low stock items (above 0 but at or below threshold)
-    const lowStock = activeItems.filter(
-      (item: any) => item.stock > 0 && item.stock <= item.low_stock_threshold
-    );
-  
-    if (outOfStock.length > 0) {
-      const names = outOfStock
-        .slice(0, 3)
-        .map((i: any) => i.name)
-        .join(', ');
-      const extra = outOfStock.length > 3 ? ` and ${outOfStock.length - 3} more` : '';
-      addNotification(
-        'error',
-        `${outOfStock.length} item${outOfStock.length > 1 ? 's' : ''} out of stock`,
-        `${names}${extra} need restocking immediately.`
+    
+    // Check if we already fired stock notifications in the last 24 hours
+    const STOCK_NOTIF_KEY = 'stock_notifications_last_fired';
+    const TWENTY_FOUR_HOURS = 1000 * 60 * 60 * 24;
+    const lastFiredRaw = localStorage.getItem(STOCK_NOTIF_KEY);
+    const lastFired = lastFiredRaw ? parseInt(lastFiredRaw, 10) : 0;
+    const shouldNotify = Date.now() - lastFired > TWENTY_FOUR_HOURS;
+    
+    if (shouldNotify) {
+      // Out of stock items
+      const outOfStock = activeItems.filter((item: any) => item.stock <= 0);
+    
+      // Low stock items (above 0 but at or below threshold)
+      const lowStock = activeItems.filter(
+        (item: any) => item.stock > 0 && item.stock <= item.low_stock_threshold
       );
+    
+      if (outOfStock.length > 0) {
+        const names = outOfStock
+          .slice(0, 3)
+          .map((i: any) => i.name)
+          .join(', ');
+        const extra = outOfStock.length > 3 ? ` and ${outOfStock.length - 3} more` : '';
+        addNotification(
+          'error',
+          `${outOfStock.length} item${outOfStock.length > 1 ? 's' : ''} out of stock`,
+          `${names}${extra} need restocking immediately.`
+        );
+      }
+    
+      if (lowStock.length > 0) {
+        const names = lowStock
+          .slice(0, 3)
+          .map((i: any) => i.name)
+          .join(', ');
+        const extra = lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : '';
+        addNotification(
+          'warning',
+          `${lowStock.length} item${lowStock.length > 1 ? 's' : ''} running low`,
+          `${names}${extra} are below their stock threshold.`
+        );
+      }
+    
+      // Only update the timestamp if we actually had something to notify about
+      if (outOfStock.length > 0 || lowStock.length > 0) {
+        localStorage.setItem(STOCK_NOTIF_KEY, Date.now().toString());
+      }
     }
   
     if (lowStock.length > 0) {
