@@ -180,19 +180,6 @@ export const DataProvider = ({ children }: any) => {
       }
     }
   
-    if (lowStock.length > 0) {
-      const names = lowStock
-        .slice(0, 3)
-        .map((i: any) => i.name)
-        .join(', ');
-      const extra = lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : '';
-      addNotification(
-        'warning',
-        `${lowStock.length} item${lowStock.length > 1 ? 's' : ''} running low`,
-        `${names}${extra} are below their stock threshold.`
-      );
-    }
-  };
 
   // CUSTOMERS
   const fetchCustomers = async (businessId: string) => {
