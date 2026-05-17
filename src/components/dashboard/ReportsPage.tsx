@@ -1,89 +1,158 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FileText,
-  Download,
-  Calendar,
-  TrendingUp,
-  Users,
-  Package,
-  CreditCard,
-  ArrowRight,
+  FileText, Download, Calendar, TrendingUp,
+  Users, Package, CreditCard, ArrowRight, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiFetch } from '@/lib/apiFetch';
 
-const reportCategories = [
-  {
-    title: 'Financial Health Summary',
-    subtitle: 'Where is my money?',
-    description: 'Understand your real profit after costs and expenses.',
-    icon: CreditCard,
-    color: 'text-blue-500',
-    metric: { label: 'Net Profit (Last 30 days)', value: '—' },
-    reports: [
-      'Cash In vs Cash Out',
-      'Net Profit Margin',
-      'Expenses Breakdown',
-    ],
-  },
-  {
-    title: 'Smart Stock List',
-    subtitle: 'What do I need to buy?',
-    description: 'Automatic restock list based on stock levels and sales velocity.',
-    icon: Package,
-    color: 'text-orange-500',
-    metric: { label: 'Items low on stock', value: '—' },
-    reports: [
-      'Low Stock Alerts',
-      'Inventory Velocity',
-      'Restock Shopping List',
-    ],
-  },
-  {
-    title: 'Customer Loyalty Insights',
-    subtitle: 'Who is my best customer?',
-    description: 'Turn gut feeling about regulars into a data-driven strategy.',
-    icon: Users,
-    color: 'text-purple-500',
-    metric: { label: 'VIP customers lapsed 30+ days', value: '—' },
-    reports: [
-      'Top 10% Spenders',
-      'Lapsed Customers (30+ days)',
-      'Customer Lifetime Value',
-    ],
-  },
-  {
-    title: 'Sales Performance',
-    subtitle: 'What is selling?',
-    description: 'Transaction history and top performing products.',
-    icon: TrendingUp,
-    color: 'text-green-500',
-    metric: { label: 'Top product this month', value: '—' },
-    reports: [
-      'Daily Sales Summary',
-      'Top Products',
-      'Payment Method Breakdown',
-    ],
-  },
-];
+/* ── Date range helpers ── */
+const getDateRange = (range: string): { start: string; end: string } => {
+  const now = new Date();
+  const end = now.toISOString().slice(0, 10);
+
+  switch (range) {
+    case 'today': {
+      return { start: end, end };
+    }
+    case 'last-7': {
+      const start = new Date(now);
+      start.setDate(start.getDate() - 7);
+      return { start: start.toISOString().slice(0, 10), end };
+    }
+    case 'last-30': {
+      const start = new Date(now);
+      start.setDate(start.getDate() - 30);
+      return { start: start.toISOString().slice(0, 10), end };
+    }
+    case 'this-quarter': {
+      const quarter = Math.floor(now.getMonth() / 3);
+      const start = new Date(now.getFullYear(), quarter * 3, 1);
+      return { start: start.toISOString().slice(0, 10), end };
+    }
+    case 'year-to-date': {
+      const start = new Date(now.getFullYear(), 0, 1);
+      return { start: start.toISOString().slice(0, 10), end };
+    }
+    default: {
+      const start = new Date(now);
+      start.setDate(start.getDate() - 30);
+      return { start: start.toISOString().slice(0, 10), end };
+    }
+  }
+};
+
+/* ── CSV export helper ── */
+const downloadCSV = (data: any[], filename: string) => {
+  if (!data || data.length === 0) return;
+  const headers = Object.keys(data[0]).join(',');
+  const rows = data.map(row =>
+    Object.values(row).map(val =>
+      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+    ).join(',')
+  );
+  const csv = [headers, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+/* ── Types ── */
+interface ReportData {
+  summary: any;
+  data: any[];
+}
 
 export const ReportsPage = () => {
+  const { user } = useAuth();
+  const businessId = user?.businessId;
   const [dateRange, setDateRange] = useState('last-30');
+
+  const [financial, setFinancial] = useState<ReportData | null>(null);
+  const [stock, setStock] = useState<ReportData | null>(null);
+  const [customers, setCustomers] = useState<ReportData | null>(null);
+  const [salesPerf, setSalesPerf] = useState<ReportData | null>(null);
+
+  const [loadingFinancial, setLoadingFinancial] = useState(false);
+  const [loadingStock, setLoadingStock] = useState(false);
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [loadingSales, setLoadingSales] = useState(false);
+
+  const fetchAll = useCallback(async () => {
+    if (!businessId) return;
+    const { start, end } = getDateRange(dateRange);
+
+    // Financial
+    setLoadingFinancial(true);
+    try {
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/reports/financial?businessId=${businessId}&start=${start}&end=${end}`
+      );
+      const json = await res.json();
+      const d = Array.isArray(json) ? json[0] : json;
+      if (d?.success) {
+        setFinancial({ summary: d.data.summary, data: d.data.daily_breakdown });
+      }
+    } catch (e) { console.error(e); }
+    finally { setLoadingFinancial(false); }
+
+    // Stock
+    setLoadingStock(true);
+    try {
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/reports/stock?businessId=${businessId}`
+      );
+      const json = await res.json();
+      const d = Array.isArray(json) ? json[0] : json;
+      if (d?.success) {
+        setStock({ summary: d.data.summary, data: d.data.items });
+      }
+    } catch (e) { console.error(e); }
+    finally { setLoadingStock(false); }
+
+    // Customers
+    setLoadingCustomers(true);
+    try {
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/reports/customers?businessId=${businessId}`
+      );
+      const json = await res.json();
+      const d = Array.isArray(json) ? json[0] : json;
+      if (d?.success) {
+        setCustomers({ summary: d.data.summary, data: d.data.customers });
+      }
+    } catch (e) { console.error(e); }
+    finally { setLoadingCustomers(false); }
+
+    // Sales Performance
+    setLoadingSales(true);
+    try {
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/reports/sales-performance?businessId=${businessId}&start=${start}&end=${end}`
+      );
+      const json = await res.json();
+      const d = Array.isArray(json) ? json[0] : json;
+      if (d?.success) {
+        setSalesPerf({ summary: d.data.summary, data: d.data.breakdown });
+      }
+    } catch (e) { console.error(e); }
+    finally { setLoadingSales(false); }
+
+  }, [businessId, dateRange]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  const fmt = (n: number) => `KES ${Number(n).toLocaleString()}`;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -92,12 +161,8 @@ export const ReportsPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reports & Exports</h1>
-          <p className="text-muted-foreground">
-            Download and analyze your business data.
-          </p>
+          <p className="text-muted-foreground">Download and analyze your business data.</p>
         </div>
-
-        {/* Global Time Filter */}
         <div className="flex items-center gap-2 bg-card p-2 rounded-lg border shadow-sm">
           <Calendar className="w-4 h-4 text-muted-foreground ml-2" />
           <Select value={dateRange} onValueChange={setDateRange}>
@@ -124,86 +189,202 @@ export const ReportsPage = () => {
           <div>
             <h3 className="font-semibold text-lg">Quick Full Business Snapshot</h3>
             <p className="text-sm text-muted-foreground">
-              Download a comprehensive PDF summary of all departments.
+              Download a comprehensive CSV of all report data.
             </p>
           </div>
         </div>
-        <Button className="w-full md:w-auto gap-2">
+        <Button
+          className="w-full md:w-auto gap-2"
+          onClick={() => {
+            if (financial?.data) downloadCSV(financial.data, 'financial-summary');
+            if (stock?.data) downloadCSV(stock.data, 'stock-list');
+            if (customers?.data) downloadCSV(customers.data, 'customer-insights');
+            if (salesPerf?.data) downloadCSV(salesPerf.data, 'sales-performance');
+          }}
+        >
           <Download className="w-4 h-4" />
-          Generate Snapshot
+          Download All Reports
         </Button>
       </div>
 
       {/* Reports Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {reportCategories.map((category) => (
-          <Card
-            key={category.title}
-            className="hover:shadow-md transition-shadow flex flex-col"
-          >
-            <CardHeader>
-              <div
-                className={cn(
-                  'w-10 h-10 rounded-lg bg-background border flex items-center justify-center mb-2',
-                  category.color
-                )}
-              >
-                <category.icon className="w-6 h-6" />
-              </div>
-              <p className="text-xs font-semibold text-primary uppercase tracking-wider">
-                {category.subtitle}
-              </p>
-              <CardTitle className="text-base">{category.title}</CardTitle>
-              <CardDescription>{category.description}</CardDescription>
-            </CardHeader>
 
-            {/* Live metric callout — wire to API later */}
-            <div className="mx-6 mb-4 p-3 rounded-lg bg-muted/40 border border-border">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                {category.metric.label}
-              </p>
-              <p className="text-xl font-bold text-foreground">
-                {category.metric.value}
-              </p>
+        {/* Financial Health */}
+        <Card className="hover:shadow-md transition-shadow flex flex-col">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center mb-2 text-blue-500">
+              <CreditCard className="w-6 h-6" />
             </div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">Where is my money?</p>
+            <CardTitle className="text-base">Financial Health Summary</CardTitle>
+            <CardDescription>Understand your real profit after costs and expenses.</CardDescription>
+          </CardHeader>
+          <div className="mx-6 mb-4 p-3 rounded-lg bg-muted/40 border border-border">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Total Revenue</p>
+            <p className="text-xl font-bold text-foreground">
+              {loadingFinancial ? <Loader2 className="w-4 h-4 animate-spin" /> : financial ? fmt(financial.summary.total_revenue) : '—'}
+            </p>
+          </div>
+          <CardContent className="flex-1">
+            <ul className="space-y-3">
+              {['Cash In vs Cash Out', 'Daily Revenue Breakdown', 'Avg Transaction Value'].map(r => (
+                <li key={r} className="group flex items-center justify-between text-sm py-2 px-3 rounded-md hover:bg-muted cursor-pointer transition-colors">
+                  <span className="font-medium">{r}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              disabled={loadingFinancial || !financial}
+              onClick={() => financial?.data && downloadCSV(financial.data, 'financial-summary')}
+            >
+              {loadingFinancial ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+              Export CSV
+            </Button>
+          </CardFooter>
+        </Card>
 
-            <CardContent className="flex-1">
-              <ul className="space-y-3">
-                {category.reports.map((report) => (
-                  <li
-                    key={report}
-                    className="group flex items-center justify-between text-sm py-2 px-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
-                  >
-                    <span className="font-medium">{report}</span>
-                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
+        {/* Smart Stock List */}
+        <Card className="hover:shadow-md transition-shadow flex flex-col">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center mb-2 text-orange-500">
+              <Package className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">What do I need to buy?</p>
+            <CardTitle className="text-base">Smart Stock List</CardTitle>
+            <CardDescription>Automatic restock list based on stock levels.</CardDescription>
+          </CardHeader>
+          <div className="mx-6 mb-4 p-3 rounded-lg bg-muted/40 border border-border">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Items to restock</p>
+            <p className="text-xl font-bold text-foreground">
+              {loadingStock ? <Loader2 className="w-4 h-4 animate-spin" /> : stock ? stock.summary.total_items_to_restock : '—'}
+            </p>
+            {stock && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {stock.summary.out_of_stock_count} out of stock · {stock.summary.low_stock_count} low
+              </p>
+            )}
+          </div>
+          <CardContent className="flex-1">
+            <ul className="space-y-3">
+              {['Low Stock Alerts', 'Inventory Velocity', 'Restock Shopping List'].map(r => (
+                <li key={r} className="group flex items-center justify-between text-sm py-2 px-3 rounded-md hover:bg-muted cursor-pointer transition-colors">
+                  <span className="font-medium">{r}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              disabled={loadingStock || !stock}
+              onClick={() => stock?.data && downloadCSV(stock.data, 'smart-stock-list')}
+            >
+              {loadingStock ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+              Export CSV
+            </Button>
+          </CardFooter>
+        </Card>
 
-            <CardFooter className="border-t pt-4">
-              <div className="flex w-full gap-2">
-                <Select defaultValue="csv">
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="csv">CSV</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="xlsx">Excel</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-8 text-xs gap-1"
-                >
-                  <Download className="w-3 h-3" /> Export
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+        {/* Customer Loyalty */}
+        <Card className="hover:shadow-md transition-shadow flex flex-col">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center mb-2 text-purple-500">
+              <Users className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">Who is my best customer?</p>
+            <CardTitle className="text-base">Customer Loyalty Insights</CardTitle>
+            <CardDescription>Turn gut feeling about regulars into data.</CardDescription>
+          </CardHeader>
+          <div className="mx-6 mb-4 p-3 rounded-lg bg-muted/40 border border-border">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">VIP customers</p>
+            <p className="text-xl font-bold text-foreground">
+              {loadingCustomers ? <Loader2 className="w-4 h-4 animate-spin" /> : customers ? customers.summary.vip_count : '—'}
+            </p>
+            {customers && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {customers.summary.lapsed_count} lapsed · {customers.summary.regular_count} regular
+              </p>
+            )}
+          </div>
+          <CardContent className="flex-1">
+            <ul className="space-y-3">
+              {['Top 10% Spenders', 'Lapsed Customers (30+ days)', 'Customer Lifetime Value'].map(r => (
+                <li key={r} className="group flex items-center justify-between text-sm py-2 px-3 rounded-md hover:bg-muted cursor-pointer transition-colors">
+                  <span className="font-medium">{r}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              disabled={loadingCustomers || !customers}
+              onClick={() => customers?.data && downloadCSV(customers.data, 'customer-loyalty-insights')}
+            >
+              {loadingCustomers ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+              Export CSV
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Sales Performance */}
+        <Card className="hover:shadow-md transition-shadow flex flex-col">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-background border flex items-center justify-center mb-2 text-green-500">
+              <TrendingUp className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">What is selling?</p>
+            <CardTitle className="text-base">Sales Performance</CardTitle>
+            <CardDescription>Transaction history and payment method breakdown.</CardDescription>
+          </CardHeader>
+          <div className="mx-6 mb-4 p-3 rounded-lg bg-muted/40 border border-border">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Top payment method</p>
+            <p className="text-xl font-bold text-foreground">
+              {loadingSales ? <Loader2 className="w-4 h-4 animate-spin" /> : salesPerf ? salesPerf.summary.top_payment_method : '—'}
+            </p>
+            {salesPerf && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {salesPerf.summary.top_payment_percentage}% of transactions
+              </p>
+            )}
+          </div>
+          <CardContent className="flex-1">
+            <ul className="space-y-3">
+              {['Daily Sales Summary', 'Payment Method Breakdown', 'Total Transactions'].map(r => (
+                <li key={r} className="group flex items-center justify-between text-sm py-2 px-3 rounded-md hover:bg-muted cursor-pointer transition-colors">
+                  <span className="font-medium">{r}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1"
+              disabled={loadingSales || !salesPerf}
+              onClick={() => salesPerf?.data && downloadCSV(salesPerf.data, 'sales-performance')}
+            >
+              {loadingSales ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+              Export CSV
+            </Button>
+          </CardFooter>
+        </Card>
+
       </div>
 
       {/* Export History — placeholder until API is wired */}
