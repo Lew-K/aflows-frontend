@@ -1,5 +1,6 @@
 import { changePassword } from '@/lib/api';
 import { toast } from 'sonner';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -158,6 +159,7 @@ const ReceiptPreview = ({ settings }) => {
 ───────────────────────────────────────────── */
 export const SettingsPage = () => {
   const { user, accessToken } = useAuth();
+  const { addNotification } = useNotifications();
   const { business, refreshBusiness } = useData();
 
   const [openSections, setOpenSections] = useState({
@@ -324,6 +326,11 @@ export const SettingsPage = () => {
           setSettings((prev) => ({ ...prev, business_logo_url: res.logoUrl }));
           setLogoPreview(null); // server URL takes over
           toast.success("Logo uploaded successfully");
+          addNotification(
+            'success',
+            'Logo updated',
+            'Your new logo will appear on all receipts and documents going forward.'
+          );
         } else {
           toast.error("Logo upload failed");
         }
@@ -370,6 +377,11 @@ export const SettingsPage = () => {
       const res = await changePassword(passwordData.current, passwordData.new, accessToken);
       setPasswordData({ current: "", new: "", confirm: "" });
       toast.success(res.message || "Password updated successfully");
+      addNotification(
+        'success',
+        'Password changed',
+        "Your password was updated successfully. If you didn't make this change, contact support immediately."
+      );
     } catch (err) {
       console.error(err);
       toast.error("Failed to update password");
