@@ -123,7 +123,7 @@ export const NotificationCenter = () => {
             )}
           </div>
         </div>
-        <ScrollArea className="max-h-[300px]">
+        <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-sm">
               No notifications
