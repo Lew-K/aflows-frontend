@@ -344,6 +344,9 @@ const TopCustomerCard = ({
         </div>
       
         {/* Main — New vs Returning */}
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+          Customers This Month
+        </p>
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="text-center">
             <p className="text-3xl font-black text-green-600">
