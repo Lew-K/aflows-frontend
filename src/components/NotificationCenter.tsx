@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const NotificationItem = ({ notification }: { notification: Notification }) => {
   const { markAsRead, removeNotification } = useNotifications();
+  const [expanded, setExpanded] = React.useState(false);
 
   const typeStyles = {
     success: 'border-l-success',
@@ -34,9 +35,22 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
           <p className="text-sm font-medium text-foreground truncate">
             {notification.title}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+          <p
+            className={`text-xs text-muted-foreground mt-0.5 cursor-pointer ${
+              expanded ? '' : 'line-clamp-2'
+            }`}
+            onClick={() => setExpanded((prev) => !prev)}
+          >
             {notification.message}
           </p>
+          {notification.message.length > 80 && (
+            <button
+              onClick={() => setExpanded((prev) => !prev)}
+              className="text-[10px] text-primary hover:underline mt-0.5"
+            >
+              {expanded ? 'Show less' : 'Show more'}
+            </button>
+          )}
           <p className="text-xs text-muted-foreground/70 mt-1">
             {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
           </p>
