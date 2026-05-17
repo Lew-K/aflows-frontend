@@ -179,7 +179,7 @@ export const DataProvider = ({ children }: any) => {
         localStorage.setItem(STOCK_NOTIF_KEY, Date.now().toString());
       }
     }
-  
+  };
 
   // CUSTOMERS
   const fetchCustomers = async (businessId: string) => {
