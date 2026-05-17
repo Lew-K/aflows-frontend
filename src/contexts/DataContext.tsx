@@ -417,9 +417,15 @@ export const DataProvider = ({ children }: any) => {
 
   
   const refreshInventory = async (businessId: string) => {
+    const key = `${businessId}-inventory`;
+    setLastFetched((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setInventory([]);
     await fetchInventory(businessId);
   };
-
   const refreshBusiness = async (businessId: string) => {
     await fetchBusiness(businessId);
   };
