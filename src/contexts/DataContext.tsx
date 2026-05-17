@@ -126,7 +126,13 @@ export const DataProvider = ({ children }: any) => {
   const fetchInventory = async (businessId: string) => {
     const key = `${businessId}-inventory`;
   
+    // Skip if already fetching
     if (fetchingKeys[key]) return;
+  
+    // Skip if data is fresh (within 5 minutes)
+    const STALE_TIME = 1000 * 60 * 5;
+    const isStale = !lastFetched[key] || Date.now() - lastFetched[key] > STALE_TIME;
+    if (inventory.length > 0 && !isStale) return;
   
     setFetchingKeys((prev) => ({ ...prev, [key]: true }));
   
@@ -180,6 +186,7 @@ export const DataProvider = ({ children }: any) => {
       console.error("Inventory fetch error:", err);
     } finally {
       setFetchingKeys((prev) => ({ ...prev, [key]: false }));
+      setLastFetched((prev) => ({ ...prev, [key]: Date.now() }));
     }
   };
   // CUSTOMERS
