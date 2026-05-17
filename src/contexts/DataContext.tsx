@@ -79,6 +79,7 @@ interface DataContextType {
 
   prefetchAll: (businessId: string) => Promise<void>;
   refreshInventory: (businessId: string) => Promise<void>;
+  fetchInventory: (businessId: string) => Promise<void>;
   refreshBusiness: (businessId: string) => Promise<void>;
   refreshCustomers: (businessId: string) => Promise<void>;
   refreshSales: (businessId: string, period: string, start?: string, end?: string) => Promise<void>;
@@ -87,6 +88,7 @@ interface DataContextType {
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
+
 
 export const DataProvider = ({ children }: any) => {
 
@@ -122,65 +124,64 @@ export const DataProvider = ({ children }: any) => {
 
   // INVENTORY
   const fetchInventory = async (businessId: string) => {
-    const res = await apiFetch(
-      `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
-    );
-    const data = await res.json();
-    const items = data?.items || [];
-    setInventory(items);
+    const key = `${businessId}-inventory`;
   
-   // Only check items that have had real movement
-    const activeItems = items.filter((item: any) => item.last_movement !== null);
-    
-    // Check if we already fired stock notifications in the last 24 hours
-    const STOCK_NOTIF_KEY = 'stock_notifications_last_fired';
-    const TWENTY_FOUR_HOURS = 1000 * 60 * 60 * 24;
-    const lastFiredRaw = localStorage.getItem(STOCK_NOTIF_KEY);
-    const lastFired = lastFiredRaw ? parseInt(lastFiredRaw, 10) : 0;
-    const shouldNotify = Date.now() - lastFired > TWENTY_FOUR_HOURS;
-    
-    if (shouldNotify) {
-      // Out of stock items
-      const outOfStock = activeItems.filter((item: any) => item.stock <= 0);
-    
-      // Low stock items (above 0 but at or below threshold)
-      const lowStock = activeItems.filter(
-        (item: any) => item.stock > 0 && item.stock <= item.low_stock_threshold
+    if (fetchingKeys[key]) return;
+  
+    setFetchingKeys((prev) => ({ ...prev, [key]: true }));
+  
+    try {
+      const res = await apiFetch(
+        `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
       );
-    
-      if (outOfStock.length > 0) {
-        const names = outOfStock
-          .slice(0, 3)
-          .map((i: any) => i.name)
-          .join(', ');
-        const extra = outOfStock.length > 3 ? ` and ${outOfStock.length - 3} more` : '';
-        addNotification(
-          'error',
-          `${outOfStock.length} item${outOfStock.length > 1 ? 's' : ''} out of stock`,
-          `${names}${extra} need restocking immediately.`
+      const data = await res.json();
+      const items = data?.items || [];
+      setInventory(items);
+  
+      const activeItems = items.filter((item: any) => item.last_movement !== null);
+  
+      const STOCK_NOTIF_KEY = 'stock_notifications_last_fired';
+      const TWENTY_FOUR_HOURS = 1000 * 60 * 60 * 24;
+      const lastFiredRaw = localStorage.getItem(STOCK_NOTIF_KEY);
+      const lastFired = lastFiredRaw ? parseInt(lastFiredRaw, 10) : 0;
+      const shouldNotify = Date.now() - lastFired > TWENTY_FOUR_HOURS;
+  
+      if (shouldNotify) {
+        const outOfStock = activeItems.filter((item: any) => item.stock <= 0);
+        const lowStock = activeItems.filter(
+          (item: any) => item.stock > 0 && item.stock <= item.low_stock_threshold
         );
+  
+        if (outOfStock.length > 0) {
+          const names = outOfStock.slice(0, 3).map((i: any) => i.name).join(', ');
+          const extra = outOfStock.length > 3 ? ` and ${outOfStock.length - 3} more` : '';
+          addNotification(
+            'error',
+            `${outOfStock.length} item${outOfStock.length > 1 ? 's' : ''} out of stock`,
+            `${names}${extra} need restocking immediately.`
+          );
+        }
+  
+        if (lowStock.length > 0) {
+          const names = lowStock.slice(0, 3).map((i: any) => i.name).join(', ');
+          const extra = lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : '';
+          addNotification(
+            'warning',
+            `${lowStock.length} item${lowStock.length > 1 ? 's' : ''} running low`,
+            `${names}${extra} are below their stock threshold.`
+          );
+        }
+  
+        if (outOfStock.length > 0 || lowStock.length > 0) {
+          localStorage.setItem(STOCK_NOTIF_KEY, Date.now().toString());
+        }
       }
-    
-      if (lowStock.length > 0) {
-        const names = lowStock
-          .slice(0, 3)
-          .map((i: any) => i.name)
-          .join(', ');
-        const extra = lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : '';
-        addNotification(
-          'warning',
-          `${lowStock.length} item${lowStock.length > 1 ? 's' : ''} running low`,
-          `${names}${extra} are below their stock threshold.`
-        );
-      }
-    
-      // Only update the timestamp if we actually had something to notify about
-      if (outOfStock.length > 0 || lowStock.length > 0) {
-        localStorage.setItem(STOCK_NOTIF_KEY, Date.now().toString());
-      }
+    } catch (err) {
+      console.error("Inventory fetch error:", err);
+    } finally {
+      setFetchingKeys((prev) => ({ ...prev, [key]: false }));
     }
   };
-
   // CUSTOMERS
   const fetchCustomers = async (businessId: string) => {
     const res = await apiFetch(`/api/customers?businessId=${businessId}`);
@@ -437,6 +438,7 @@ export const DataProvider = ({ children }: any) => {
         refreshBusiness,
         refreshCustomers,
         refreshSales,
+        fetchInventory,
         business,
         fetchBusiness,
       }}
