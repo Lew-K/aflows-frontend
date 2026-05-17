@@ -315,10 +315,14 @@ const PaymentBreakdown = ({
 const TopCustomerCard = ({
   topCustomer,
   receiptsCount,
+  newCustomersCount,
+  returningCustomersCount,
   isLoading = false,
 }: {
   topCustomer: { name: string; totalSpend: number } | null;
   receiptsCount: number;
+  newCustomersCount: number;
+  returningCustomersCount: number;
   isLoading?: boolean;
 }) => (
   <motion.div
@@ -340,16 +344,31 @@ const TopCustomerCard = ({
         
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">Top Customer (This Month)</p>
 
-        <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+       <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Spend</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Top Spend</span>
             <span className="text-sm font-black text-foreground">
               {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Receipts</span>
-            <span className="text-sm font-black text-foreground">{isLoading ? '...' : receiptsCount}</span>
+          <div className="border-t border-border/30 pt-3">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Customers This Month
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-green-500/10 rounded-lg p-2 text-center">
+                <p className="text-lg font-black text-green-600">
+                  {isLoading ? '...' : newCustomersCount}
+                </p>
+                <p className="text-[10px] font-bold text-green-600/70 uppercase">New</p>
+              </div>
+              <div className="bg-blue-500/10 rounded-lg p-2 text-center">
+                <p className="text-lg font-black text-blue-600">
+                  {isLoading ? '...' : returningCustomersCount}
+                </p>
+                <p className="text-[10px] font-bold text-blue-600/70 uppercase">Returning</p>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -926,12 +945,18 @@ export const AnalyticsPage = () => {
       fetchSales(businessId, period, customStart, customEnd);
     }
   }, [businessId, period, customStart, customEnd, fetchKey]);
+
+  useEffect(() => {
+    if (businessId) {
+      fetchSales(businessId, 'all');
+    }
+  }, [businessId]);
   
   const sales = getSales(businessId, period, customStart, customEnd);
 
   const thisMonthSales = getSales(businessId, 'this_month');
 
-  const { topCustomer, receiptsCount } = useMemo(() => {
+  const { topCustomer, receiptsCount, newCustomersCount, returningCustomersCount } = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -955,9 +980,41 @@ export const AnalyticsPage = () => {
   
     const sorted = Object.values(customerSpends).sort((a, b) => b.total - a.total);
   
+    const allSales = getSales(businessId, 'all');
+
+    const previousCustomers = new Set(
+      allSales
+        .filter((s: any) => {
+          const saleDate = new Date(s.created_at);
+          return (
+            saleDate.getMonth() < currentMonth ||
+            saleDate.getFullYear() < currentYear
+          );
+        })
+        .map((s: any) => s.customer_name || 'Walk-in Customer')
+    );
+    
+    const uniqueThisMonth = Object.keys(
+      filteredSales.reduce((acc: any, sale: any) => {
+        const name = sale.customer_name || 'Walk-in Customer';
+        acc[name] = true;
+        return acc;
+      }, {})
+    );
+    
+    const newCustomersCount = uniqueThisMonth.filter(
+      (name) => !previousCustomers.has(name)
+    ).length;
+    
+    const returningCustomersCount = uniqueThisMonth.filter(
+      (name) => previousCustomers.has(name)
+    ).length;
+    
     return {
       topCustomer: sorted[0] ? { name: sorted[0].name, totalSpend: sorted[0].total } : null,
       receiptsCount: filteredSales.length,
+      newCustomersCount,
+      returningCustomersCount,
     };
   }, [thisMonthSales]);
   
@@ -1136,6 +1193,8 @@ export const AnalyticsPage = () => {
         <TopCustomerCard
           topCustomer={topCustomer}
           receiptsCount={receiptsCount}
+          newCustomersCount={newCustomersCount}
+          returningCustomersCount={returningCustomersCount}
           isLoading={isFetching(`${businessId}-this_month--`)}
         />
       </div>
