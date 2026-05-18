@@ -39,7 +39,9 @@ export const LoginSection = () => {
       const response = await loginBusiness({
         email: data.email,
         password: data.password,
-      });     
+      });  
+
+      console.log('Full login response:', JSON.stringify(response));
 
       if (response.success && response.access_token && response.refresh_token) {
         login(
@@ -55,13 +57,6 @@ export const LoginSection = () => {
             mustChangePassword: response.user.mustChangePassword,
           }
         );
-
-        const response = await loginBusiness({
-          email: data.email,
-          password: data.password,
-        });
-        
-        console.log('Full login response:', JSON.stringify(response));
       
         toast.success('Login successful! Redirecting to dashboard...');
       
