@@ -5,6 +5,9 @@ interface User {
   businessName: string;
   ownerName: string;
   email: string;
+  role: 'owner' | 'staff';
+  staffId?: string;
+  mustChangePassword?: boolean;
 }
 
 interface AuthContextType {
