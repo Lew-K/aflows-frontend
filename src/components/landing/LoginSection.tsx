@@ -11,7 +11,6 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { loginSchema, type LoginFormData } from '@/lib/validation';
 import { loginBusiness } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LogIn, ShieldCheck } from 'lucide-react';
 
@@ -63,6 +62,7 @@ export const LoginSection = () => {
           navigate('/change-password');
         } else {
           navigate('/dashboard');
+        }
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
