@@ -73,6 +73,13 @@ export const LoginSection = () => {
     }
   };
 
+  const response = await loginBusiness({
+    email: data.email,
+    password: data.password,
+  });
+  
+  console.log('Full login response:', JSON.stringify(response));
+
   return (
     <section id="login" className="py-24 bg-background relative overflow-hidden">
       {/* Background Decorative Element */}
