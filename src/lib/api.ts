@@ -96,11 +96,14 @@ export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
     }),
   });
 
+  const json = await response.json();
+  const parsed = Array.isArray(json) ? json[0] : json;
+
   if (!response.ok) {
-    throw new Error('Login failed');
+    throw new Error(parsed.message || 'Login failed');
   }
 
-  return response.json();
+  return parsed;
 };
 
 interface FileUploadData {
