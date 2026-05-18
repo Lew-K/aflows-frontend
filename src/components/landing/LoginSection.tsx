@@ -51,11 +51,18 @@ export const LoginSection = () => {
             businessName: response.user.businessName,
             ownerName: response.user.ownerName,
             email: data.email,
+            role: response.user.role || 'owner',
+            staffId: response.user.staffId,
+            mustChangePassword: response.user.mustChangePassword,
           }
         );
       
         toast.success('Login successful! Redirecting to dashboard...');
-        navigate('/dashboard');
+      
+        if (response.user.mustChangePassword) {
+          navigate('/change-password');
+        } else {
+          navigate('/dashboard');
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
