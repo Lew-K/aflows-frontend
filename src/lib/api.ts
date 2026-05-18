@@ -21,13 +21,19 @@ interface LoginData {
 
 interface AuthResponse {
   success: boolean;
-  message: string;
-  token?: string;
+  message?: string;
+  access_token?: string;
+  refresh_token?: string;
+  businessId?: string;
+  businessName?: string;
   user?: {
     businessId: string;
     businessName: string;
     ownerName: string;
     email: string;
+    role?: 'owner' | 'staff';
+    staffId?: string;
+    mustChangePassword?: boolean;
   };
 }
 
