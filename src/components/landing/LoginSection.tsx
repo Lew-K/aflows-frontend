@@ -60,11 +60,7 @@ export const LoginSection = () => {
       
         toast.success('Login successful! Redirecting to dashboard...');
       
-        if (response.user.mustChangePassword) {
-          navigate('/change-password');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
