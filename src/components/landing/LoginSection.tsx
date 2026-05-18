@@ -55,6 +55,13 @@ export const LoginSection = () => {
             mustChangePassword: response.user.mustChangePassword,
           }
         );
+
+        const response = await loginBusiness({
+          email: data.email,
+          password: data.password,
+        });
+        
+        console.log('Full login response:', JSON.stringify(response));
       
         toast.success('Login successful! Redirecting to dashboard...');
       
@@ -73,12 +80,7 @@ export const LoginSection = () => {
     }
   };
 
-  const response = await loginBusiness({
-    email: data.email,
-    password: data.password,
-  });
   
-  console.log('Full login response:', JSON.stringify(response));
 
   return (
     <section id="login" className="py-24 bg-background relative overflow-hidden">
