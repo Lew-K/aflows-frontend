@@ -122,8 +122,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               </p>
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 {tier === 'starter'
-                  ? 'Upgrade to Growth for Inventory, Customers & File Uploads.'
-                  : 'Upgrade to Pro for Reports & Team Members.'}
+                  ? 'Upgrade to Growth for Inventory & File Uploads.'
+                  : 'Upgrade to Pro for Reports, Customers & Team Members.'}
               </p>
             </div>
           )}
