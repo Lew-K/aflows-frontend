@@ -110,21 +110,25 @@ export const StaffAnalyticsView = ({ businessId }: { businessId: string }) => {
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
           Quick Actions
         </p>
+      
         <div className="grid grid-cols-2 gap-3">
-          
+      
+          <a
             href="/dashboard/sales"
             className="p-4 rounded-xl border bg-card hover:bg-muted/40 transition-colors flex items-center gap-3"
           >
             <ShoppingCart className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">Record Sale</span>
           </a>
-          
+      
+          <a
             href="/dashboard/operations"
             className="p-4 rounded-xl border bg-card hover:bg-muted/40 transition-colors flex items-center gap-3"
           >
             <Package className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">Operations</span>
           </a>
+      
         </div>
       </div>
 
