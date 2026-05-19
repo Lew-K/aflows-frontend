@@ -1,10 +1,10 @@
 import { changePassword } from '@/lib/api';
 import { toast } from 'sonner';
 import { useNotifications } from '@/contexts/NotificationContext';
-
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
+import { useAccess } from "@/hooks/useAccess";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,7 @@ export const SettingsPage = () => {
   const { user, accessToken } = useAuth();
   const { addNotification } = useNotifications();
   const { business, refreshBusiness } = useData();
+  const { can } = useAccess();
 
   const [openSections, setOpenSections] = useState({
     password: false,
@@ -453,7 +454,7 @@ export const SettingsPage = () => {
           </Card>
 
           {/* RECEIPT CUSTOMIZATION */}
-          <Card>
+          {can('settings_business') && <Card>
             <CardHeader>
               <CardTitle>Receipt Customization</CardTitle>
               <CardDescription>
@@ -485,7 +486,7 @@ export const SettingsPage = () => {
                   />
                   <span>%</span>
                 </div>
-              </div>
+              </div>}
 
               {/* Footer Message */}
               <div>
@@ -556,7 +557,7 @@ export const SettingsPage = () => {
         <div className="lg:col-span-5 space-y-8">
 
           {/* BRANDING / LOGO */}
-          <Card>
+          {can('settings_business') && <Card>
             <CardHeader>
               <CardTitle>Branding</CardTitle>
             </CardHeader>
@@ -666,10 +667,10 @@ export const SettingsPage = () => {
               
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* LIVE RECEIPT PREVIEW */}
-          <Card>
+          {can('settings_business') && <Card>
             <CardHeader
               className="cursor-pointer"
               onClick={() => toggleSection("receiptPreview")}
@@ -702,7 +703,7 @@ export const SettingsPage = () => {
                 </div>
               </CardContent>
             </div>
-          </Card>
+          </Card>}
 
           {/* CHANGE PASSWORD */}
           <Card>
@@ -775,7 +776,7 @@ export const SettingsPage = () => {
           </Card>
 
           {/* ACCESS & SESSIONS */}
-          <Card>
+          {can('settings_business') && <Card>
             <CardHeader
               className="cursor-pointer"
               onClick={() => toggleSection("access")}
@@ -847,7 +848,7 @@ export const SettingsPage = () => {
                 </div>
               </CardContent>
             </div>
-          </Card>
+          </Card>}
 
         </div>
       </div>
