@@ -20,21 +20,18 @@ interface RevenueAnalytics {
 
 interface Business {
   business_id: string;
-
   business_name: string;
   phone: string;
   location?: string;
-
   logo_url?: string;
-
-  // receipt settings
   receipt_prefix?: string;
   receipt_footer?: string;
   tax_rate?: string | number;
-
-  // discount
   discount_type?: "percentage" | "fixed";
   discount_value?: string | number;
+  subscription_tier?: 'starter' | 'growth' | 'pro';
+  subscription_status?: 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid';
+  trial_ends_at?: string | null;
 }
 
 interface DataContextType {
