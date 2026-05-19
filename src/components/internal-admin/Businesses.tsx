@@ -24,9 +24,17 @@ type Business = {
   id: string;
   name: string;
   owner_email: string;
-  plan?: string;
+  business_owner?: string;
+  phone?: string;
+
   status?: string;
   created_at?: string;
+
+  subscription_tier?: string;
+  subscription_status?: string;
+
+  trial_ends_at?: string | null;
+  current_period_end?: string | null;
 };
 
 const Businesses = () => {
@@ -118,6 +126,15 @@ const Businesses = () => {
   }, [search, businesses]);
 
   // ---------- HELPERS ----------
+
+  const isOverdue = (business: Business) => {
+    if (!business.current_period_end) return false;
+  
+    const endDate = new Date(business.current_period_end);
+    const now = new Date();
+  
+    return endDate < now;
+  };
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
 
@@ -330,23 +347,31 @@ const Businesses = () => {
 
   // ---------- STATUS ----------
   const StatusBadge = ({
-    status,
+    business,
   }: {
-    status?: string;
+    business: Business;
   }) => {
-    const s = status?.toLowerCase() || "active";
-
+    let s = business.status?.toLowerCase() || "active";
+  
+    // Billing overdue overrides status
+    if (isOverdue(business)) {
+      s = "overdue";
+    }
+  
     const styles: Record<string, string> = {
       active:
         "bg-green-100 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900",
+  
       inactive:
         "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+  
       overdue:
         "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900",
+  
       deactivated:
         "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900",
     };
-
+  
     return (
       <span
         className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${
@@ -354,7 +379,7 @@ const Businesses = () => {
         }`}
       >
         <span className="h-2 w-2 rounded-full bg-current opacity-70" />
-
+  
         {s.charAt(0).toUpperCase() +
           s.slice(1)}
       </span>
@@ -382,8 +407,8 @@ const Businesses = () => {
       },
       {
         label: "Overdue",
-        value: businesses.filter(
-          (b) => b.status === "overdue"
+        value: businesses.filter((b) =>
+          isOverdue(b)
         ).length,
       },
       {
@@ -588,25 +613,64 @@ const Businesses = () => {
                         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                           {b.owner_email}
                         </p>
-
-                        <p className="text-xs text-zinc-500 mt-1">
-                          Primary Owner
-                        </p>
+                      
+                        {b.business_owner && (
+                          <p className="text-xs text-zinc-500 mt-1">
+                            {b.business_owner}
+                          </p>
+                        )}
+                      
+                        {b.phone && (
+                          <p className="text-xs text-zinc-400 mt-1">
+                            {b.phone}
+                          </p>
+                        )}
                       </div>
                     </td>
 
                     {/* PLAN */}
                     <td className="p-5">
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-wide">
-                        {b.plan || "Free"}
-                      </span>
+                      {(() => {
+                        const tier =
+                          b.subscription_tier?.toLowerCase() ||
+                          "free";
+                      
+                        const styles: Record<string, string> = {
+                          free:
+                            "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+                      
+                          starter:
+                            "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400",
+                      
+                          pro:
+                            "bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400",
+                      
+                          enterprise:
+                            "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400",
+                        };
+                      
+                        return (
+                          <span
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                              styles[tier] || styles.free
+                            }`}
+                          >
+                            {tier}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* STATUS */}
                     <td className="p-5">
-                      <StatusBadge
-                        status={b.status}
-                      />
+                      <StatusBadge business={b} />
+                      
+                      {b.current_period_end && (
+                        <p className="text-xs text-zinc-500 mt-2">
+                          Renews:{" "}
+                          {formatDate(b.current_period_end)}
+                        </p>
+                      )}
                     </td>
 
                     {/* JOINED */}
