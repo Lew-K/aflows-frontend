@@ -2,8 +2,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 
 type Feature =
-  | 'dashboard_full'
-  | 'dashboard_advanced'
   | 'sales'
   | 'inventory'
   | 'customers'
@@ -14,7 +12,11 @@ type Feature =
   | 'settings_business'
   | 'settings_full'
   | 'contact'
-  | 'team_members';
+  | 'team_members'
+  | 'branding_edit'
+  | 'analytics_advanced'
+  | 'analytics_custom_range'
+  | 'analytics_segmentation';
 
 export const useAccess = () => {
   const { user } = useAuth();
@@ -32,36 +34,39 @@ export const useAccess = () => {
     : (business?.subscription_tier || 'starter');
 
   const can = (feature: Feature): boolean => {
-    // Staff access — limited regardless of tier
     if (role === 'staff') {
       const staffAllowed: Feature[] = [
         'sales',
         'operations',
         'contact',
-        'dashboard_advanced',
+        'settings_basic',
       ];
       return staffAllowed.includes(feature);
     }
 
-    // Owner access — based on tier
     switch (feature) {
+      // All tiers
       case 'sales':
       case 'operations':
       case 'contact':
       case 'settings_basic':
-      case 'dashboard_advanced':
-        return true; // all tiers
+        return true;
 
+      // Growth and Pro
       case 'inventory':
-      case 'customers':
       case 'uploads':
       case 'settings_business':
-      case 'dashboard_full':
+      case 'branding_edit':
+      case 'analytics_advanced':
         return tier === 'growth' || tier === 'pro';
 
+      // Pro only
+      case 'customers':
       case 'reports':
       case 'settings_full':
       case 'team_members':
+      case 'analytics_custom_range':
+      case 'analytics_segmentation':
         return tier === 'pro';
 
       default:
