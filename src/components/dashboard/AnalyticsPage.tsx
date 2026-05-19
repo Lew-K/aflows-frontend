@@ -63,6 +63,7 @@ const ANIMATION_VARIANTS = {
   },
 };
 
+
 // Helper Functions
 const getPeriodLabel = (period: string): string => {
   const found = PERIOD_OPTIONS.find(opt => opt.value === period);
