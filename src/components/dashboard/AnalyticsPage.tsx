@@ -2,6 +2,8 @@ import React from 'react';
 import { LabelList } from "recharts";
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from "@/contexts/DataContext";
+import { useAccess } from '@/hooks/useAccess';
+import { StaffAnalyticsView } from './StaffAnalyticsView';
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -936,6 +938,7 @@ export const AnalyticsPage = () => {
   }
 
   const businessId = user?.businessId;
+  const { role } = useAccess();
 
   const [period, setPeriod] = useState<'today' | 'yesterday' | 'this_week' | 'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'>('this_month');
   const [customStart, setCustomStart] = useState('');
@@ -1145,6 +1148,10 @@ export const AnalyticsPage = () => {
   // Sales pace = compare today's revenue vs avg day
   const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
+  if (role === 'staff') {
+    return <StaffAnalyticsView businessId={businessId} />;
+  }
+  
   return (
     <div className="space-y-6 p-4 md:p-6">
       {/* Header */}
