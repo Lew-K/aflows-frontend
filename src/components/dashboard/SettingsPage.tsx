@@ -779,7 +779,8 @@ export const SettingsPage = () => {
           </Card>
 
           {/* ACCESS & SESSIONS */}
-          {can('settings_business') && <Card>
+          {can('settings_business') && (
+          <Card>
             <CardHeader
               className="cursor-pointer"
               onClick={() => toggleSection("access")}
@@ -851,7 +852,8 @@ export const SettingsPage = () => {
                 </div>
               </CardContent>
             </div>
-          </Card>}
+          </Card>
+          )}
 
         </div>
       </div>
