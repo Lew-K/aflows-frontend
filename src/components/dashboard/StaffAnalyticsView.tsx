@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingCart, TrendingUp, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export const StaffAnalyticsView = ({ businessId }: { businessId: string }) => {
+export const StaffAnalyticsView = ({ businessId, tier }: { businessId: string; tier: string }) => {
   const { user } = useAuth();
   const { getSales, fetchSales, isFetching, business } = useData();
 
@@ -19,9 +19,13 @@ export const StaffAnalyticsView = ({ businessId }: { businessId: string }) => {
   const loading = isFetching(`${businessId}-today--`);
 
   const todayStats = useMemo(() => {
-    const transactions = todaySales.length;
-    const lastCustomer = todaySales.length > 0
-      ? (todaySales[todaySales.length - 1] as any)?.customer_name || 'Walk-in'
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Nairobi' });
+    const filteredToday = todaySales.filter((s: any) =>
+      s.created_at?.startsWith(todayDate)
+    );
+    const transactions = filteredToday.length;
+    const lastCustomer = filteredToday.length > 0
+      ? (filteredToday[filteredToday.length - 1] as any)?.customer_name || 'Walk-in'
       : '—';
     return { transactions, lastCustomer };
   }, [todaySales]);
@@ -63,7 +67,7 @@ export const StaffAnalyticsView = ({ businessId }: { businessId: string }) => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-${tier === 'starter' ? '2' : '3'} gap-4`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,6 +108,28 @@ export const StaffAnalyticsView = ({ businessId }: { businessId: string }) => {
           </Card>
         </motion.div>
       </div>
+
+      {(tier === 'growth' || tier === 'pro') && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-3xl font-black">
+                  {loading ? '...' : `KES ${todaySales.reduce((sum: number, s: any) => sum + (s.amount ?? 0), 0).toLocaleString()}`}
+                </p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">
+                  Revenue Today
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
       {/* Quick actions */}
       <div>
