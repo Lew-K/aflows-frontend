@@ -505,21 +505,23 @@ const RevenueTrend = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center gap-2 mb-4">
-          {(['monthly', 'daily'] as const).map(view => (
-            <button
-              key={view}
-              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
-                revenueView === view
-                  ? 'bg-primary text-white'
-                  : 'bg-card text-foreground hover:bg-muted'
-              }`}
-              onClick={() => onRevenueViewChange(view)}
-            >
-              {view === 'monthly' ? 'Monthly' : 'Daily'}
-            </button>
-          ))}
-        </div>
+        {showToggle && (
+          <div className="flex justify-center gap-2 mb-4">
+            {(['monthly', 'daily'] as const).map(view => (
+              <button
+                key={view}
+                className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
+                  revenueView === view
+                    ? 'bg-primary text-white'
+                    : 'bg-card text-foreground hover:bg-muted'
+                }`}
+                onClick={() => onRevenueViewChange(view)}
+              >
+                {view === 'monthly' ? 'Monthly' : 'Daily'}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="h-72">
 
@@ -939,7 +941,7 @@ export const AnalyticsPage = () => {
   }
 
   const businessId = user?.businessId;
-  const { role } = useAccess();
+  const { role, can, tier } = useAccess();
 
   const [period, setPeriod] = useState<'today' | 'yesterday' | 'this_week' | 'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'>('this_month');
   const [customStart, setCustomStart] = useState('');
@@ -1128,7 +1130,7 @@ export const AnalyticsPage = () => {
     revenueData.filter(m => m.revenue > 0).length > 1;
 
   // Get today's date
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Nairobi' });
 
   // Filter sales for today
   const todaySales = useMemo(() => sales?.filter(s => s.created_at.startsWith(today)) ?? [], [sales, today]);
@@ -1150,7 +1152,7 @@ export const AnalyticsPage = () => {
   const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
   if (role === 'staff') {
-    return <StaffAnalyticsView businessId={businessId} />;
+    return <StaffAnalyticsView businessId={businessId} tier={tier} />;
   }
   
   return (
@@ -1209,13 +1211,22 @@ export const AnalyticsPage = () => {
           isLoading={revenueLoading}
         />
 
-        <TopCustomerCard
-          topCustomer={topCustomer}
-          receiptsCount={receiptsCount}
-          newCustomersCount={newCustomersCount}
-          returningCustomersCount={returningCustomersCount}
-          isLoading={isFetching(`${businessId}-this_month--`)}
-        />
+        {can('analytics_advanced') ? (
+          <TopCustomerCard
+            topCustomer={topCustomer}
+            receiptsCount={receiptsCount}
+            newCustomersCount={newCustomersCount}
+            returningCustomersCount={returningCustomersCount}
+            isLoading={isFetching(`${businessId}-this_month--`)}
+          />
+        ) : (
+          <div className="rounded-xl bg-muted/30 border border-dashed border-border flex items-center justify-center p-6 text-center">
+            <div>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Customer Insights</p>
+              <p className="text-xs text-muted-foreground">Available on Growth plan</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Charts Grid */}
@@ -1227,6 +1238,7 @@ export const AnalyticsPage = () => {
           onRevenueViewChange={setRevenueView}
           isLoading={revenueLoading}
           hasMultipleMonths={hasMultipleMonths}
+          showToggle={can('analytics_advanced')}
         />
 
         <TopSellingItems
@@ -1239,31 +1251,31 @@ export const AnalyticsPage = () => {
         />
       </div>
 
-      {/* Smart Recommendation, Today Snapshot & Monthly Projection */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <SmartRecommendationCard
-          topItems={topSellingItems}
-          salesPace={salesPace}
-          totalRevenue={revenueSummary?.totalRevenue ?? 0}
-          isLoading={loading}
-        />
-
-        <TodaySnapshotCard
-          todayRevenue={todayRevenue}
-          todayTransactions={todayTransactions}
-          avgSale={avgSale}
-          salesPace={salesPace}
-          isLoading={loading}
-        />
-      
-        <MonthlyProjectionCard
-          monthRevenue={monthRevenue}
-          projectedRevenue={projectedRevenue}
-          daysElapsed={daysElapsed}
-          daysInMonth={daysInMonth}
-          isLoading={loading}
-        />
-      </div>
+      {/* Smart Recommendation, Today Snapshot & Monthly Projection — Growth+ only */}
+      {can('analytics_advanced') && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <SmartRecommendationCard
+            topItems={topSellingItems}
+            salesPace={salesPace}
+            totalRevenue={revenueSummary?.totalRevenue ?? 0}
+            isLoading={loading}
+          />
+          <TodaySnapshotCard
+            todayRevenue={todayRevenue}
+            todayTransactions={todayTransactions}
+            avgSale={avgSale}
+            salesPace={salesPace}
+            isLoading={loading}
+          />
+          <MonthlyProjectionCard
+            monthRevenue={monthRevenue}
+            projectedRevenue={projectedRevenue}
+            daysElapsed={daysElapsed}
+            daysInMonth={daysInMonth}
+            isLoading={loading}
+          />
+        </div>
+      )}
     </div>
   );
 };
