@@ -505,23 +505,22 @@ const RevenueTrend = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {showToggle && (
-          <div className="flex justify-center gap-2 mb-4">
-            {(['monthly', 'daily'] as const).map(view => (
-              <button
-                key={view}
-                className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
-                  revenueView === view
-                    ? 'bg-primary text-white'
-                    : 'bg-card text-foreground hover:bg-muted'
-                }`}
-                onClick={() => onRevenueViewChange(view)}
-              >
-                {view === 'monthly' ? 'Monthly' : 'Daily'}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex justify-center gap-2 mb-4">
+          {(['monthly', 'daily'] as const).map(view => (
+            <button
+              key={view}
+              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
+                revenueView === view
+                  ? 'bg-primary text-white'
+                  : 'bg-card text-foreground hover:bg-muted'
+              }`}
+              onClick={() => onRevenueViewChange(view)}
+            >
+              {view === 'monthly' ? 'Monthly' : 'Daily'}
+            </button>
+          ))}
+        </div>
+        
 
         <div className="h-72">
 
@@ -1238,7 +1237,6 @@ export const AnalyticsPage = () => {
           onRevenueViewChange={setRevenueView}
           isLoading={revenueLoading}
           hasMultipleMonths={hasMultipleMonths}
-          showToggle={can('analytics_advanced')}
         />
 
         <TopSellingItems
