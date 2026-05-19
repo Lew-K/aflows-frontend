@@ -1,3 +1,4 @@
+import { useAccess } from '@/hooks/useAccess';
 import { useData } from '@/contexts/DataContext';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -21,24 +22,28 @@ import {
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { useAccess } from '@/hooks/useAccess';
+import { useData } from '@/contexts/DataContext';
 
-const navItems = [
-  { icon: BarChart3, label: 'Analytics', path: '/dashboard' },
-  { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales' },
-  { icon: Package, label: 'Inventory', path: '/dashboard/inventory' },
-  { icon: Users, label: 'Customers', path: '/dashboard/customers' },
-
-  { icon: FileBarChart, label: 'Reports', path: '/dashboard/reports' },
-
-  { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations' },
-  { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads' },
-  { icon: Mail, label: 'Contact Us', path: '/dashboard/contact' },
-  { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
+const allNavItems = [
+  { icon: BarChart3, label: 'Analytics', path: '/dashboard', feature: null },
+  { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales', feature: 'sales' as const },
+  { icon: Package, label: 'Inventory', path: '/dashboard/inventory', feature: 'inventory' as const },
+  { icon: Users, label: 'Customers', path: '/dashboard/customers', feature: 'customers' as const },
+  { icon: FileBarChart, label: 'Reports', path: '/dashboard/reports', feature: 'reports' as const },
+  { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations', feature: 'operations' as const },
+  { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads', feature: 'uploads' as const },
+  { icon: Mail, label: 'Contact Us', path: '/dashboard/contact', feature: 'contact' as const },
+  { icon: Settings, label: 'Settings', path: '/dashboard/settings', feature: 'settings_basic' as const },
 ];
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { business } = useData();
+  const { can, tier, role } = useAccess();
+  const navItems = allNavItems.filter(item =>
+    item.feature === null || can(item.feature)
+  );
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
@@ -107,6 +112,21 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               );
             })}
           </nav>
+
+
+          {/* Upgrade hint for non-pro owners */}
+          {role === 'owner' && tier !== 'pro' && (
+            <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+              <p className="text-xs font-bold text-primary mb-1">
+                ✨ Unlock more features
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                {tier === 'starter'
+                  ? 'Upgrade to Growth for Inventory, Customers & File Uploads.'
+                  : 'Upgrade to Pro for Reports & Team Members.'}
+              </p>
+            </div>
+          )}
 
           {/* User Section */}
           <div className="p-4 border-t border-sidebar-border">
