@@ -28,6 +28,7 @@ const ReceiptPreview = ({ settings }) => {
   const timeStr = now.toLocaleTimeString("en-KE", {
     hour: "2-digit", minute: "2-digit",
   });
+  
 
   const sampleItems = [
     { name: "Product A", qty: 2, price: 500 },
