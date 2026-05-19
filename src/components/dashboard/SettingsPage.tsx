@@ -454,7 +454,8 @@ export const SettingsPage = () => {
           </Card>
 
           {/* RECEIPT CUSTOMIZATION */}
-          {can('settings_business') && <Card>
+          {can('settings_business') && (
+          <Card>
             <CardHeader>
               <CardTitle>Receipt Customization</CardTitle>
               <CardDescription>
@@ -486,7 +487,7 @@ export const SettingsPage = () => {
                   />
                   <span>%</span>
                 </div>
-              </div>}
+              </div>
 
               {/* Footer Message */}
               <div>
@@ -550,6 +551,7 @@ export const SettingsPage = () => {
 
             </CardContent>
           </Card>
+          )}
 
         </div>
 
