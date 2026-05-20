@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAccess } from '@/hooks/useAccess';
 import { toast } from 'sonner';
 import {
   FileUp,
@@ -56,6 +57,20 @@ const uploadedFiles = [
 ];
 
 export const UploadsPage = () => {
+
+  const { can } = useAccess();
+
+  if (!can('uploads')) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center gap-3">
+        <FileUp className="w-12 h-12 text-muted-foreground/20" />
+        <p className="font-semibold text-muted-foreground">File Uploads</p>
+        <p className="text-sm text-muted-foreground/70">Available on the Pro plan.</p>
+      </div>
+    );
+  }
+  
+  
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
