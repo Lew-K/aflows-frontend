@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useNotifications } from '@/contexts/NotificationContext';
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { TeamManagementModal } from '@/components/modals/TeamManagementModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
 import { useAccess } from "@/hooks/useAccess";
@@ -246,6 +246,9 @@ const ReceiptPreview = ({ settings }) => {
    SETTINGS PAGE
 ───────────────────────────────────────────── */
 export const SettingsPage = () => {
+
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  
   const { user, accessToken } = useAuth();
 
   const { addNotification } = useNotifications();
@@ -1197,10 +1200,7 @@ export const SettingsPage = () => {
                     </p>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setTeamModalOpen(true)}>
                     Invite / Manage
                   </Button>
                 </div>
@@ -1240,6 +1240,13 @@ export const SettingsPage = () => {
           </Card>
         )}
       </div>
+
+      {teamModalOpen && (
+        <TeamManagementModal
+          onClose={() => setTeamModalOpen(false)}
+          businessName={business?.business_name || user?.businessName || ''}
+        />
+      )}
 
       {/* FLOATING SAVE BAR */}
       <AnimatePresence>
