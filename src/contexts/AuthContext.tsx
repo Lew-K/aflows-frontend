@@ -8,6 +8,9 @@ interface User {
   role: 'owner' | 'staff';
   staffId?: string;
   mustChangePassword?: boolean;
+  subscriptionTier?: 'starter' | 'growth' | 'pro';
+  subscriptionStatus?: 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid';
+  trialEndsAt?: string | null;
 }
 
 interface AuthContextType {
