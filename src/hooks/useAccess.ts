@@ -1,5 +1,4 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useData } from '@/contexts/DataContext';
 
 type Feature =
   | 'sales'
@@ -13,6 +12,7 @@ type Feature =
   | 'settings_full'
   | 'contact'
   | 'team_members'
+  | 'team_management'
   | 'branding_edit'
   | 'analytics_advanced'
   | 'analytics_custom_range'
@@ -20,18 +20,17 @@ type Feature =
 
 export const useAccess = () => {
   const { user } = useAuth();
-  const { business } = useData();
 
   const role = user?.role || 'owner';
 
   const isOnTrial =
-    business?.subscription_status === 'trialing' &&
-    business?.trial_ends_at != null &&
-    new Date(business.trial_ends_at) > new Date();
+    user?.subscriptionStatus === 'trialing' &&
+    user?.trialEndsAt != null &&
+    new Date(user.trialEndsAt) > new Date();
 
   const tier = isOnTrial
     ? 'pro'
-    : (business?.subscription_tier || 'starter');
+    : (user?.subscriptionTier || 'starter');
 
   const can = (feature: Feature): boolean => {
     if (role === 'staff') {
@@ -54,17 +53,18 @@ export const useAccess = () => {
 
       // Growth and Pro
       case 'inventory':
-      case 'uploads':
       case 'settings_business':
       case 'branding_edit':
       case 'analytics_advanced':
         return tier === 'growth' || tier === 'pro';
 
       // Pro only
+      case 'uploads':
       case 'customers':
       case 'reports':
       case 'settings_full':
       case 'team_members':
+      case 'team_management':
       case 'analytics_custom_range':
       case 'analytics_segmentation':
         return tier === 'pro';
