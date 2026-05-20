@@ -35,7 +35,7 @@ const allNavItems = [
   { icon: ClipboardCheck, label: 'Operations', path: '/dashboard/operations', feature: 'operations' as const },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads', feature: 'uploads' as const },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact', feature: 'contact' as const },
-  { icon: Settings, label: 'Settings', path: '/dashboard/settings', feature: 'settings_basic' as const },
+  // { icon: Settings, label: 'Settings', path: '/dashboard/settings', feature: 'settings_basic' as const },
 ];
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -234,14 +234,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   </div>
 
                   {/* Menu items */}
-                  <button
-                    onClick={() => { navigate('/dashboard/settings'); setAvatarMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-muted-foreground" />
-                    Settings
-                  </button>
-
                   <button
                     onClick={() => { navigate('/dashboard/contact'); setAvatarMenuOpen(false); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
