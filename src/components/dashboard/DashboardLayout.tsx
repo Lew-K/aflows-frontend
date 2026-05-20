@@ -1,8 +1,8 @@
-import { useAccess } from '@/hooks/useAccess';
-import { useData } from '@/contexts/DataContext';
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
+import { useAccess } from '@/hooks/useAccess';
 import { Button } from '@/components/ui/button';
 import {
   BarChart3,
@@ -17,13 +17,14 @@ import {
   Package,
   Settings,
   FileBarChart,
-  Users
+  Users,
+  User,
+  HelpCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
-import { useAccess } from '@/hooks/useAccess';
-import { useData } from '@/contexts/DataContext';
 
 const allNavItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard', feature: null },
@@ -41,11 +42,25 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const { user, logout } = useAuth();
   const { business } = useData();
   const { can, tier, role } = useAccess();
+  const navigate = useNavigate();
   const navItems = allNavItems.filter(item =>
     item.feature === null || can(item.feature)
   );
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
+  const avatarRef = React.useRef<HTMLDivElement>(null);
+
+  // Close avatar menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getInitials = (name: string) => {
     return name
@@ -57,7 +72,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen overflow-hidden bg-background flex">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -69,13 +84,13 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-200 ease-in-out',
+          'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-200 ease-in-out flex flex-col h-full',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-sidebar-border">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-sidebar-border flex-shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
                 <Zap className="w-5 h-5 text-primary-foreground" />
@@ -91,7 +106,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -113,10 +128,9 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             })}
           </nav>
 
-
           {/* Upgrade hint for non-pro owners */}
           {role === 'owner' && tier !== 'pro' && (
-            <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20 flex-shrink-0">
               <p className="text-xs font-bold text-primary mb-1">
                 ✨ Unlock more features
               </p>
@@ -129,7 +143,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           )}
 
           {/* User Section */}
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border flex-shrink-0">
             <Button
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
@@ -143,9 +157,10 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+
         {/* Header */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-30">
           <button
             className="lg:hidden p-2 -ml-2"
             onClick={() => setSidebarOpen(true)}
@@ -158,34 +173,100 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <NotificationCenter />
+
+            {/* Gear / Settings shortcut */}
+            <button
+              onClick={() => navigate('/dashboard/settings')}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground">
                 {business?.business_name || user?.businessName}
               </p>
               <p className="text-xs text-muted-foreground">{user?.ownerName}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-              {business?.logo_url ? (
-                <img
-                  src={business.logo_url}
-                  alt="Business logo"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-sm font-medium text-primary-foreground">
-                  {business?.business_name
-                    ? getInitials(business.business_name)
-                    : user?.businessName
-                    ? getInitials(user.businessName)
-                    : 'AF'}
-                </span>
+
+            {/* Avatar with dropdown */}
+            <div className="relative" ref={avatarRef}>
+              <button
+                onClick={() => setAvatarMenuOpen(prev => !prev)}
+                className="flex items-center gap-1 focus:outline-none"
+                aria-label="Account menu"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                  {business?.logo_url ? (
+                    <img
+                      src={business.logo_url}
+                      alt="Business logo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-primary-foreground">
+                      {business?.business_name
+                        ? getInitials(business.business_name)
+                        : user?.businessName
+                        ? getInitials(user.businessName)
+                        : 'AF'}
+                    </span>
+                  )}
+                </div>
+                <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
+              </button>
+
+              {/* Dropdown menu */}
+              {avatarMenuOpen && (
+                <div className="absolute right-0 top-12 w-52 bg-card border border-border rounded-xl shadow-lg z-50 py-1 overflow-hidden">
+                  {/* Business info header */}
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {business?.business_name || user?.businessName}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
+                    <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      {tier} plan
+                    </span>
+                  </div>
+
+                  {/* Menu items */}
+                  <button
+                    onClick={() => { navigate('/dashboard/settings'); setAvatarMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    Settings
+                  </button>
+
+                  <button
+                    onClick={() => { navigate('/dashboard/contact'); setAvatarMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    Help & Support
+                  </button>
+
+                  <div className="border-t border-border mt-1 pt-1">
+                    <button
+                      onClick={() => { logout(); setAvatarMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        {/* Page Content — only this scrolls */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
         </main>
       </div>
