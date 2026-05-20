@@ -182,7 +182,7 @@ export function OperationsPage() {
   // ================= UI =================
 
   return (
-    <div className="w-screen min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="p-6 space-y-6 mx-auto">
         {/* HEADER */}
         <div>
