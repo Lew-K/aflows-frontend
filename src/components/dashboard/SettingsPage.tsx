@@ -779,7 +779,7 @@ export const SettingsPage = () => {
           </Card>
 
           {/* ACCESS & SESSIONS */}
-          {can('settings_business') && (
+          {can('team_management') && (
           <Card>
             <CardHeader
               className="cursor-pointer"
