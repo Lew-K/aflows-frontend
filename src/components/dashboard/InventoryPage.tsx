@@ -1,3 +1,4 @@
+import { FileSpreadsheet } from 'lucide-react';
 import React, { useMemo, useState } from "react";
 import { useInventory } from "@/hooks/useInventory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AddProductModal } from "./modals/AddProductModal"; 
 import { AddStockModal } from "./modals/AddStockModal";
 import { BulkStockModal } from "./modals/BulkStockModal";
+import { ImportStockModal } from "./modals/ImportStockModal";
 
 import {
   Package,
@@ -20,6 +22,7 @@ import {
 
 export const InventoryPage = () => {
   const [bulkRestockOpen, setBulkRestockOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { user } = useAuth();
   const businessId = user?.businessId;
   const { items = [], loading, refresh } = useInventory(businessId || "");
@@ -93,6 +96,13 @@ export const InventoryPage = () => {
             onClick={() => setBulkRestockOpen(true)}
           >
             <Boxes className="w-4 h-4 mr-2" /> Bulk Restock
+          </Button>
+          <Button
+            variant="outline"
+            className="shadow-sm"
+            onClick={() => setImportModalOpen(true)}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" /> Import Excel
           </Button>
         </div>
       </div>
@@ -263,6 +273,16 @@ export const InventoryPage = () => {
           onClose={() => setBulkRestockOpen(false)}
           onSuccess={() => {
             setBulkRestockOpen(false);
+            refresh();
+          }}
+        />
+      )}
+
+      {importModalOpen && (
+        <ImportStockModal
+          onClose={() => setImportModalOpen(false)}
+          onSuccess={() => {
+            setImportModalOpen(false);
             refresh();
           }}
         />
