@@ -146,7 +146,7 @@ export const TeamManagementModal = ({
             <div>
               <p className="text-sm font-semibold">Add Staff Member</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Set a password for them — they will use this to log in. They can change it after their first login.
+                Set a password for them — they will use this to log in.
               </p>
             </div>
 
