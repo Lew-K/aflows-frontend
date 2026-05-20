@@ -67,7 +67,7 @@ export const StaffAnalyticsView = ({ businessId, tier }: { businessId: string; t
       </div>
 
       {/* Stats */}
-      <div className={`grid grid-cols-1 sm:grid-cols-${tier === 'starter' ? '2' : '3'} gap-4`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -87,7 +87,7 @@ export const StaffAnalyticsView = ({ businessId, tier }: { businessId: string; t
             </CardContent>
           </Card>
         </motion.div>
-
+      
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,13 +107,13 @@ export const StaffAnalyticsView = ({ businessId, tier }: { businessId: string; t
             </CardContent>
           </Card>
         </motion.div>
-      </div>
-
-      {(tier === 'growth' || tier === 'pro') && (
+      
+        {(tier === 'growth' || tier === 'pro') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
+            className="sm:col-span-2"
           >
             <Card>
               <CardContent className="p-6">
@@ -130,6 +130,7 @@ export const StaffAnalyticsView = ({ businessId, tier }: { businessId: string; t
             </Card>
           </motion.div>
         )}
+      </div>
 
       {/* Quick actions */}
       <div>
