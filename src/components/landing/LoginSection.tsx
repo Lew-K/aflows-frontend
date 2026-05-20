@@ -55,6 +55,9 @@ export const LoginSection = () => {
             role: response.user.role || 'owner',
             staffId: response.user.staffId,
             mustChangePassword: response.user.mustChangePassword,
+            subscriptionTier: response.subscription_tier,
+            subscriptionStatus: response.subscription_status,
+            trialEndsAt: response.trial_ends_at ?? null,
           }
         );
       
