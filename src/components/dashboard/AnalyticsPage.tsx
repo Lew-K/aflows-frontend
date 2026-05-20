@@ -1181,7 +1181,7 @@ export const AnalyticsPage = () => {
       </div>
 
       {/* Stats Grid - 4 columns with balanced spacing */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -1210,7 +1210,7 @@ export const AnalyticsPage = () => {
           isLoading={revenueLoading}
         />
 
-        {can('analytics_advanced') ? (
+        {can('analytics_advanced') && (
           <TopCustomerCard
             topCustomer={topCustomer}
             receiptsCount={receiptsCount}
@@ -1218,13 +1218,6 @@ export const AnalyticsPage = () => {
             returningCustomersCount={returningCustomersCount}
             isLoading={isFetching(`${businessId}-this_month--`)}
           />
-        ) : (
-          <div className="rounded-xl bg-muted/30 border border-dashed border-border flex items-center justify-center p-6 text-center">
-            <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Customer Insights</p>
-              <p className="text-xs text-muted-foreground">Available on Growth plan</p>
-            </div>
-          </div>
         )}
       </div>
 
