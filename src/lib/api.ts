@@ -24,17 +24,15 @@ interface AuthResponse {
   message?: string;
   access_token?: string;
   refresh_token?: string;
-  businessId?: string;
-  businessName?: string;
-  user?: {
-    businessId: string;
-    businessName: string;
-    ownerName: string;
-    email: string;
-    role?: 'owner' | 'staff';
-    staffId?: string;
-    mustChangePassword?: boolean;
-  };
+  business_id?: string;
+  business_name?: string;
+  business_owner?: string;
+  email?: string;
+  role?: 'owner' | 'staff';
+  staff_id?: string;
+  subscription_tier?: 'starter' | 'growth' | 'pro';
+  subscription_status?: 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid';
+  trial_ends_at?: string | null;
 }
 
 export const registerBusiness = async (data: RegisterData): Promise<AuthResponse> => {
