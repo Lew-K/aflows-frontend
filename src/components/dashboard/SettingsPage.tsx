@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useNotifications } from '@/contexts/NotificationContext';
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TeamManagementModal } from '@/components/modals/TeamManagementModal';
+import { TeamManagementModal } from '@/components/dashboard/modals/TeamManagementModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
 import { useAccess } from "@/hooks/useAccess";
