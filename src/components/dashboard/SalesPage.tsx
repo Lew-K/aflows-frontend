@@ -62,7 +62,20 @@ export const SalesPage = () => {
   
   const businessId = user?.businessId;
   const period = "this_month"; 
-  const weeklySales = getSales(businessId, "this_week");
+  const rawWeeklySales = getSales(businessId, "this_week");
+
+  const weeklySales = useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - daysFromMonday);
+    monday.setHours(0, 0, 0, 0);
+    return rawWeeklySales.filter((sale: any) => {
+      const saleDate = new Date(sale.created_at);
+      return saleDate >= monday && saleDate <= now;
+    });
+  }, [rawWeeklySales]);
 
   const cachedSales = getSales(businessId, period) || [];
   const [optimisticSales, setOptimisticSales] = useState<any[]>([]);
