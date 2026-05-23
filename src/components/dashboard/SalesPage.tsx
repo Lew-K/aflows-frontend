@@ -153,7 +153,10 @@ export const SalesPage = () => {
       }
 
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/download-receipt?receipt_id=${receiptId}`
+        `https://api.aflows.uk/api/v1/receipts/${receiptId}/download`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
       );
       
       if (!res.ok) throw new Error();
@@ -211,13 +214,14 @@ export const SalesPage = () => {
     setOptimisticSales([optimisticSale, ...cachedSales]);
     try {
       const response = await apiFetch(
-        'https://n8n.aflows.uk/webhook/record-sales',
+        'https://api.aflows.uk/api/v1/sales/record',
         {
           method: 'POST',
           // headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             business_id: businessId,
             customer_name: data.customerName || null,
+            customer_phone: data.customerPhone || null,
             items: items.map(i => ({
               item: i.item,
               quantity: i.quantity,
@@ -266,7 +270,7 @@ export const SalesPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 p-4 md:p-6">
+    <div className="w-full space-y-8 p-4 md:p-6">
       <header className="space-y-1">
         <h1 className="text-3xl font-extrabold tracking-tight">Sales Dashboard</h1>
         <p className="text-muted-foreground text-lg">Manage transactions and monitor performance.</p>
@@ -323,11 +327,18 @@ export const SalesPage = () => {
                   <Label className="text-xs uppercase tracking-wide text-muted-foreground">
                     Customer
                   </Label>
-                  <Input
-                    placeholder="Customer name"
-                    className="h-9"
-                    {...register('customerName')}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input
+                      placeholder="Customer name"
+                      className="h-9"
+                      {...register('customerName')}
+                    />
+                    <Input
+                      placeholder="Phone number (optional)"
+                      className="h-9"
+                      {...register('customerPhone')}
+                    />
+                  </div>
                 </div>
               
                 {/* Items Section */}
