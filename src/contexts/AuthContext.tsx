@@ -118,6 +118,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [accessToken]);
 
+  // ✅ 4️⃣ Silent token refresh — runs 1 minute before access token expires
+useEffect(() => {
+  if (!accessToken || !refreshToken) return;
+
+  try {
+    // Decode the JWT payload (middle part, base64 encoded)
+    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+    const expiresAt = payload.exp * 1000; // JWT exp is in seconds, convert to ms
+    const refreshAt = expiresAt - 60 * 1000; // refresh 1 minute before expiry
+    const delay = refreshAt - Date.now();
+
+    if (delay <= 0) return; // token already expired or about to
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('https://api.aflows.uk/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.access_token && data.refresh_token) {
+          localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+          localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+          setAccessToken(data.access_token);
+          setRefreshToken(data.refresh_token);
+        } else {
+          logout();
+        }
+      } catch {
+        logout();
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
+  } catch {
+    // Invalid token format — ignore
+  }
+}, [accessToken]);
+
   // const login = (newAccessToken: string, newRefreshToken: string, newUser: User) => {
   //   localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
   //   localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
