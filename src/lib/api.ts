@@ -1,6 +1,7 @@
 import CryptoJS from 'crypto-js';
 
 const BASE_URL = 'https://n8n.aflows.uk/webhook';
+const API_URL = 'https://api.aflows.uk/api/v1';
 
 export const hashPassword = (password: string): string => {
   return CryptoJS.SHA256(password).toString();
@@ -39,7 +40,7 @@ interface AuthResponse {
 }
 
 export const registerBusiness = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetch(`${BASE_URL}/register-business`, {
+  const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -66,27 +67,9 @@ export const registerBusiness = async (data: RegisterData): Promise<AuthResponse
 };
 
 
-// export const registerBusiness = async (data: RegisterData): Promise<AuthResponse> => {
-//   const response = await fetch(`${BASE_URL}/register-business`, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({
-//       ...data,
-//       password: hashPassword(data.password),
-//     }),
-//   });
-
-//   if (!response.ok) {
-//     throw new Error('Registration failed');
-//   }
-
-//   return response.json();
-// };
 
 export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await fetch(`${BASE_URL}/login-business`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -97,13 +80,12 @@ export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
     }),
   });
 
-  const json = await response.json();
-  const parsed = Array.isArray(json) ? json[0] : json;
+  const parsed = await response.json();
 
   if (!response.ok) {
     throw new Error(parsed.message || 'Login failed');
   }
-
+  
   return parsed;
 };
 
@@ -187,5 +169,17 @@ export const changePassword = async (
     throw new Error(parsed.message || 'Failed to change password');
   }
 
+  return parsed;
+};
+
+export const refreshToken = async (refresh_token: string): Promise<AuthResponse> => {
+  const response = await fetch(`${API_URL}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token }),
+  });
+
+  const parsed = await response.json();
+  if (!response.ok) throw new Error(parsed.message || 'Token refresh failed');
   return parsed;
 };
