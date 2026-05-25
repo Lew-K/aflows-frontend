@@ -135,7 +135,7 @@ export const DataProvider = ({ children }: any) => {
   
     try {
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/inventory?businessId=${businessId}`
+        `https://api.aflows.uk/api/v1/inventory?businessId=${businessId}`
       );
       const data = await res.json();
       const items = data?.items || [];
@@ -241,7 +241,7 @@ export const DataProvider = ({ children }: any) => {
       setFetchingKeys((prev) => ({ ...prev, [key]: true }));
   
       try {
-        const url = new URL(`https://n8n.aflows.uk/webhook/get-sales`);
+        const url = new URL(`https://api.aflows.uk/api/v1/sales`);
         url.searchParams.append("business_id", businessId);
         url.searchParams.append("period", period);
   
@@ -293,7 +293,7 @@ export const DataProvider = ({ children }: any) => {
     setFetchingKeys((prev) => ({ ...prev, [key]: true }));
 
     try {
-      const url = new URL(`https://n8n.aflows.uk/webhook/revenue`);
+      const url = new URL(`https://api.aflows.uk/api/v1/analytics/revenue`);
       url.searchParams.append("businessId", businessId);
 
       if (period === "custom" && start && end) {
@@ -331,7 +331,7 @@ export const DataProvider = ({ children }: any) => {
 
   // SIMPLE REVENUE (legacy)
   const fetchRevenue = async (businessId: string) => {
-    const url = new URL(`https://n8n.aflows.uk/webhook/revenue`);
+    const url = new URL(`https://api.aflows.uk/api/v1/analytics/revenue`);
     url.searchParams.append("businessId", businessId);
     url.searchParams.append("period", "today");
 
