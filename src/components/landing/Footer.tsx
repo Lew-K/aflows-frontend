@@ -58,8 +58,8 @@ export const Footer = () => {
 
       {/* Main Footer */}
       <div className="relative py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:items-center">
+        <div className="w-full px-6 xl:px-12 2xl:px-16">
+          <div className="flex flex-col gap-12 md:flex-row md:items-center md:justify-between">
             {/* Left */}
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ export const Footer = () => {
             </div>
 
             {/* Center */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:absolute md:left-1/2 md:-translate-x-1/2">
               <button
                 onClick={() => navigate('/features')}
                 className="text-sm font-medium text-zinc-400 transition-colors hover:text-white"
