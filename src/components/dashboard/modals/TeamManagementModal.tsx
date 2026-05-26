@@ -38,7 +38,7 @@ export const TeamManagementModal = ({
     setStaffLoading(true);
     try {
       const res = await fetch(
-        `https://n8n.aflows.uk/webhook/get-staff?business_id=${user.businessId}`,
+        `https://api.aflows.uk/api/v1/staff?business_id=${user.businessId}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await res.json();
@@ -67,7 +67,7 @@ export const TeamManagementModal = ({
 
     setInviting(true);
     try {
-      const res = await fetch('https://n8n.aflows.uk/webhook/invite-staff', {
+      const res = await fetch('https://api.aflows.uk/api/v1/staff', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,16 +101,12 @@ export const TeamManagementModal = ({
   const handleRemove = async (staffId: string, staffName: string) => {
     if (!confirm(`Remove ${staffName} from your team?`)) return;
     try {
-      const res = await fetch('https://n8n.aflows.uk/webhook/remove-staff', {
-        method: 'POST',
+      const res = await fetch(`https://api.aflows.uk/api/v1/staff/${staffId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          business_id: user?.businessId,
-          staff_id: staffId,
-        }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
