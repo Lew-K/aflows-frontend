@@ -378,9 +378,9 @@ export const SettingsPage = () => {
 
     try {
       const res = await fetch(
-        "https://n8n.aflows.uk/webhook/update-business-settings",
+        "https://api.aflows.uk/api/v1/business/settings",
         {
-          method: "POST",
+          method: "PATCH",
 
           headers: {
             "Content-Type": "application/json",
@@ -475,9 +475,10 @@ export const SettingsPage = () => {
 
       xhr.open(
         "POST",
-        "https://n8n.aflows.uk/webhook/upload-logo"
+        "https://api.aflows.uk/api/v1/business/logo"
       );
 
+      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round(
