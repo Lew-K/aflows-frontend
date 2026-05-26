@@ -94,10 +94,10 @@ export const ReportsPage = () => {
     setLoadingFinancial(true);
     try {
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/reports/financial?businessId=${businessId}&start=${start}&end=${end}`
+        `https://api.aflows.uk/api/v1/reports/financial?businessId=${businessId}&start=${start}&end=${end}`
       );
       const json = await res.json();
-      const d = Array.isArray(json) ? json[0] : json;
+      const d = json;
       if (d?.success) {
         setFinancial({ summary: d.data.summary, data: d.data.daily_breakdown });
       }
@@ -108,10 +108,10 @@ export const ReportsPage = () => {
     setLoadingStock(true);
     try {
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/reports/stock?businessId=${businessId}`
+        `https://api.aflows.uk/api/v1/reports/stock?businessId=${businessId}`
       );
       const json = await res.json();
-      const d = Array.isArray(json) ? json[0] : json;
+      const d = json;
       if (d?.success) {
         setStock({ summary: d.data.summary, data: d.data.items });
       }
@@ -122,10 +122,10 @@ export const ReportsPage = () => {
     setLoadingCustomers(true);
     try {
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/reports/customers?businessId=${businessId}`
+        `https://api.aflows.uk/api/v1/reports/customers?businessId=${businessId}`
       );
       const json = await res.json();
-      const d = Array.isArray(json) ? json[0] : json;
+      const d = json;
       if (d?.success) {
         setCustomers({ summary: d.data.summary, data: d.data.customers });
       }
@@ -136,10 +136,10 @@ export const ReportsPage = () => {
     setLoadingSales(true);
     try {
       const res = await apiFetch(
-        `https://n8n.aflows.uk/webhook/reports/sales-performance?businessId=${businessId}&start=${start}&end=${end}`
+        `https://api.aflows.uk/api/v1/reports/sales-performance?businessId=${businessId}&start=${start}&end=${end}`
       );
       const json = await res.json();
-      const d = Array.isArray(json) ? json[0] : json;
+      const d = json;
       if (d?.success) {
         setSalesPerf({ summary: d.data.summary, data: d.data.breakdown });
       }
