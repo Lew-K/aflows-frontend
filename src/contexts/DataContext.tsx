@@ -196,7 +196,7 @@ export const DataProvider = ({ children }: any) => {
   // BUSINESS
   const fetchBusiness = async (businessId: string) => {
     const res = await apiFetch(
-      `https://n8n.aflows.uk/webhook/business-settings?businessId=${businessId}`
+      `https://api.aflows.uk/api/v1/business/settings?businessId=${businessId}`
     );
     const data = await res.json();
     const result = Array.isArray(data) ? data[0] : data;
