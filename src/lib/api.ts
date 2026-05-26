@@ -145,7 +145,7 @@ export const changePassword = async (
   newPassword: string,
   token: string
 ): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${BASE_URL}/change-password`, {
+  const response = await fetch(`${API_URL}/auth/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
