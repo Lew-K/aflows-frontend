@@ -82,6 +82,8 @@ interface DataContextType {
   refreshSales: (businessId: string, period: string, start?: string, end?: string) => Promise<void>;
   business: Business | null;
   fetchBusiness: (businessId: string) => Promise<void>;
+  injectSale: (businessId: string, sale: any) => void;
+  updateSaleReceipt: (businessId: string, saleId: string, receipt_id: string, receipt_number: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -431,6 +433,36 @@ export const DataProvider = ({ children }: any) => {
     await fetchCustomers(businessId);
   };
 
+  const injectSale = (businessId: string, sale: any) => {
+    const periodKey = getKey(businessId, 'this_month');
+    const weekKey = getKey(businessId, 'this_week');
+    setSalesCache(prev => ({
+      ...prev,
+      [periodKey]: [sale, ...(prev[periodKey] || [])],
+      [weekKey]: [sale, ...(prev[weekKey] || [])],
+    }));
+  };
+
+  const updateSaleReceipt = (
+    businessId: string,
+    saleId: string,
+    receipt_id: string,
+    receipt_number: string
+  ) => {
+    setSalesCache(prev =>
+      Object.fromEntries(
+        Object.entries(prev).map(([k, v]) => [
+          k,
+          (v as any[]).map(s =>
+            s.id === saleId
+              ? { ...s, receipt_id, receipt_number, _receiptPending: false }
+              : s
+          ),
+        ])
+      )
+    );
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -451,6 +483,8 @@ export const DataProvider = ({ children }: any) => {
         fetchInventory,
         business,
         fetchBusiness,
+        injectSale,
+        updateSaleReceipt,
       }}
     >
       {children}
