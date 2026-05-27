@@ -34,7 +34,7 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const { user, accessToken } = useAuth();
-  const { getSales, fetchSales, refreshSales, refreshInventory, isFetching } = useData();
+  const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(7);
@@ -203,15 +203,7 @@ export const SalesPage = () => {
     }
     
     setIsLoading(true);
-    const optimisticSale = {
-      id: `optimistic-${Date.now()}`,
-      customer_name: data.customerName || null,
-      item_sold: items.map(i => i.item).join(", "),
-      total_amount: calculatedAmount,
-      payment_method: data.paymentMethod,
-      created_at: new Date().toISOString(),
-    };
-    setOptimisticSales([optimisticSale, ...cachedSales]);
+  
     try {
       const response = await apiFetch(
         'https://api.aflows.uk/api/v1/sales/record',
@@ -304,7 +296,16 @@ export const SalesPage = () => {
           // Also refresh inventory silently
           await refreshInventory(businessId);
         }, 2000);
+      } else {
+        toast.error(result.message || 'Failed to record sale');
+        setOptimisticSales([]);
       }
+    } catch (error) {
+      setOptimisticSales([]);
+      toast.error('Something went wrong!');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
