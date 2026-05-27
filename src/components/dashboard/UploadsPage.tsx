@@ -134,7 +134,7 @@ export const UploadsPage = () => {
       formData.append('file_name', selectedFile.name);
 
       const response = await apiFetch(
-        'https://n8n.aflows.uk/webhook/upload-business-file',
+        'https://api.aflows.uk/api/v1/business/upload-file',
         {
           method: 'POST',
           body: formData,
