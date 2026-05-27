@@ -132,7 +132,7 @@ export const DataProvider = ({ children }: any) => {
     // Skip if data is fresh (within 5 minutes)
     const STALE_TIME = 1000 * 60 * 5;
     const isStale = !lastFetched[key] || Date.now() - lastFetched[key] > STALE_TIME;
-    if (inventory.length > 0 && !isStale) return;
+    if (!isStale) return;
   
     setFetchingKeys((prev) => ({ ...prev, [key]: true }));
   
