@@ -100,7 +100,7 @@ export const uploadBusinessFile = async ({ file, fileType, token }: FileUploadDa
   formData.append('file', file);
   formData.append('fileType', fileType);
 
-  const response = await fetch(`${BASE_URL}/upload-business-file`, {
+  const response = await fetch(`${API_URL}/business/upload-file`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
