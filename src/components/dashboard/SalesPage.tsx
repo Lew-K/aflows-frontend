@@ -254,19 +254,9 @@ export const SalesPage = () => {
           _receiptPending: true, // flag to show spinner
         };
       
-        // Prepend to cache immediately — no full reload
-        setSalesCache(prev => {
-          const periodKey = getKey(businessId, period);
-          const weekKey = getKey(businessId, 'this_week');
-          const existing = prev[periodKey] || [];
-          const existingWeek = prev[weekKey] || [];
-          return {
-            ...prev,
-            [periodKey]: [newSale, ...existing],
-            [weekKey]: [newSale, ...existingWeek],
-          };
-        });
-      
+        // Inject new sale at top using DataContext method
+        injectSale(businessId, newSale);
+
         // After 2s, fetch only the receipt for this sale
         setTimeout(async () => {
           try {
@@ -276,32 +266,15 @@ export const SalesPage = () => {
             );
             if (receiptRes.ok) {
               const receiptData = await receiptRes.json();
-              // Update just this sale in cache with real receipt_id
-              setSalesCache(prev => {
-                const updateSales = (sales: any[]) =>
-                  sales.map(s => s.id === result.sale_id
-                    ? { ...s, receipt_id: receiptData.receipt_id, receipt_number: receiptData.receipt_number, _receiptPending: false }
-                    : s
-                  );
-                const periodKey = getKey(businessId, period);
-                const weekKey = getKey(businessId, 'this_week');
-                return {
-                  ...prev,
-                  [periodKey]: updateSales(prev[periodKey] || []),
-                  [weekKey]: updateSales(prev[weekKey] || []),
-                };
-              });
+              updateSaleReceipt(businessId, result.sale_id, receiptData.receipt_id, receiptData.receipt_number);
             }
-          } catch { /* receipt will appear on next natural refresh */ }
-          // Also refresh inventory silently
+          } catch {}
           await refreshInventory(businessId);
         }, 2000);
       } else {
         toast.error(result.message || 'Failed to record sale');
-        setOptimisticSales([]);
       }
     } catch (error) {
-      setOptimisticSales([]);
       toast.error('Something went wrong!');
     } finally {
       setIsLoading(false);
