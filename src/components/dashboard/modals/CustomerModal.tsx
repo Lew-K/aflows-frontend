@@ -76,7 +76,7 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                   <span className="text-xs font-medium text-muted-foreground">
                     {new Date(sale.created_at).toLocaleDateString()}
                   </span>
-                  <span className="text-sm font-bold tracking-tight">KES {Number(sale.amount).toLocaleString()}</span>
+                  <span className="text-sm font-bold tracking-tight">KES {Number(sale.total_amount || sale.amount || 0).toLocaleString()}</span>
                 </div>
                 {/* Visual indicator for items */}
                 <div className="mt-3 pt-3 border-t space-y-2">
