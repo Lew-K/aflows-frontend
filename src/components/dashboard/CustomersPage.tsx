@@ -117,7 +117,7 @@ export const CustomersPage = () => {
                 <SelectItem value="all">All Segments</SelectItem>
                 <SelectItem value="vip">VIP</SelectItem>
                 <SelectItem value="regular">Regular</SelectItem>
-                <SelectItem value="At Risk">At Risk</SelectItem>
+                <SelectItem value="Lapsed">Lapsed</SelectItem>
               </SelectContent>
             </Select>
           </div>
