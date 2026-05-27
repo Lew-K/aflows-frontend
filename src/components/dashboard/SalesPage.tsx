@@ -107,7 +107,8 @@ export const SalesPage = () => {
     if (!businessId) return;
     fetchSales(businessId, period);
     fetchSales(businessId, "this_week");
-  }, [businessId, period, fetchSales]);
+    fetchInventory(businessId);
+  }, [businessId]);
 
   const {
     register,
