@@ -10,6 +10,7 @@ type Sale = {
   created_at: string;
 };
 
+
 interface RevenueAnalytics {
   revenueSummary: any;
   dailyRevenue: any[];
