@@ -78,8 +78,7 @@ export const SalesPage = () => {
   }, [rawWeeklySales]);
 
   const cachedSales = getSales(businessId, period) || [];
-  const [optimisticSales, setOptimisticSales] = useState<any[]>([]);
-  const allSales = optimisticSales.length ? optimisticSales : cachedSales;
+  const allSales = cachedSales;
 
   const isLoadingSales = isFetching(`${businessId}-${period}`);
   const { items: inventoryItems = [] } = useInventory(businessId || "");
