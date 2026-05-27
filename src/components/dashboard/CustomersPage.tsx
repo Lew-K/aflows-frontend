@@ -93,7 +93,7 @@ export const CustomersPage = () => {
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
               <p className="text-muted-foreground mt-1">
-                {repeatCustomers.length} repeat customers · {customers.length} total
+                {repeatCustomers.length} repeat customers driving {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue.
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export const CustomersPage = () => {
                 <SelectItem value="all">All Segments</SelectItem>
                 <SelectItem value="vip">VIP</SelectItem>
                 <SelectItem value="regular">Regular</SelectItem>
-                <SelectItem value="lapsed">Lapsed</SelectItem>
+                <SelectItem value="At Risk">At Risk</SelectItem>
               </SelectContent>
             </Select>
           </div>
