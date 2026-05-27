@@ -246,27 +246,65 @@ export const SalesPage = () => {
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
-        setItems([
-          { 
-            item: "", 
-            quantity: 1, 
-            unitCost: 0,
-            inventory_id: null,
-            affects_stock: false
-          }
-        ]);
-        setOptimisticSales([]);
-        await refreshSales(businessId, period);
-        await refreshInventory(businessId);
-      } else {
-        toast.error(result.message || 'Failed to record sale');
+        setItems([{ item: "", quantity: 1, unitCost: 0, inventory_id: null, affects_stock: false }]);
+      
+        // Inject new sale at top immediately using real sale_id from response
+        const newSale = {
+          id: result.sale_id,
+          customer_name: data.customerName || null,
+          customer_phone: data.customerPhone || null,
+          item_sold: items.map(i => i.item).join(', '),
+          total_amount: calculatedAmount,
+          payment_method: data.paymentMethod,
+          created_at: result.created_at || new Date().toISOString(),
+          receipt_id: null,
+          receipt_number: null,
+          _receiptPending: true, // flag to show spinner
+        };
+      
+        // Prepend to cache immediately — no full reload
+        setSalesCache(prev => {
+          const periodKey = getKey(businessId, period);
+          const weekKey = getKey(businessId, 'this_week');
+          const existing = prev[periodKey] || [];
+          const existingWeek = prev[weekKey] || [];
+          return {
+            ...prev,
+            [periodKey]: [newSale, ...existing],
+            [weekKey]: [newSale, ...existingWeek],
+          };
+        });
+      
+        // After 2s, fetch only the receipt for this sale
+        setTimeout(async () => {
+          try {
+            const receiptRes = await apiFetch(
+              `https://api.aflows.uk/api/v1/receipts/by-sale/${result.sale_id}`,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            if (receiptRes.ok) {
+              const receiptData = await receiptRes.json();
+              // Update just this sale in cache with real receipt_id
+              setSalesCache(prev => {
+                const updateSales = (sales: any[]) =>
+                  sales.map(s => s.id === result.sale_id
+                    ? { ...s, receipt_id: receiptData.receipt_id, receipt_number: receiptData.receipt_number, _receiptPending: false }
+                    : s
+                  );
+                const periodKey = getKey(businessId, period);
+                const weekKey = getKey(businessId, 'this_week');
+                return {
+                  ...prev,
+                  [periodKey]: updateSales(prev[periodKey] || []),
+                  [weekKey]: updateSales(prev[weekKey] || []),
+                };
+              });
+            }
+          } catch { /* receipt will appear on next natural refresh */ }
+          // Also refresh inventory silently
+          await refreshInventory(businessId);
+        }, 2000);
       }
-    } catch (error) {
-      setOptimisticSales([]);
-      toast.error('Something went wrong!');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -715,7 +753,11 @@ export const SalesPage = () => {
                         <div className="flex items-center gap-3 ml-4">
                           <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.total_amount || 0).toLocaleString()}</p>
 
-                          {(sale.receipt_id || sale.receipt_number) && (
+                          {sale._receiptPending ? (
+                            <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" disabled>
+                              <LoadingSpinner size="sm" />
+                            </Button>
+                          ) : (sale.receipt_id || sale.receipt_number) ? (
                             <Button
                               size="icon"
                               variant="outline"
@@ -724,7 +766,7 @@ export const SalesPage = () => {
                             >
                               <Download className="w-3 h-3" />
                             </Button>
-                          )}
+                          ) : null}
 
                           
                           
