@@ -42,7 +42,7 @@ const allNavItems = [
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { business } = useData();
-  const { can, tier, role } = useAccess();
+  const { can, tier, role, isExpired } = useAccess();
   const navigate = useNavigate();
   const navItems = allNavItems.filter(item =>
     item.feature === null || can(item.feature)
@@ -308,6 +308,14 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
           featureName="Next Plan Features"
           onClose={() => setUpgradeModalOpen(false)}
+        />
+      )}
+      {isExpired && (
+        <UpgradeModal
+          requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
+          featureName="Trial Expired"
+          onClose={() => {}}
+          locked={true}
         />
       )}
       
