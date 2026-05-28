@@ -5,7 +5,7 @@ import { apiFetch } from "@/lib/apiFetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Calendar, TrendingUp } from "lucide-react";
+import { Users, Search, Calendar, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +14,7 @@ import { CustomerModal } from "./modals/CustomerModal";
 export const CustomersPage = () => {
   const { user, accessToken } = useAuth();
   const businessId = user?.businessId || "";
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ export const CustomersPage = () => {
   const [sortBy, setSortBy] = useState("total_spent");
   const [segmentFilter, setSegmentFilter] = useState("all");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [customerSales, setCustomerSales] = useState<any[]>([]);
+  const [salesCache, setSalesCache] = useState<Record<string, any[]>>({});
   const [loadingSales, setLoadingSales] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
@@ -40,13 +41,15 @@ export const CustomersPage = () => {
 
   const handleSelectCustomer = async (c: any) => {
     setSelectedCustomer(c);
+    setMobileSheetOpen(true);
+    if (salesCache[c.id]) return; // already cached
     setLoadingSales(true);
     try {
       const res = await apiFetch(
         `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
       );
       const d = await res.json();
-      if (d.success) setCustomerSales(d.sales);
+      if (d.success) setSalesCache(prev => ({ ...prev, [c.id]: d.sales }));
     } catch {}
     setLoadingSales(false);
   };
@@ -86,6 +89,30 @@ export const CustomersPage = () => {
   );
 
   return (
+    <>
+    {/* MOBILE BOTTOM SHEET */}
+    {mobileSheetOpen && selectedCustomer && (
+      <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={() => { setMobileSheetOpen(false); setSelectedCustomer(null); }}
+        />
+        <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-2xl max-h-[88vh] overflow-y-auto">
+          <div className="sticky top-0 bg-card px-4 pt-4 pb-3 border-b flex items-center justify-between">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30 absolute left-1/2 -translate-x-1/2 top-2" />
+            <span className="font-semibold text-sm">{selectedCustomer.customer_name}</span>
+            <button onClick={() => { setMobileSheetOpen(false); setSelectedCustomer(null); }}>
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+          <CustomerModal
+            customer={selectedCustomer}
+            sales={loadingSales ? [] : (salesCache[selectedCustomer?.id] || [])}
+            onClose={() => { setMobileSheetOpen(false); setSelectedCustomer(null); }}
+          />
+        </div>
+      </div>
+    )}
     <div className="flex h-screen bg-background/50 gap-0 overflow-hidden">
       <div className={`transition-all duration-500 ease-in-out flex flex-col h-screen ${selectedCustomer ? "w-full lg:w-[60%]" : "w-full"}`}>
         <div className="w-full space-y-6 px-6 pt-4 pb-2 flex-shrink-0">
@@ -166,12 +193,13 @@ export const CustomersPage = () => {
         <div className="hidden lg:block w-[40%] sticky top-0 h-screen border-l bg-card shadow-2xl">
           <CustomerModal
             customer={selectedCustomer}
-            sales={loadingSales ? [] : customerSales}
-            onClose={() => { setSelectedCustomer(null); setCustomerSales([]); }}
+            sales={loadingSales ? [] : (salesCache[selectedCustomer?.id] || [])}
+            onClose={() => { setSelectedCustomer(null); setMobileSheetOpen(false); }}
           />
         </div>
       )}
     </div>
+  </>
   );
 };
 
