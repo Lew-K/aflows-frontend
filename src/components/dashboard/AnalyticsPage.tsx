@@ -89,6 +89,7 @@ const StatCard = ({
   trend,
   percentageChange,
   isLoading = false,
+  subtitle,
 }: {
   icon: any;
   title: string;
@@ -96,6 +97,7 @@ const StatCard = ({
   trend?: 'up' | 'down' | 'neutral';
   percentageChange?: string;
   isLoading?: boolean;
+  subtitle?: string;
 }) => (
   <motion.div
     initial={ANIMATION_VARIANTS.card.initial}
@@ -130,6 +132,7 @@ const StatCard = ({
           </div>
         )}
         
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">{title}</p>
       </CardContent>
     </Card>
@@ -505,14 +508,12 @@ const RevenueTrend = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center gap-2 mb-4">
+        <div className="inline-flex bg-muted rounded-lg p-1 mx-auto mb-4 flex justify-center">
           {(['monthly', 'daily'] as const).map(view => (
             <button
               key={view}
-              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
-                revenueView === view
-                  ? 'bg-primary text-white'
-                  : 'bg-card text-foreground hover:bg-muted'
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                revenueView === view ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => onRevenueViewChange(view)}
             >
@@ -522,7 +523,7 @@ const RevenueTrend = ({
         </div>
         
 
-        <div className="h-72">
+        <div className="h-52 sm:h-72">
 
           {revenueView === "monthly" && !hasMultipleMonths ? (
         
@@ -636,20 +637,27 @@ const TopSellingItems = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center gap-2 mb-4">
-          {(['quantity', 'revenue'] as const).map(metric => (
-            <button
-              key={metric}
-              className={`px-3 py-1 rounded-xl text-sm font-medium transition-colors ${
-                chartMetric === metric
-                  ? 'bg-primary text-white'
-                  : 'bg-card text-foreground hover:bg-muted'
-              }`}
-              onClick={() => onChartMetricChange(metric)}
-            >
-              {metric === 'quantity' ? 'Items Sold' : 'Revenue'}
-            </button>
-          ))}
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+          <div className="inline-flex bg-muted rounded-lg p-1">
+            {(['quantity', 'revenue'] as const).map(metric => (
+              <button key={metric}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${chartMetric === metric ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => onChartMetricChange(metric)}
+              >
+                {metric === 'quantity' ? 'Items Sold' : 'Revenue'}
+              </button>
+            ))}
+          </div>
+          <div className="inline-flex bg-muted rounded-lg p-1">
+            {(['bar', 'pie'] as const).map(type => (
+              <button key={type}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${chartType === type ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => onChartTypeChange(type)}
+              >
+                {type === 'bar' ? 'Bar' : 'Pie'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex justify-center gap-2 mb-4">
@@ -679,7 +687,7 @@ const TopSellingItems = ({
             <p className="text-xs mt-1">Try changing the date range or period above</p>
           </div>
         ) : (
-          <div className="h-72">
+          <div className="h-52 sm:h-72">
 
             {chartType === "bar" ? (
           
@@ -953,7 +961,7 @@ export const AnalyticsPage = () => {
   // const [receiptsCount, setReceiptsCount] = useState(0);
   // const [fetchingReceipts, setFetchingReceipts] = useState(false);
 
-  const { getSales, fetchSales, isFetching, getRevenueAnalytics, fetchRevenueAnalytics } = useData();
+  const { getSales, fetchSales, isFetching, getRevenueAnalytics, fetchRevenueAnalytics, refreshSales } = useData();
 
   // Fetch sales for the selected period
   useEffect(() => {
@@ -1172,23 +1180,28 @@ export const AnalyticsPage = () => {
           onPeriodChange={setPeriod}
           onCustomStartChange={setCustomStart}
           onCustomEndChange={setCustomEnd}
-          onApplyCustom={() => {
-            if (customStart && customEnd) {
-              setFetchKey((prev) => prev + 1);
-            }
-          }}
+          onApplyCustom={async () => {
+          if (customStart && customEnd) {
+            await refreshSales(businessId, 'custom', customStart, customEnd);
+            fetchRevenueAnalytics(businessId, 'custom', customStart, customEnd);
+            setFetchKey(prev => prev + 1);
+          }
+        }}
         />
       </div>
 
       {/* Stats Grid - 4 columns with balanced spacing */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
-          icon={DollarSign}
-          title="Total Revenue"
-          value={revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue)}
-          trend={revenueSummary?.trend as any}
+          icon={ShoppingCart}
+          title="Total Sales"
+          value={loading ? '...' : totalSales.toString()}
+          trend={revenueSummary?.trend === 'flat' ? 'neutral' : revenueSummary?.trend}
           percentageChange={formatPercentage(revenueSummary?.percentageChange)}
-          isLoading={revenueLoading}
+          isLoading={loading}
+          subtitle={totalSales > 0 && revenueSummary?.totalRevenue
+            ? `avg ${formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} per sale`
+            : undefined}
         />
 
         <StatCard
