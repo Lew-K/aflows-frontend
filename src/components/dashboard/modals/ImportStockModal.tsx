@@ -69,7 +69,7 @@ export const ImportStockModal = ({
     setIsUploading(true);
 
     try {
-      const res = await fetch('https://n8n.aflows.uk/webhook/import-inventory', {
+      const res = await fetch('https://api.aflows.uk/api/v1/inventory/import', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
