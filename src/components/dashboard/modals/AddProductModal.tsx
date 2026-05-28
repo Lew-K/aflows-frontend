@@ -78,8 +78,8 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-      <div className="bg-background border border-border rounded-xl w-full max-w-3xl p-4 sm:p-6 space-y-5 shadow-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 sm:p-6" onClick={onClose}>
+      <div className="bg-background border border-border rounded-t-2xl sm:rounded-xl w-full max-w-3xl p-4 sm:p-6 space-y-5 shadow-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex justify-between items-center">
