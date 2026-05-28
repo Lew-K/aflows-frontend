@@ -7,6 +7,7 @@ import { TeamManagementModal } from '@/components/dashboard/modals/TeamManagemen
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
 import { useAccess } from "@/hooks/useAccess";
+import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
 
 
 import {
@@ -249,6 +250,8 @@ const ReceiptPreview = ({ settings }) => {
 export const SettingsPage = () => {
 
   const [teamModalOpen, setTeamModalOpen] = useState(false);
+
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   
   const { user, accessToken } = useAuth();
 
@@ -256,7 +259,7 @@ export const SettingsPage = () => {
 
   const { business, refreshBusiness } = useData();
 
-  const { can } = useAccess();
+  const { can, tier } = useAccess();
 
   /* ─────────────────────────────────────────────
      SETTINGS STATE
@@ -1247,6 +1250,14 @@ export const SettingsPage = () => {
         <TeamManagementModal
           onClose={() => setTeamModalOpen(false)}
           businessName={business?.business_name || user?.businessName || ''}
+          onUpgrade={() => { setTeamModalOpen(false); setUpgradeModalOpen(true); }}
+        />
+      )}
+      {upgradeModalOpen && (
+        <UpgradeModal
+          requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
+          featureName="Team Members"
+          onClose={() => setUpgradeModalOpen(false)}
         />
       )}
 
