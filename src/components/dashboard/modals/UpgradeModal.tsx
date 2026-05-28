@@ -9,7 +9,7 @@ const PLANS = {
     price: 'KES 2,499/mo',
     icon: TrendingUp,
     color: 'text-blue-500',
-    highlight: false,
+    highlight: true,
     features: ['Everything in Starter', 'Inventory management', 'Customer CRM + history', 'Full analytics + projections', 'Up to 3 staff', 'CSV exports', 'Full branding & receipts'],
   },
   pro: {
@@ -17,7 +17,7 @@ const PLANS = {
     price: 'KES 3,999/mo',
     icon: Shield,
     color: 'text-purple-500',
-    highlight: true,
+    highlight: false,
     features: ['Everything in Growth', 'Unlimited staff', 'WhatsApp receipts', 'File uploads & vault', 'PDF exports', 'Priority support', 'Multi-session management'],
   },
 };
