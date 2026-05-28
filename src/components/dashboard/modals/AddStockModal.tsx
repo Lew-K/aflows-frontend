@@ -18,6 +18,7 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
   const [quantity, setQuantity] = useState(0);
   const [unitPrice, setUnitPrice] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { user, accessToken } = useAuth();
 
   useEffect(() => {
     if (item?.id) {
@@ -41,22 +42,21 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
     setLoading(true);
 
     try {
-      const res = await fetch("https://n8n.aflows.uk/webhook/add-stock", {
+      const res = await fetch("https://api.aflows.uk/api/v1/inventory/add-stock", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           businessId: user?.businessId,
           item_id: selectedItemId,
           quantity: Number(quantity),
           unit_price: Number(unitPrice),
-          type: "PURCHASE",
           movement_type: "PURCHASE",
           source: "MANUAL",
         }),
       });
-
       if (!res.ok) throw new Error("Failed to add stock");
 
       onSuccess();
