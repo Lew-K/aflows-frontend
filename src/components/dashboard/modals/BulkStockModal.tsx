@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 export const BulkStockModal = ({ items, onClose, onSuccess }) => {
   const [updates, setUpdates] = useState({});
