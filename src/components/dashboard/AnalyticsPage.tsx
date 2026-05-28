@@ -660,23 +660,6 @@ const TopSellingItems = ({
           </div>
         </div>
 
-        <div className="flex justify-center gap-2 mb-4">
-
-          {(['bar','pie'] as const).map(type => (
-            <button
-              key={type}
-              className={`px-3 py-1 rounded-xl text-sm ${
-                chartType === type
-                  ? 'bg-primary text-white'
-                  : 'bg-card hover:bg-muted'
-              }`}
-              onClick={() => onChartTypeChange(type)}
-            >
-              {type === 'bar' ? 'Bar Chart' : 'Pie Chart'}
-            </button>
-          ))}
-        
-        </div>
 
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
