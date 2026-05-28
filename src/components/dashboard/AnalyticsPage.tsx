@@ -648,7 +648,7 @@ const TopSellingItems = ({
               </button>
             ))}
           </div>
-          <div className="inline-flex bg-muted rounded-lg p-1">
+          <div className="hidden sm:inline-flex bg-muted rounded-lg p-1">
             {(['bar', 'pie'] as const).map(type => (
               <button key={type}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${chartType === type ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
