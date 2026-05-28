@@ -1,3 +1,4 @@
+import { useAccess } from '@/hooks/useAccess';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -15,12 +16,20 @@ interface StaffMember {
   last_login: string | null;
 }
 
+const STAFF_LIMITS: Record<string, number> = {
+  starter: 1,
+  growth: 3,
+  pro: Infinity,
+};
+
 export const TeamManagementModal = ({
   onClose,
   businessName,
+  onUpgrade,
 }: {
   onClose: () => void;
   businessName: string;
+  onUpgrade?: () => void;
 }) => {
   const { user, accessToken } = useAuth();
 
@@ -33,6 +42,12 @@ export const TeamManagementModal = ({
   const [showPassword, setShowPassword] = useState(false);
   const [inviting, setInviting] = useState(false);
 
+  const { tier } = useAccess();
+  const staffLimit = STAFF_LIMITS[tier] ?? 1;
+  const atLimit = staffList.length >= staffLimit;
+
+  
+  
   const fetchStaff = async () => {
     if (!user?.businessId) return;
     setStaffLoading(true);
@@ -146,45 +161,64 @@ export const TeamManagementModal = ({
               </p>
             </div>
 
-            <Input
-              placeholder="Full name"
-              value={inviteName}
-              onChange={(e) => setInviteName(e.target.value)}
-            />
+            {!atLimit && (
+              <>
+                <Input
+                  placeholder="Full name"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                />
+            
+                <Input
+                  placeholder="Email address"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+            
+                <div className="relative">
+                  <Input
+                    placeholder="Set a password for them"
+                    type={showPassword ? 'text' : 'password'}
+                    value={invitePassword}
+                    onChange={(e) => setInvitePassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword(p => !p)}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </>
+            )}
 
-            <Input
-              placeholder="Email address"
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-            />
-
-            <div className="relative">
-              <Input
-                placeholder="Set a password for them"
-                type={showPassword ? 'text' : 'password'}
-                value={invitePassword}
-                onChange={(e) => setInvitePassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowPassword(p => !p)}
+            {atLimit ? (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-center space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  You've reached the <span className="font-semibold capitalize">{tier}</span> plan limit of <span className="font-semibold">{staffLimit}</span> staff member{staffLimit !== 1 ? 's' : ''}.
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={() => onUpgrade ? onUpgrade() : onClose()}
+                >
+                  Upgrade to Add More Staff
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleInvite}
+                disabled={inviting}
+                size="sm"
+                className="w-full"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-
-            <Button
-              onClick={handleInvite}
-              disabled={inviting}
-              size="sm"
-              className="w-full"
-            >
-              {inviting ? 'Adding...' : (
-                <><UserPlus className="w-4 h-4 mr-2" />Add Staff Member</>
-              )}
-            </Button>
+                {inviting ? 'Adding...' : (
+                  <><UserPlus className="w-4 h-4 mr-2" />Add Staff Member</>
+                )}
+              </Button>
+            )}
           </div>
 
           <hr className="border-border/40" />
