@@ -12,13 +12,13 @@ interface Props {
 }
 
 export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) => {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [selectedItemId, setSelectedItemId] = useState(item?.id || "");
   const [quantity, setQuantity] = useState(0);
   const [unitPrice, setUnitPrice] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { user, accessToken } = useAuth();
+  
 
   useEffect(() => {
     if (item?.id) {
