@@ -89,9 +89,9 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
                 className={`rounded-xl border p-5 flex flex-col gap-4 ${plan.highlight ? 'border-primary bg-primary/5' : 'border-border'}`}
               >
                 {plan.highlight && showBothPlans && (
-                  <span className="self-start text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                    {/* Most Popular */}
-                  </span>
+                {/* <span className="self-start text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                    Most Popular
+                  </span> */}
                 )}
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
