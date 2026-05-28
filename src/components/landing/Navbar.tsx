@@ -1,5 +1,5 @@
 // Navbar.tsx
-
+import { ThemeToggle } from '@/components/ThemeToggle';
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -270,6 +270,9 @@ export const Navbar = () => {
               >
                 Sign In
               </Button>
+
+              <ThemeToggle />
+              
               <Button
                 variant="hero"
                 onClick={() => navigate('/register')}
@@ -363,16 +366,19 @@ export const Navbar = () => {
                     Aflows
                   </span>
                 </div>
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl
-                             border border-border bg-muted/60
-                             text-foreground transition-colors hover:bg-muted
-                             outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                >
-                  <X className="h-4.5 w-4.5" aria-hidden="true" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    aria-label="Close menu"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl
+                               border border-border bg-muted/60
+                               text-foreground transition-colors hover:bg-muted
+                               outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    <X className="h-4.5 w-4.5" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
 
               {/* Scrollable content */}
