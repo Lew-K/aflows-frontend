@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash } from "lucide-react";
 
 export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [rows, setRows] = useState([
     { name: "", stock: "", threshold: 5, cost: "" },
@@ -48,21 +48,20 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
 
     try {
       for (const row of rows) {
-        const res = await fetch("https://n8n.aflows.uk/webhook/add-product", {
+        const res = await fetch("https://api.aflows.uk/api/v1/inventory/add-product", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             businessId: user?.businessId,
             name: row.name.trim(),
             low_stock_threshold: Number(row.threshold),
-            initial_stock: row.stock ? Number(row.stock) : 0, // safe addition
-            cost_per_unit: row.cost ? Number(row.cost) : null, // ✅ NEW
-
+            initial_stock: row.stock ? Number(row.stock) : 0,
+            cost_per_unit: row.cost ? Number(row.cost) : null,
           }),
         });
-
         if (!res.ok) throw new Error("Failed");
       }
 
