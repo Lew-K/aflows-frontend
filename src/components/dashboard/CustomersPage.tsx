@@ -13,6 +13,7 @@ import { CustomerModal } from "./modals/CustomerModal";
 
 export const CustomersPage = () => {
   const { user, accessToken } = useAuth();
+  const { customers: contextCustomers, isFetching } = useData();
   const businessId = user?.businessId || "";
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
@@ -29,13 +30,34 @@ export const CustomersPage = () => {
 
   useEffect(() => {
     if (!businessId) return;
+  
+    // Use prefetched data from DataContext if available
+    if (contextCustomers && contextCustomers.length > 0) {
+      const normalized = contextCustomers.map((c: any) => ({
+        ...c,
+        segment: c.segment === 'lapsed' ? 'at_risk' : c.segment,
+      }));
+      setCustomers(normalized);
+      setLoading(false);
+      return;
+    }
+  
+    // Fallback: fetch directly
     setLoading(true);
     apiFetch(`https://api.aflows.uk/api/v1/customers?businessId=${businessId}`)
       .then(r => r.json())
-      .then(d => { if (d.success) setCustomers(d.customers); })
+      .then(d => {
+        if (d.success) {
+          const normalized = d.customers.map((c: any) => ({
+            ...c,
+            segment: c.segment === 'lapsed' ? 'at_risk' : c.segment,
+          }));
+          setCustomers(normalized);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [businessId]);
+  }, [businessId, contextCustomers]);
 
   useEffect(() => { setCurrentPage(1); }, [search, segmentFilter, sortBy]);
 
