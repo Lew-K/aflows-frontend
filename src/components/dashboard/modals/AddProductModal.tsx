@@ -6,6 +6,7 @@ import { Loader2, Plus, Trash } from "lucide-react";
 
 export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
   const { user, accessToken } = useAuth();
+  
 
   const [rows, setRows] = useState([
     { name: "", stock: "", threshold: 5, cost: "" },
