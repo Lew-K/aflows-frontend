@@ -69,9 +69,8 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-background text-foreground rounded-lg w-full max-w-md p-6 space-y-4 shadow-lg border">
-
+    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-background text-foreground rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 space-y-4 shadow-lg border" onClick={e => e.stopPropagation()}>
         <h2 className="text-lg font-semibold">
           {item ? `Restock ${item.name}` : "Add Stock"}
         </h2>
