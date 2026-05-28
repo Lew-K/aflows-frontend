@@ -724,10 +724,8 @@ const TopSellingItems = ({
                     data={chartTopItems}
                     dataKey="total"
                     nameKey="name"
-                    outerRadius={100}
-                    label={({name, percent}) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
+                    outerRadius="40%"
+                    label={false}
                   >
                     {chartTopItems.map((entry, index) => (
                       <Cell
@@ -738,7 +736,16 @@ const TopSellingItems = ({
                   </Pie>
           
                   <Tooltip />
-                  <Legend />
+                  <Legend
+                    layout="vertical"
+                    align="right"
+                    verticalAlign="middle"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => (
+                      <span style={{ fontSize: '11px' }}>{value}</span>
+                    )}
+                  />
           
                 </PieChart>
               </ResponsiveContainer>
