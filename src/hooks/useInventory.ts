@@ -13,7 +13,7 @@ export const useInventory = (businessId: string) => {
 
   return {
     items: inventory,
-    loading: isFetching(key) || (!inventory.length),
+    loading: isFetching(key),
     refresh: () => refreshInventory(businessId),
   };
 };
