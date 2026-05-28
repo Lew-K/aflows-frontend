@@ -1193,6 +1193,16 @@ export const AnalyticsPage = () => {
       {/* Stats Grid - 4 columns with balanced spacing */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
+          icon={DollarSign}
+          title="Total Revenue"
+          value={revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue)}
+          trend={revenueSummary?.trend as any}
+          percentageChange={formatPercentage(revenueSummary?.percentageChange)}
+          isLoading={revenueLoading}
+          subtitle={revenueSummary?.previousRevenue ? `vs ${formatCurrency(revenueSummary.previousRevenue)} last period` : undefined}
+        />
+
+        <StatCard
           icon={ShoppingCart}
           title="Total Sales"
           value={loading ? '...' : totalSales.toString()}
@@ -1202,19 +1212,6 @@ export const AnalyticsPage = () => {
           subtitle={totalSales > 0 && revenueSummary?.totalRevenue
             ? `avg ${formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} per sale`
             : undefined}
-        />
-
-        <StatCard
-          icon={ShoppingCart}
-          title="Total Sales"
-          value={loading ? '...' : totalSales.toString()}
-          trend={
-            revenueSummary?.trend === 'flat'
-              ? 'neutral'
-              : revenueSummary?.trend
-          }
-          percentageChange={formatPercentage(revenueSummary?.percentageChange)}
-          isLoading={loading}
         />
 
         <PaymentBreakdown
