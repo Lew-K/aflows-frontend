@@ -201,12 +201,13 @@ export const InventoryPage = () => {
 
           {/* TABLE */}
           <Card className="border-none shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 border-b">
                   <tr className="text-left font-semibold text-muted-foreground">
                     <th className="p-4">Product Name</th>
-                    <th className="p-4">Current Stock</th>
+                    <th className="p-4">Stock</th>
                     <th className="p-4">Value (KES)</th>
                     <th className="p-4">Status</th>
                     <th className="p-4 text-right">Action</th>
@@ -217,9 +218,9 @@ export const InventoryPage = () => {
                     const status = getStatus(item);
                     return (
                       <tr key={item.id} className="hover:bg-muted/20 transition-colors group">
-                        <td className="p-4 font-medium text-foreground">{item.name}</td>
-                        <td className="p-4 font-mono text-slate-600">{item.stock}</td>
-                        <td className="p-4 font-medium">{(item.stock * (item.cost_price || 0)).toLocaleString()}</td>
+                        <td className="p-4 font-medium">{item.name}</td>
+                        <td className="p-4 font-mono">{item.stock}</td>
+                        <td className="p-4">{(item.stock * (item.cost_price || 0)).toLocaleString()}</td>
                         <td className="p-4">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status.class}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
@@ -227,14 +228,8 @@ export const InventoryPage = () => {
                           </span>
                         </td>
                         <td className="p-4 text-right">
-                          <Button 
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-1 opacity-90 hover:opacity-100"
-                            onClick={() => setSelectedItemForStock(item)}
-                          >
-                            <ArrowRightLeft className="w-3 h-3" />
-                            Restock
+                          <Button variant="outline" size="sm" onClick={() => setSelectedItemForStock(item)}>
+                            <ArrowRightLeft className="w-3 h-3 mr-1" /> Restock
                           </Button>
                         </td>
                       </tr>
@@ -242,6 +237,31 @@ export const InventoryPage = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+          
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y">
+              {filteredItems.map((item) => {
+                const status = getStatus(item);
+                return (
+                  <div key={item.id} className="p-4 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <p className="font-semibold text-sm">{item.name}</p>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${status.class}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                        {status.label}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Stock: <span className="font-mono text-foreground">{item.stock}</span></span>
+                      <span>Value: <span className="text-foreground">KES {(item.stock * (item.cost_price || 0)).toLocaleString()}</span></span>
+                    </div>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => setSelectedItemForStock(item)}>
+                      <ArrowRightLeft className="w-3 h-3 mr-1" /> Restock
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         </div>
