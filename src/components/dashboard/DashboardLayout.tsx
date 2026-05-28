@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
 
 const allNavItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard', feature: null },
@@ -70,6 +71,21 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const [showUpgradeHint, setShowUpgradeHint] = React.useState(() => {
+    const last = localStorage.getItem('upgrade_hint_last_shown');
+    if (!last) return true;
+    const daysSince = (Date.now() - Number(last)) / (1000 * 60 * 60 * 24);
+    return daysSince >= 30;
+  });
+  
+  React.useEffect(() => {
+    if (showUpgradeHint) {
+      localStorage.setItem('upgrade_hint_last_shown', Date.now().toString());
+    }
+  }, [showUpgradeHint]);
+
+  const [upgradeModalOpen, setUpgradeModalOpen] = React.useState(false);
 
   return (
     <div className="h-screen overflow-hidden bg-background flex">
@@ -129,17 +145,31 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           </nav>
 
           {/* Upgrade hint for non-pro owners */}
-          {role === 'owner' && tier !== 'pro' && (
-            <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20 flex-shrink-0">
-              <p className="text-xs font-bold text-primary mb-1">
-                ✨ Unlock more features
-              </p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
+          {role === 'owner' && tier !== 'pro' && showUpgradeHint && (
+            <div className="mx-3 mb-2 p-3 rounded-xl bg-primary/5 border border-primary/20 flex-shrink-0 relative">
+              <button
+                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowUpgradeHint(false)}
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <p className="text-xs font-bold text-primary mb-1">✨ Upgrade Plan</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed pr-4">
                 {tier === 'starter'
-                  ? 'Upgrade to Growth for Inventory & File Uploads.'
-                  : 'Upgrade to Pro for Reports, Customers & Team Members.'}
+                  ? 'Growth — KES 2,499/mo: Inventory, CRM, full analytics, 3 staff.'
+                  : 'Pro — KES 3,999/mo: Unlimited staff, WhatsApp, file uploads, PDF exports.'}
               </p>
             </div>
+          )}
+
+          {role === 'owner' && tier !== 'pro' && (
+            <button
+              className="mx-3 mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors w-[calc(100%-24px)]"
+              onClick={() => setUpgradeModalOpen(true)}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Upgrade Plan
+            </button>
           )}
 
           {/* User Section */}
@@ -233,6 +263,16 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                     </span>
                   </div>
 
+                  {role === 'owner' && tier !== 'pro' && (
+                    <button
+                      onClick={() => { setUpgradeModalOpen(true); setAvatarMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+                    >
+                      <Zap className="w-4 h-4" />
+                      Upgrade Plan
+                    </button>
+                  )}
+
                   {/* Menu items */}
                   <button
                     onClick={() => { navigate('/dashboard/contact'); setAvatarMenuOpen(false); }}
@@ -262,6 +302,15 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           {children}
         </main>
       </div>
+
+      {upgradeModalOpen && (
+        <UpgradeModal
+          requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
+          featureName="Next Plan Features"
+          onClose={() => setUpgradeModalOpen(false)}
+        />
+      )}
+      
     </div>
   );
 };
