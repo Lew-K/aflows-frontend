@@ -113,8 +113,8 @@ export const Navbar = () => {
             : 'bg-transparent',
         ].join(' ')}
       >
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex h-18 items-center justify-between gap-4 py-3">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex h-18 items-center justify-between gap-4 py-3 w-full min-w-0">
 
             {/* ── Logo ─────────────────────────────────────────────────── */}
             <button
@@ -261,27 +261,23 @@ export const Navbar = () => {
 
             {/* ── Desktop CTA ──────────────────────────────────────────── */}
             <div className="hidden items-center gap-2 lg:flex">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/login')}
+              <ThemeToggle />
+            
+              <Button variant="ghost" onClick={() => navigate('/login')}
                 className="rounded-full px-5 text-sm font-medium
                            text-foreground/80 hover:text-foreground hover:bg-muted
                            transition-colors duration-150"
               >
                 Sign In
               </Button>
-
-              <ThemeToggle />
-              
-              <Button
-                variant="hero"
-                onClick={() => navigate('/register')}
+            
+              <Button variant="hero" onClick={() => navigate('/register')}
                 className="h-10 rounded-full px-5 text-sm font-semibold
                            shadow-lg shadow-primary/20
                            transition-all duration-200 hover:shadow-primary/30 hover:scale-[1.02]
                            active:scale-[0.98]"
               >
-                Start Free
+                Get Started
               </Button>
             </div>
 
