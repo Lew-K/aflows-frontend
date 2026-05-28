@@ -191,9 +191,23 @@ export const DataProvider = ({ children }: any) => {
   };
   // CUSTOMERS
   const fetchCustomers = async (businessId: string) => {
-    const res = await apiFetch(`/api/customers?businessId=${businessId}`);
-    const data = await res.json();
-    setCustomers(data || []);
+    const key = `${businessId}-customers`;
+    const STALE_TIME = 1000 * 60 * 5;
+    const isStale = !lastFetched[key] || Date.now() - lastFetched[key] > STALE_TIME;
+    if (!isStale) return;
+    setFetchingKeys(prev => ({ ...prev, [key]: true }));
+    try {
+      const res = await apiFetch(
+        `https://api.aflows.uk/api/v1/customers?businessId=${businessId}`
+      );
+      const data = await res.json();
+      if (data.success) setCustomers(data.customers || []);
+      setLastFetched(prev => ({ ...prev, [key]: Date.now() }));
+    } catch (err) {
+      console.error('Customers fetch error:', err);
+    } finally {
+      setFetchingKeys(prev => ({ ...prev, [key]: false }));
+    }
   };
 
   // BUSINESS
@@ -355,6 +369,7 @@ export const DataProvider = ({ children }: any) => {
         fetchRevenueAnalytics(businessId, "this_month"),
         fetchRevenue(businessId),
         fetchBusiness(businessId),
+        fetchCustomers(businessId),
       ]);
     } catch (err) {
       console.error("Prefetch failed:", err);
