@@ -1,6 +1,6 @@
 // Navbar.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,203 +26,209 @@ export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
 
+  // Ref to manage hover intent — prevents flicker when moving
+  // cursor from trigger button into the mega menu panel
+  const megaMenuRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ─── Scroll listener (unchanged logic) ───────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-
-    window.addEventListener('scroll', handleScroll);
-
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // ─── Lock body scroll when mobile drawer is open ──────────────────────────
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
+  // ─── Close mobile menu on route change ───────────────────────────────────
+  useEffect(() => {
+    setMobileOpen(false);
+    setMegaMenuOpen(false);
+  }, [location.pathname]);
+
+  // ─── Mega menu hover helpers (delayed close prevents flicker) ────────────
+  const handleMegaEnter = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMegaMenuOpen(true);
+  };
+
+  const handleMegaLeave = () => {
+    closeTimer.current = setTimeout(() => setMegaMenuOpen(false), 120);
+  };
+
+  // ─── scrollToSection (unchanged logic) ───────────────────────────────────
   const scrollToSection = (id: string) => {
     if (location.pathname !== '/') {
       navigate(`/#${id}`);
       return;
     }
-
     const element = document.getElementById(id);
-
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
     setMobileOpen(false);
     setMegaMenuOpen(false);
   };
 
+  // ─── Data (unchanged) ────────────────────────────────────────────────────
   const features = [
-    {
-      title: 'Analytics',
-      desc: 'Track revenue and performance live',
-      icon: BarChart3,
-      id: 'analytics',
-    },
-    {
-      title: 'Receipts',
-      desc: 'Generate branded receipts instantly',
-      icon: Receipt,
-      id: 'receipts',
-    },
-    {
-      title: 'Sales',
-      desc: 'Manage sales and transactions',
-      icon: ShoppingCart,
-      id: 'sales',
-    },
-    {
-      title: 'Inventory',
-      desc: 'Monitor products and stock levels',
-      icon: Package,
-      id: 'inventory',
-    },
-    {
-      title: 'Customers',
-      desc: 'Build customer relationships',
-      icon: Users,
-      id: 'customers',
-    },
-    {
-      title: 'Documents',
-      desc: 'Store invoices and business files',
-      icon: FileUp,
-      id: 'documents',
-    },
+    { title: 'Analytics',  desc: 'Track revenue and performance live',       icon: BarChart3,   id: 'analytics'  },
+    { title: 'Receipts',   desc: 'Generate branded receipts instantly',       icon: Receipt,     id: 'receipts'   },
+    { title: 'Sales',      desc: 'Manage sales and transactions',             icon: ShoppingCart,id: 'sales'      },
+    { title: 'Inventory',  desc: 'Monitor products and stock levels',         icon: Package,     id: 'inventory'  },
+    { title: 'Customers',  desc: 'Build customer relationships',              icon: Users,       id: 'customers'  },
+    { title: 'Documents',  desc: 'Store invoices and business files',         icon: FileUp,      id: 'documents'  },
   ];
 
   const navLinks = [
-    {
-      label: 'Features',
-      megaMenu: true,
-    },
-    {
-      label: 'About',
-      action: () => navigate('/about'),
-    },
-    {
-      label: 'Pricing',
-      action: () => scrollToSection('pricing'),
-    },
-    {
-      label: 'Contact',
-      action: () => scrollToSection('contact'),
-    },
+    { label: 'Features', megaMenu: true },
+    { label: 'About',    action: () => navigate('/about') },
+    { label: 'Pricing',  action: () => scrollToSection('pricing') },
+    { label: 'Contact',  action: () => scrollToSection('contact') },
   ];
+
+  // Determine active link for highlight indicator
+  const isActive = (label: string) => {
+    if (label === 'About' && location.pathname === '/about') return true;
+    if (label === 'Features' && location.pathname === '/') return true;
+    return false;
+  };
 
   return (
     <>
+      {/* ─────────────────────────────── HEADER ──────────────────────────── */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        className={[
+          'fixed inset-x-0 top-0 z-50 transition-all duration-300',
           isScrolled
-            ? 'border-b border-border/60 bg-background/80 backdrop-blur-xl'
-            : 'bg-transparent'
-        }`}
+            ? 'border-b border-border/60 bg-background/80 backdrop-blur-xl shadow-sm'
+            : 'bg-transparent',
+        ].join(' ')}
       >
-        <div className="container mx-auto px-6">
-          <div className="flex h-20 items-center justify-between">
-            {/* Logo */}
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex h-18 items-center justify-between gap-4 py-3">
+
+            {/* ── Logo ─────────────────────────────────────────────────── */}
             <button
               onClick={() => navigate('/')}
-              className="flex shrink-0 items-center gap-3"
+              aria-label="Aflows — go to homepage"
+              className="flex shrink-0 items-center gap-3 rounded-xl p-1 outline-none
+                         focus-visible:ring-2 focus-visible:ring-primary/60
+                         transition-opacity duration-200 hover:opacity-80"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                <Zap className="h-5 w-5 fill-current" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl
+                              bg-primary text-primary-foreground
+                              shadow-lg shadow-primary/25
+                              transition-transform duration-200 hover:scale-105">
+                <Zap className="h-5 w-5 fill-current" aria-hidden="true" />
               </div>
-
-              <div className="flex flex-col items-start">
-                <span className="text-lg font-extrabold tracking-tight text-foreground">
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-[17px] font-extrabold tracking-tight text-foreground">
                   Aflows
                 </span>
-
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
                   Business Automation
                 </span>
               </div>
             </button>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden items-center gap-2 lg:flex">
+            {/* ── Desktop nav ──────────────────────────────────────────── */}
+            <nav
+              className="hidden items-center gap-1 lg:flex"
+              aria-label="Main navigation"
+            >
               {navLinks.map((item) => {
                 if (item.megaMenu) {
                   return (
                     <div
                       key={item.label}
+                      ref={megaMenuRef}
                       className="relative"
-                      onMouseEnter={() => setMegaMenuOpen(true)}
-                      onMouseLeave={() => setMegaMenuOpen(false)}
+                      onMouseEnter={handleMegaEnter}
+                      onMouseLeave={handleMegaLeave}
                     >
                       <button
-                        className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        aria-expanded={megaMenuOpen}
+                        aria-haspopup="true"
+                        className={[
+                          'flex items-center gap-1.5 rounded-full px-4 py-2',
+                          'text-sm font-medium transition-colors duration-150 outline-none',
+                          'focus-visible:ring-2 focus-visible:ring-primary/60',
+                          megaMenuOpen
+                            ? 'bg-muted text-foreground'
+                            : 'text-foreground/80 hover:bg-muted hover:text-foreground',
+                        ].join(' ')}
                       >
                         {item.label}
-
                         <ChevronDown
-                          className={`h-4 w-4 transition-transform duration-200 ${
-                            megaMenuOpen ? 'rotate-180' : ''
-                          }`}
+                          className={[
+                            'h-3.5 w-3.5 transition-transform duration-200',
+                            megaMenuOpen ? 'rotate-180' : '',
+                          ].join(' ')}
+                          aria-hidden="true"
                         />
                       </button>
 
                       <AnimatePresence>
                         {megaMenuOpen && (
-                          <motion.div
-                            initial={
-                              shouldReduceMotion
-                                ? false
-                                : {
-                                    opacity: 0,
-                                    y: 10,
-                                  }
-                            }
-                            animate={
-                              shouldReduceMotion
-                                ? {}
-                                : {
-                                    opacity: 1,
-                                    y: 0,
-                                  }
-                            }
-                            exit={
-                              shouldReduceMotion
-                                ? {}
-                                : {
-                                    opacity: 0,
-                                    y: 10,
-                                  }
-                            }
-                            transition={{ duration: 0.2 }}
-                            className="absolute left-1/2 top-full mt-4 w-[760px] -translate-x-1/2 overflow-hidden rounded-3xl border border-border bg-background/95 p-6 shadow-2xl backdrop-blur-xl"
+                          // Invisible bridge fills the gap between trigger and panel,
+                          // preventing accidental close when moving the cursor down.
+                          <div
+                            onMouseEnter={handleMegaEnter}
+                            onMouseLeave={handleMegaLeave}
+                            className="absolute left-1/2 top-full -translate-x-1/2 pt-2 w-[760px]"
+                            style={{ maxWidth: 'min(760px, calc(100vw - 2rem))' }}
                           >
-                            <div className="grid grid-cols-2 gap-4">
-                              {features.map((feature) => (
-                                <button
-                                  key={feature.title}
-                                  onClick={() =>
-                                    scrollToSection(feature.id)
-                                  }
-                                  className="group flex items-start gap-4 rounded-2xl border border-transparent p-4 text-left transition-all hover:border-primary/20 hover:bg-muted/50"
-                                >
-                                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-transform duration-300 group-hover:scale-110">
-                                    <feature.icon className="h-6 w-6 text-primary" />
-                                  </div>
-
-                                  <div>
-                                    <h3 className="mb-1 text-sm font-semibold text-foreground">
-                                      {feature.title}
-                                    </h3>
-
-                                    <p className="text-sm leading-relaxed text-muted-foreground">
-                                      {feature.desc}
-                                    </p>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
+                            <motion.div
+                              initial={shouldReduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+                              animate={shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }}
+                              exit={shouldReduceMotion ? {} : { opacity: 0, y: 6, scale: 0.98 }}
+                              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden rounded-3xl border border-border
+                                         bg-background/95 p-5 shadow-2xl
+                                         backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/5"
+                            >
+                              <div className="grid grid-cols-2 gap-2">
+                                {features.map((feature) => (
+                                  <button
+                                    key={feature.title}
+                                    onClick={() => scrollToSection(feature.id)}
+                                    className="group flex items-start gap-4 rounded-2xl
+                                               border border-transparent p-4 text-left
+                                               transition-all duration-200 outline-none
+                                               hover:border-primary/20 hover:bg-muted/60
+                                               focus-visible:ring-2 focus-visible:ring-primary/50"
+                                  >
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center
+                                                    rounded-xl bg-primary/10
+                                                    transition-transform duration-200
+                                                    group-hover:scale-110 group-hover:bg-primary/15">
+                                      <feature.icon
+                                        className="h-5 w-5 text-primary"
+                                        aria-hidden="true"
+                                      />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="mb-0.5 text-sm font-semibold text-foreground">
+                                        {feature.title}
+                                      </p>
+                                      <p className="text-sm leading-relaxed text-muted-foreground">
+                                        {feature.desc}
+                                      </p>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </motion.div>
+                          </div>
                         )}
                       </AnimatePresence>
                     </div>
@@ -233,144 +239,167 @@ export const Navbar = () => {
                   <button
                     key={item.label}
                     onClick={item.action}
-                    className="rounded-full px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    className={[
+                      'relative rounded-full px-4 py-2 text-sm font-medium outline-none',
+                      'transition-colors duration-150',
+                      'focus-visible:ring-2 focus-visible:ring-primary/60',
+                      isActive(item.label)
+                        ? 'text-foreground'
+                        : 'text-foreground/80 hover:bg-muted hover:text-foreground',
+                    ].join(' ')}
                   >
                     {item.label}
+                    {/* Active dot indicator */}
+                    {isActive(item.label) && (
+                      <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2
+                                       rounded-full bg-primary" />
+                    )}
                   </button>
                 );
               })}
             </nav>
 
-            {/* Desktop CTA */}
-            <div className="hidden items-center gap-3 lg:flex">
+            {/* ── Desktop CTA ──────────────────────────────────────────── */}
+            <div className="hidden items-center gap-2 lg:flex">
               <Button
                 variant="ghost"
                 onClick={() => navigate('/login')}
-                className="rounded-full px-5 text-foreground hover:bg-muted"
+                className="rounded-full px-5 text-sm font-medium
+                           text-foreground/80 hover:text-foreground hover:bg-muted
+                           transition-colors duration-150"
               >
                 Sign In
               </Button>
-
               <Button
                 variant="hero"
                 onClick={() => navigate('/register')}
-                className="h-11 rounded-full px-6 shadow-lg shadow-primary/20"
+                className="h-10 rounded-full px-5 text-sm font-semibold
+                           shadow-lg shadow-primary/20
+                           transition-all duration-200 hover:shadow-primary/30 hover:scale-[1.02]
+                           active:scale-[0.98]"
               >
                 Start Free
               </Button>
             </div>
 
-            {/* Mobile Toggle */}
+            {/* ── Mobile toggle ─────────────────────────────────────────── */}
             <button
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background text-foreground lg:hidden"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              className="flex h-10 w-10 items-center justify-center rounded-xl
+                         border border-border bg-background/80
+                         text-foreground transition-colors duration-150
+                         hover:bg-muted outline-none
+                         focus-visible:ring-2 focus-visible:ring-primary/60
+                         lg:hidden"
             >
-              {mobileOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {mobileOpen ? (
+                  <motion.span
+                    key="close"
+                    initial={shouldReduceMotion ? false : { opacity: 0, rotate: -90 }}
+                    animate={shouldReduceMotion ? {} : { opacity: 1, rotate: 0 }}
+                    exit={shouldReduceMotion ? {} : { opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="open"
+                    initial={shouldReduceMotion ? false : { opacity: 0, rotate: 90 }}
+                    animate={shouldReduceMotion ? {} : { opacity: 1, rotate: 0 }}
+                    exit={shouldReduceMotion ? {} : { opacity: 0, rotate: -90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Menu className="h-5 w-5" aria-hidden="true" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
+
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* ─────────────────────────────── MOBILE MENU ─────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
-              initial={
-                shouldReduceMotion
-                  ? false
-                  : {
-                      opacity: 0,
-                    }
-              }
-              animate={
-                shouldReduceMotion
-                  ? {}
-                  : {
-                      opacity: 1,
-                    }
-              }
-              exit={
-                shouldReduceMotion
-                  ? {}
-                  : {
-                      opacity: 0,
-                    }
-              }
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+              key="backdrop"
+              initial={shouldReduceMotion ? false : { opacity: 0 }}
+              animate={shouldReduceMotion ? {} : { opacity: 1 }}
+              exit={shouldReduceMotion ? {} : { opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
             />
 
+            {/* Drawer */}
             <motion.div
-              initial={
-                shouldReduceMotion
-                  ? false
-                  : {
-                      x: '100%',
-                    }
-              }
-              animate={
-                shouldReduceMotion
-                  ? {}
-                  : {
-                      x: 0,
-                    }
-              }
-              exit={
-                shouldReduceMotion
-                  ? {}
-                  : {
-                      x: '100%',
-                    }
-              }
+              key="drawer"
+              initial={shouldReduceMotion ? false : { x: '100%' }}
+              animate={shouldReduceMotion ? {} : { x: 0 }}
+              exit={shouldReduceMotion ? {} : { x: '100%' }}
               transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-background p-6 shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col
+                         border-l border-border bg-background p-5 shadow-2xl lg:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
             >
-              <div className="mb-10 flex items-center justify-between">
+              {/* Drawer header */}
+              <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                    <Zap className="h-5 w-5 fill-current" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl
+                                  bg-primary text-primary-foreground">
+                    <Zap className="h-4.5 w-4.5 fill-current" aria-hidden="true" />
                   </div>
-
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="text-base font-extrabold tracking-tight text-foreground">
                     Aflows
                   </span>
                 </div>
-
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-border"
+                  aria-label="Close menu"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl
+                             border border-border bg-muted/60
+                             text-foreground transition-colors hover:bg-muted
+                             outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  <X className="h-5 w-5 text-foreground" />
+                  <X className="h-4.5 w-4.5" aria-hidden="true" />
                 </button>
               </div>
 
-              <div className="flex flex-1 flex-col">
-                <div className="space-y-2">
-                  <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              {/* Scrollable content */}
+              <div className="flex flex-1 flex-col overflow-y-auto">
+                {/* Features section */}
+                <div className="space-y-1">
+                  <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     Features
                   </p>
-
                   {features.map((feature) => (
                     <button
                       key={feature.title}
                       onClick={() => scrollToSection(feature.id)}
-                      className="flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-colors hover:bg-muted"
+                      className="flex w-full items-center gap-4 rounded-2xl p-3.5
+                                 text-left transition-colors duration-150
+                                 hover:bg-muted outline-none
+                                 focus-visible:ring-2 focus-visible:ring-primary/50"
                     >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
-                        <feature.icon className="h-5 w-5 text-primary" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center
+                                      rounded-xl bg-primary/10">
+                        <feature.icon className="h-5 w-5 text-primary" aria-hidden="true" />
                       </div>
-
                       <div>
-                        <h3 className="text-sm font-semibold text-foreground">
+                        <p className="text-sm font-semibold text-foreground">
                           {feature.title}
-                        </h3>
-
-                        <p className="text-sm text-muted-foreground">
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           {feature.desc}
                         </p>
                       </div>
@@ -378,52 +407,48 @@ export const Navbar = () => {
                   ))}
                 </div>
 
-                <div className="mt-8 space-y-2 border-t border-border pt-8">
-                  <button
-                    onClick={() => {
-                      navigate('/about');
-                      setMobileOpen(false);
-                    }}
-                    className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    About
-                  </button>
-
-                  <button
-                    onClick={() => scrollToSection('pricing')}
-                    className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Pricing
-                  </button>
-
-                  <button
-                    onClick={() => scrollToSection('contact')}
-                    className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                  >
-                    Contact
-                  </button>
+                {/* Secondary links */}
+                <div className="mt-6 space-y-0.5 border-t border-border pt-6">
+                  {[
+                    { label: 'About',   action: () => { navigate('/about'); setMobileOpen(false); } },
+                    { label: 'Pricing', action: () => scrollToSection('pricing') },
+                    { label: 'Contact', action: () => scrollToSection('contact') },
+                  ].map((link) => (
+                    <button
+                      key={link.label}
+                      onClick={link.action}
+                      className={[
+                        'w-full rounded-xl px-4 py-3 text-left text-sm font-medium',
+                        'transition-colors duration-150 outline-none',
+                        'hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/50',
+                        isActive(link.label)
+                          ? 'text-foreground font-semibold'
+                          : 'text-foreground/80',
+                      ].join(' ')}
+                    >
+                      {link.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6">
+              {/* CTA buttons */}
+              <div className="mt-6 flex flex-col gap-2.5 border-t border-border pt-5">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    navigate('/login');
-                    setMobileOpen(false);
-                  }}
-                  className="h-12 rounded-full"
+                  onClick={() => { navigate('/login'); setMobileOpen(false); }}
+                  className="h-12 rounded-full text-sm font-medium
+                             border-border hover:bg-muted transition-colors duration-150"
                 >
                   Sign In
                 </Button>
-
                 <Button
                   variant="hero"
-                  onClick={() => {
-                    navigate('/register');
-                    setMobileOpen(false);
-                  }}
-                  className="h-12 rounded-full shadow-lg shadow-primary/20"
+                  onClick={() => { navigate('/register'); setMobileOpen(false); }}
+                  className="h-12 rounded-full text-sm font-semibold
+                             shadow-lg shadow-primary/20
+                             transition-all duration-200 hover:shadow-primary/30
+                             active:scale-[0.98]"
                 >
                   Start Free
                 </Button>
@@ -435,155 +460,3 @@ export const Navbar = () => {
     </>
   );
 };
-
-
-// import React, { useState, useEffect } from 'react';
-// import { motion, AnimatePresence } from 'framer-motion';
-// import { Button } from '@/components/ui/button';
-// import { useAuth } from '@/contexts/AuthContext';
-// import { useNavigate } from 'react-router-dom';
-// import { Zap, Menu, X, LayoutDashboard } from 'lucide-react';
-// import { ThemeToggle } from '@/components/ThemeToggle';
-
-// export const Navbar = () => {
-//   const { isAuthenticated } = useAuth();
-//   const navigate = useNavigate();
-//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-//   const [scrolled, setScrolled] = useState(false);
-
-//   // Logic for changing navbar background on scroll
-//   useEffect(() => {
-//     const handleScroll = () => setScrolled(window.scrollY > 20);
-//     window.addEventListener('scroll', handleScroll);
-//     return () => window.removeEventListener('scroll', handleScroll);
-//   }, []);
-
-
-
-//   return (
-//     <motion.nav
-//       initial={{ y: -100 }}
-//       animate={{ y: 0 }}
-//       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
-//         scrolled 
-//           ? 'bg-background/80 backdrop-blur-xl border-b border-white/5 py-3' 
-//           : 'bg-transparent py-5'
-//       }`}
-//     >
-//       <div className="container mx-auto px-6 flex items-center justify-between">
-//         {/* Logo */}
-//         <div 
-//           className="flex items-center gap-2 cursor-pointer group" 
-//           onClick={() => navigate('/')}
-//         >
-//           <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-//             <Zap className="w-5 h-5 text-black fill-current" />
-//           </div>
-//           <span className="text-xl font-bold tracking-tighter text-white">Aflows</span>
-//         </div>
-
-//         {/* Desktop Navigation */}
-//         <div className="hidden md:flex items-center gap-8">
-//           <div className="flex items-center gap-6">
-//             <button
-//               onClick={() => navigate('/about')}
-//               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-//             >
-//               About
-//             </button>
-//           </div>
-          
-//           <div className="flex items-center gap-3 border-l border-white/10 pl-6">
-//             <ThemeToggle />
-//             {isAuthenticated ? (
-//               <Button 
-//                 onClick={() => navigate('/dashboard')} 
-//                 variant="hero" 
-//                 size="sm"
-//                 className="rounded-full px-5"
-//               >
-//                 <LayoutDashboard className="w-4 h-4 mr-2" />
-//                 Dashboard
-//               </Button>
-//             ) : (
-//               <div className="flex items-center gap-2">
-//                 <Button
-//                   onClick={() => navigate('/login')}
-//                   variant="ghost"
-//                   size="sm"
-//                   className="text-white hover:text-primary transition-colors"
-//                 >
-//                   Log In
-//                 </Button>
-//                 <Button
-//                   onClick={() => navigate('/register')}
-//                   variant="hero"
-//                   size="sm"
-//                   className="rounded-full px-6 font-bold text-black shadow-lg shadow-primary/10"
-//                 >
-//                   Get Started
-//                 </Button>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-
-//         {/* Mobile Action Bar: THE FIX */}
-//         <div className="flex md:hidden items-center gap-3">
-//           <ThemeToggle />
-          
-//           {!isAuthenticated && (
-//             <button 
-//               onClick={() => navigate('/login')}
-//               className="text-sm font-bold text-primary px-2 py-1 active:scale-95 transition-transform"
-//             >
-//               Log In
-//             </button>
-//           )}
-
-//           <button
-//             className="p-2 text-white bg-white/5 rounded-lg border border-white/10 active:bg-white/10"
-//             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-//           >
-//             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* Mobile Menu Overlay */}
-//       <AnimatePresence>
-//         {mobileMenuOpen && (
-//           <motion.div
-//             initial={{ opacity: 0, height: 0 }}
-//             animate={{ opacity: 1, height: 'auto' }}
-//             exit={{ opacity: 0, height: 0 }}
-//             className="md:hidden bg-background/95 backdrop-blur-2xl border-b border-white/5"
-//           >
-//             <div className="flex flex-col gap-4 p-6 pt-2">
-//               <button
-//                 onClick={() => { navigate('/about'); setMobileMenuOpen(false); }}
-//                 className="text-lg font-medium text-muted-foreground text-left py-2 border-b border-white/5"
-//               >
-//                 About
-//               </button>
-              
-//               {!isAuthenticated ? (
-//                 <Button
-//                   onClick={() => navigate('/register')}
-//                   variant="hero"
-//                   className="w-full py-6 text-black font-bold mt-2"
-//                 >
-//                   Create Free Account
-//                 </Button>
-//               ) : (
-//                 <Button onClick={() => navigate('/dashboard')} variant="hero" className="w-full py-6">
-//                   Dashboard
-//                 </Button>
-//               )}
-//             </div>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-//     </motion.nav>
-//   );
-// };
