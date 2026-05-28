@@ -90,7 +90,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
               >
                 {plan.highlight && showBothPlans && (
                   <span className="self-start text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                    Most Popular
+                    {/* Most Popular */}
                   </span>
                 )}
                 <div className="flex items-center gap-3">
