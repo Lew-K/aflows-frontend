@@ -8,6 +8,8 @@ export const BulkStockModal = ({ items, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState("add"); // add | set
+  const { accessToken, user } = useAuth();
+
 
   const handleChange = (id, value) => {
     if (Number(value) < 0) return;
@@ -54,12 +56,19 @@ export const BulkStockModal = ({ items, onClose, onSuccess }) => {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/bulk-restock", {
+      const response = await fetch("https://api.aflows.uk/api/v1/inventory/bulk-restock", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          items: payload.map(p => ({
+            ...p,
+            business_id: user?.businessId,
+          })),
+        }),
       });
-
       if (response.ok) {
         onSuccess();
         onClose();
