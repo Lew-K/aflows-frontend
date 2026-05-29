@@ -121,6 +121,7 @@ export const SalesPage = () => {
     resolver: zodResolver(saleSchema),
     defaultValues: {
       customerName: "",
+      customerPhone: "",
       items: [{ item: "", quantity: 1, unitCost: 0 }],
       paymentMethod: "cash",
       paymentReference: "",
