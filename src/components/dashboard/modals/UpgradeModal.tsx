@@ -40,7 +40,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
     : [PLANS.pro];
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-foreground/30 backdrop-blur-sm ${locked ? '' : ''}`}
+    <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm ${locked ? '' : ''}`}
       onClick={locked ? undefined : onClose}
     >
       <div
