@@ -82,7 +82,7 @@ export const SurveyModal = ({ businessId, onClose }: SurveyModalProps) => {
   const current = steps[step];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-card w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl p-6">
         <div className="flex justify-between items-start mb-1">
           <div>
