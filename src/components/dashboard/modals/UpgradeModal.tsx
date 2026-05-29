@@ -10,7 +10,15 @@ const PLANS = {
     icon: TrendingUp,
     color: 'text-blue-500',
     highlight: true,
-    features: ['Everything in Starter', 'Inventory management', 'Customer CRM + history', 'Full analytics + projections', 'Up to 3 staff', 'CSV exports', 'Full branding & receipts'],
+    features: [
+      'Everything in Starter',
+      'Inventory management (unlimited)',
+      'Customer CRM + purchase history',
+      'Full analytics — all periods + projections',
+      'Up to 3 staff members',
+      'CSV exports',
+      'Full branding + receipt customization',
+    ],
   },
   pro: {
     name: 'Pro',
@@ -18,7 +26,15 @@ const PLANS = {
     icon: Shield,
     color: 'text-purple-500',
     highlight: false,
-    features: ['Everything in Growth', 'Unlimited staff', 'WhatsApp receipts', 'File uploads & vault', 'PDF exports', 'Priority support', 'Multi-session management'],
+    features: [
+      'Everything in Growth',
+      'Unlimited staff members',
+      // 'WhatsApp receipt delivery',
+      'File uploads + document vault',
+      'PDF exports',
+      'Priority support',
+      'Multi-session management',
+    ],
   },
 };
 
