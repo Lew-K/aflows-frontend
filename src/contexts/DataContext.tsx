@@ -141,22 +141,23 @@ export const DataProvider = ({ children }: any) => {
   // New version: bust cache key only → existing data stays until new data lands
   const refreshInventory = async (businessId: string) => {
     const key = `${businessId}-inventory`;
-
-    // Bust the stale-time so fetchInventory treats this as a forced refresh
+  
     setLastFetched((prev) => {
       const next = { ...prev };
       delete next[key];
       return next;
     });
-
-    // Also clear in-flight guard so a concurrent fetch doesn't block this one
+  
     setFetchingKeys((prev) => {
       const next = { ...prev };
       delete next[key];
       return next;
     });
-
-    // Data stays visible — fetch will overwrite it when it resolves
+  
+    // Yield one tick — lets React flush both state updates above
+    // before fetchInventory reads fetchingKeys and lastFetched
+    await new Promise(resolve => setTimeout(resolve, 0));
+  
     await fetchInventory(businessId);
   };
 
