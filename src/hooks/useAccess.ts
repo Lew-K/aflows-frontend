@@ -34,6 +34,7 @@ export const useAccess = () => {
       case 'operations':
       case 'contact':
       case 'settings_basic':
+      case 'team_members': 
         return true;
 
       // Growth and Pro
