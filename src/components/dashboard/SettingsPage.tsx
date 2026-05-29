@@ -1061,189 +1061,140 @@ export const SettingsPage = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* SECURITY */}
+        
+        {/* SECURITY + TEAM */}
         <Card className="border border-border/60 shadow-sm">
-          <CardContent className="p-8 space-y-8">
-            <div>
-              <h2 className="text-xl font-semibold">
-                Security & Password
-              </h2>
+          <CardContent className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
 
-              <p className="text-sm text-muted-foreground mt-1">
-                Protect your business account.
-              </p>
-            </div>
-
-            <hr className="border-border/40" />
-
-            <div className="space-y-4 max-w-xl">
-              {["current", "new", "confirm"].map(
-                (field) => (
-                  <div
-                    key={field}
-                    className="relative"
-                  >
-                    <Input
-                      type={
-                        showPassword[field]
-                          ? "text"
-                          : "password"
-                      }
-                      placeholder={`${field} password`}
-                      value={passwordData[field]}
-                      onChange={(e) =>
-                        setPasswordData((prev) => ({
-                          ...prev,
-                          [field]:
-                            e.target.value,
-                        }))
-                      }
-                    />
-
-                    <button
-                      className="absolute right-3 top-2"
-                      onClick={() =>
-                        setShowPassword((prev) => ({
-                          ...prev,
-                          [field]:
-                            !prev[field],
-                        }))
-                      }
-                    >
-                      {showPassword[field] ? (
-                        <EyeOff size={16} />
-                      ) : (
-                        <Eye size={16} />
-                      )}
-                    </button>
-                  </div>
-                )
-              )}
-
-              {passwordData.new && (
+              {/* ── Security & Password ── */}
+              <div className="space-y-8 pb-8 lg:pb-0 lg:pr-8">
                 <div>
-                  <div className="h-2 bg-muted rounded">
-                    <div
-                      className={`h-2 rounded transition-all ${strength.color}`}
-                      style={{
-                        width: `${strength.value}%`,
-                      }}
-                    />
-                  </div>
+                  <h2 className="text-xl font-semibold">Security & Password</h2>
+                  <p className="text-sm text-muted-foreground mt-1">Protect your business account.</p>
+                </div>
 
-                  <p className="text-xs mt-1">
-                    {strength.label}
+                <hr className="border-border/40" />
+
+                <div className="space-y-4">
+                  {["current", "new", "confirm"].map((field) => (
+                    <div key={field} className="relative">
+                      <Input
+                        type={showPassword[field] ? "text" : "password"}
+                        placeholder={`${field} password`}
+                        value={passwordData[field]}
+                        onChange={(e) =>
+                          setPasswordData((prev) => ({ ...prev, [field]: e.target.value }))
+                        }
+                      />
+                      <button
+                        className="absolute right-3 top-2"
+                        onClick={() =>
+                          setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }))
+                        }
+                      >
+                        {showPassword[field] ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  ))}
+
+                  {passwordData.new && (
+                    <div>
+                      <div className="h-2 bg-muted rounded">
+                        <div
+                          className={`h-2 rounded transition-all ${strength.color}`}
+                          style={{ width: `${strength.value}%` }}
+                        />
+                      </div>
+                      <p className="text-xs mt-1">{strength.label}</p>
+                    </div>
+                  )}
+
+                  {passwordError && (
+                    <p className="text-xs text-red-500">{passwordError}</p>
+                  )}
+
+                  <Button
+                    onClick={handlePasswordUpdate}
+                    disabled={!!passwordError || !passwordData.current || !passwordData.new}
+                  >
+                    Update Password
+                  </Button>
+                </div>
+              </div>
+
+              {/* ── Access & Team ── */}
+              <div className="space-y-8 pt-8 lg:pt-0 lg:pl-8">
+                <div>
+                  <h2 className="text-xl font-semibold">Access & Team</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Manage permissions and active sessions.
                   </p>
                 </div>
-              )}
 
-              {passwordError && (
-                <p className="text-xs text-red-500">
-                  {passwordError}
-                </p>
-              )}
+                <hr className="border-border/40" />
 
-              <Button
-                onClick={handlePasswordUpdate}
-                disabled={
-                  !!passwordError ||
-                  !passwordData.current ||
-                  !passwordData.new
-                }
-              >
-                Update Password
-              </Button>
+                <div className="space-y-6">
+                  {/* OWNER */}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">Owner</p>
+                      <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <span className="text-sm text-green-600 flex items-center gap-1">
+                      <Check className="w-4 h-4" />
+                      Active
+                    </span>
+                  </div>
+
+                  {/* TEAM */}
+                  <div className="flex justify-between items-center border-t border-border/40 pt-6">
+                    <div>
+                      <p className="font-medium">Team Members</p>
+                      <p className="text-sm text-muted-foreground">
+                        {can("team_management")
+                          ? "Invite and manage staff access."
+                          : "Upgrade your plan to manage your team."}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        can("team_management")
+                          ? setTeamModalOpen(true)
+                          : setUpgradeModalOpen(true)
+                      }
+                    >
+                      {can("team_management") ? "Invite / Manage" : "Upgrade"}
+                    </Button>
+                  </div>
+
+                  {/* SESSIONS */}
+                  <div className="flex justify-between items-center border-t border-border/40 pt-6">
+                    <div>
+                      <p className="font-medium">Active Sessions</p>
+                      <p className="text-sm text-muted-foreground">
+                        You are currently logged in on this device.
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">View</Button>
+                  </div>
+
+                  {/* DANGER */}
+                  <div className="border-t border-border/40 pt-6">
+                    <Button variant="destructive" size="sm">
+                      Sign Out of All Devices
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </CardContent>
         </Card>
-
-        {/* ACCESS */}
-        {can("team_management") && (
-          <Card className="border border-border/60 shadow-sm">
-            <CardContent className="p-8 space-y-8">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  Access & Team Management
-                </h2>
-
-                <p className="text-sm text-muted-foreground mt-1">
-                  Manage permissions and active sessions.
-                </p>
-              </div>
-
-              <hr className="border-border/40" />
-
-              <div className="space-y-6">
-                {/* OWNER */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">
-                      Owner
-                    </p>
-
-                    <p className="text-sm text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-
-                  <span className="text-sm text-green-600 flex items-center gap-1">
-                    <Check className="w-4 h-4" />
-                    Active
-                  </span>
-                </div>
-
-                {/* TEAM */}
-                <div className="flex justify-between items-center border-t border-border/40 pt-6">
-                  <div>
-                    <p className="font-medium">
-                      Team Members
-                    </p>
-
-                    <p className="text-sm text-muted-foreground">
-                      Invite and manage staff access.
-                    </p>
-                  </div>
-
-                  <Button variant="outline" size="sm" onClick={() => setTeamModalOpen(true)}>
-                    Invite / Manage
-                  </Button>
-                </div>
-
-                {/* SESSIONS */}
-                <div className="flex justify-between items-center border-t border-border/40 pt-6">
-                  <div>
-                    <p className="font-medium">
-                      Active Sessions
-                    </p>
-
-                    <p className="text-sm text-muted-foreground">
-                      You are currently logged in on
-                      this device.
-                    </p>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                  >
-                    View
-                  </Button>
-                </div>
-
-                {/* DANGER */}
-                <div className="border-t border-border/40 pt-6">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Sign Out of All Devices
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        
+        
       </div>
 
       {teamModalOpen && (
