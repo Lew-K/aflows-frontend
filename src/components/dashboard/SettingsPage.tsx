@@ -7,6 +7,7 @@ import { TeamManagementModal } from '@/components/dashboard/modals/TeamManagemen
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/contexts/DataContext";
 import { useAccess } from "@/hooks/useAccess";
+import { Crown, Zap, TrendingUp, Shield, Calendar, AlertTriangle } from "lucide-react";
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
 
 
@@ -703,11 +704,13 @@ export const SettingsPage = () => {
                       size="sm"
                       variant="secondary"
                       onClick={() =>
-                        fileInputRef.current?.click()
+                        can('branding_edit')
+                          ? fileInputRef.current?.click()
+                          : setUpgradeModalOpen(true)
                       }
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      Change
+                      {can('branding_edit') ? 'Change' : 'Upgrade'}
                     </Button>
                   </div>
 
@@ -1061,6 +1064,54 @@ export const SettingsPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* SUBSCRIPTION */}
+        <Card className="border border-border/60 shadow-sm">
+          <CardContent className="p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-primary/10">
+                  <Crown className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Subscription</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      tier === 'pro' ? 'bg-purple-500/10 text-purple-600' :
+                      tier === 'growth' ? 'bg-blue-500/10 text-blue-600' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {tier} plan
+                    </span>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      user?.subscriptionStatus === 'active' ? 'bg-green-500/10 text-green-600' :
+                      user?.subscriptionStatus === 'trialing' ? 'bg-amber-500/10 text-amber-600' :
+                      'bg-red-500/10 text-red-600'
+                    }`}>
+                      {user?.subscriptionStatus === 'trialing'
+                        ? `Trial — ${Math.max(0, Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days left`
+                        : user?.subscriptionStatus === 'active' ? 'Active'
+                        : 'Expired'
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {tier !== 'pro' && (
+                  <Button onClick={() => setUpgradeModalOpen(true)}>
+                    Upgrade Plan
+                  </Button>
+                )}
+                {user?.subscriptionStatus === 'active' && (
+                  <p className="text-xs text-muted-foreground">
+                    Renews {user?.current_period_end ? new Date(user.current_period_end).toLocaleDateString() : '—'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         {/* SECURITY + TEAM */}
         <Card className="border border-border/60 shadow-sm">
