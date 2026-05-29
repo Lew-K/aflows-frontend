@@ -44,7 +44,7 @@ export const useAccess = () => {
           return hasPageAccess(tier, 'inventory');
           
         case 'customers':
-          return hasPageAccess(tier, 'customers');
+          return hasPageAccess(tier, 'customers'); // 🟢 This will safely evaluate to false on Starter/Growth, true on Pro
           
         case 'operations':
         case 'reports':
@@ -57,14 +57,20 @@ export const useAccess = () => {
         case 'team_management':
           return hasPageAccess(tier, 'team');
     
-        case 'branding_edit':
         case 'settings_basic':
         case 'settings_business':
         case 'settings_full':
           return hasPageAccess(tier, 'settings');
     
+        case 'branding_edit':
+          return tier === 'growth' || tier === 'pro'; // 🟢 Fixed: Explicitly locks Starter out of logo uploads
+    
         case 'uploads':
-          return tier === 'pro'; // Keep standalone feature gates as fallback checks
+          return tier === 'pro'; 
+    
+        // 👇 ADD THIS CASE TO MAP EXPORTS TO YOUR MATRIX
+        case 'exports' as any: 
+          return hasPageAccess(tier, 'exports'); // 🟢 Fixed: Starter returns false, Growth/Pro returns true
     
         default:
           return false;
