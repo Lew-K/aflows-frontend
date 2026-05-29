@@ -1,5 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 
+import { hasPageAccess, SubscriptionTier } from '@/lib/subscriptionAccess';
+
 type Feature =
   | 'sales' | 'inventory' | 'customers' | 'operations' | 'reports'
   | 'uploads' | 'settings_basic' | 'settings_business' | 'settings_full'
@@ -15,52 +17,101 @@ export const useAccess = () => {
     user?.trialEndsAt != null &&
     new Date(user.trialEndsAt) > new Date();
 
-  const tier = isOnTrial ? 'pro' : (user?.subscriptionTier || 'starter');
+  const tier = (isOnTrial ? 'pro' : (user?.subscriptionTier || 'starter')) as SubscriptionTier;
 
   const isExpired =
     !isOnTrial &&
     user?.subscriptionStatus !== 'active' &&
     user?.subscriptionStatus !== undefined;
 
-  const can = (feature: Feature): boolean => {
-    if (isExpired) return feature === 'settings_basic' || feature === 'contact';
-
-    if (role === 'staff') {
-      return ['sales', 'operations', 'contact', 'settings_basic'].includes(feature);
-    }
-
-    switch (feature) {
-      case 'sales':
-      case 'operations':
-      case 'contact':
-      case 'settings_basic':
-      case 'team_members': 
-        return true;
-
-      // Growth and Pro
-      case 'inventory':
-      case 'customers':
-      case 'reports':
-      case 'settings_business':
-      case 'branding_edit':
-      case 'analytics_advanced':
-        return tier === 'growth' || tier === 'pro';
-
-      // Pro only
-      case 'uploads':
-      case 'team_management':
-      case 'settings_full':
-      case 'analytics_custom_range':
-      case 'analytics_segmentation':
-        return tier === 'pro';
-
-      default:
-        return false;
-    }
-  };
-
+    const can = (feature: Feature): boolean => {
+      // 1. Handle expired accounts cleanly
+      if (isExpired) {
+        return feature === 'settings_basic' || feature === 'contact';
+      }
+    
+      // 2. Handle staff role restrictions
+      if (role === 'staff') {
+        return ['sales', 'operations', 'contact', 'settings_basic'].includes(feature);
+      }
+    
+      // 3. Map your page feature triggers directly to your subscription matrix definitions
+      switch (feature) {
+        case 'sales':
+          return hasPageAccess(tier, 'sales');
+          
+        case 'inventory':
+          return hasPageAccess(tier, 'inventory');
+          
+        case 'customers':
+          return hasPageAccess(tier, 'customers');
+          
+        case 'operations':
+        case 'reports':
+        case 'analytics_advanced':
+        case 'analytics_custom_range':
+        case 'analytics_segmentation':
+          return hasPageAccess(tier, 'analytics');
+    
+        case 'team_members':
+        case 'team_management':
+          return hasPageAccess(tier, 'team');
+    
+        case 'branding_edit':
+        case 'settings_basic':
+        case 'settings_business':
+        case 'settings_full':
+          return hasPageAccess(tier, 'settings');
+    
+        case 'uploads':
+          return tier === 'pro'; // Keep standalone feature gates as fallback checks
+    
+        default:
+          return false;
+      }
+    };
   return { can, role, tier, isOnTrial, isExpired };
 };
+
+//   const can = (feature: Feature): boolean => {
+//     if (isExpired) return feature === 'settings_basic' || feature === 'contact';
+
+//     if (role === 'staff') {
+//       return ['sales', 'operations', 'contact', 'settings_basic'].includes(feature);
+//     }
+
+//     switch (feature) {
+//       case 'sales':
+//       case 'operations':
+//       case 'contact':
+//       case 'settings_basic':
+//       case 'team_members': 
+//         return true;
+
+//       // Growth and Pro
+//       case 'inventory':
+//       case 'customers':
+//       case 'reports':
+//       case 'settings_business':
+//       case 'branding_edit':
+//       case 'analytics_advanced':
+//         return tier === 'growth' || tier === 'pro';
+
+//       // Pro only
+//       case 'uploads':
+//       case 'team_management':
+//       case 'settings_full':
+//       case 'analytics_custom_range':
+//       case 'analytics_segmentation':
+//         return tier === 'pro';
+
+//       default:
+//         return false;
+//     }
+//   };
+
+//   return { can, role, tier, isOnTrial, isExpired };
+// };
 
 
 
