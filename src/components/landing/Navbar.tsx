@@ -91,13 +91,14 @@ export const Navbar = () => {
   const navLinks = [
     { label: 'Features', megaMenu: true },
     { label: 'About',    action: () => navigate('/about') },
-    { label: 'Pricing',  action: () => scrollToSection('pricing') },
+    { label: 'Pricing', action: () => navigate('/pricing') },
     { label: 'Contact',  action: () => scrollToSection('contact') },
   ];
 
   // Determine active link for highlight indicator
   const isActive = (label: string) => {
     if (label === 'About' && location.pathname === '/about') return true;
+    if (label === 'Pricing' && location.pathname === '/pricing') return true;
     if (label === 'Features' && location.pathname === '/') return true;
     return false;
   };
@@ -413,7 +414,13 @@ export const Navbar = () => {
                 <div className="mt-6 space-y-0.5 border-t border-border pt-6">
                   {[
                     { label: 'About',   action: () => { navigate('/about'); setMobileOpen(false); } },
-                    { label: 'Pricing', action: () => scrollToSection('pricing') },
+                    {
+                      label: 'Pricing',
+                      action: () => {
+                        navigate('/pricing');
+                        setMobileOpen(false);
+                      },
+                    },
                     { label: 'Contact', action: () => scrollToSection('contact') },
                   ].map((link) => (
                     <button
