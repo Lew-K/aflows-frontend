@@ -72,8 +72,8 @@ export const subscriptionAccess: Record<
     },
 
     team: {
-      enabled: false,
-      limit: 0,
+      enabled: true,
+      limit: 1,
     },
   },
 
@@ -120,7 +120,7 @@ export const subscriptionAccess: Record<
 
     team: {
       enabled: true,
-      limit: 2,
+      limit: 3,
     },
   },
 
