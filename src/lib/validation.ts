@@ -32,7 +32,7 @@ export const loginSchema = z.object({
 export const saleSchema = z
   .object({
     customerName: z.string().optional(),
-    customerPhone: optional().or(z.literal("")),
+    customerPhone: phoneSchema.optional().or(z.literal("")),
 
     // // REQUIRED
     // items: z
