@@ -14,8 +14,7 @@ import { DataProvider } from "@/contexts/DataContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/About";
-import Pricing from "./pages/PricingPage";
-
+import { PricingPage } from "./pages/PricingPage";
 
 
 import AdminLogin from "@/components/internal-admin/AdminLogin";
