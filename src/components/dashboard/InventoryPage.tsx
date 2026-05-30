@@ -59,7 +59,7 @@ export const InventoryPage = () => {
     return { label: "In Stock", class: "bg-emerald-100 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" };
   };
 
-  if (!user || loading) {
+  if (!user || (items.length === 0 && loading)) {
     return (
       <div className="p-6 space-y-6 animate-pulse">
         <div className="h-10 bg-muted rounded w-1/4" />
