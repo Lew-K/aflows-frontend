@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 
 export const useInventory = (businessId: string) => {
-  const { inventory, isFetching, fetchInventory, refreshInventory } = useData();
+  const { inventory, isFetching, fetchInventory, refreshInventory, refreshingKeys } = useData();
 
   useEffect(() => {
     if (!businessId) return;
@@ -14,6 +14,7 @@ export const useInventory = (businessId: string) => {
   return {
     items: inventory,
     loading: isFetching(key),
+    refreshing: !!refreshingKeys?.[key],
     refresh: () => refreshInventory(businessId),
   };
 };
