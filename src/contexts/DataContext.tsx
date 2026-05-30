@@ -72,6 +72,7 @@ export const DataProvider = ({ children }: any) => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [analyticsCache, setAnalyticsCache] = useState<Record<string, RevenueAnalytics>>({});
   const [fetchingKeys, setFetchingKeys] = useState<Record<string, boolean>>({});
+  const [refreshingKeys, setRefreshingKeys] = useState<Record<string, boolean>>({});
   const [revenue, setRevenue] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -139,26 +140,42 @@ export const DataProvider = ({ children }: any) => {
   // ─── REFRESH INVENTORY (KEY FIX) ─────────────────────────────────────────
   // Old version: setInventory([]) then fetch → table goes blank until response
   // New version: bust cache key only → existing data stays until new data lands
+  // const refreshInventory = async (businessId: string) => {
+  //   const key = `${businessId}-inventory`;
+  
+  //   setLastFetched((prev) => {
+  //     const next = { ...prev };
+  //     delete next[key];
+  //     return next;
+  //   });
+  
+  //   setFetchingKeys((prev) => {
+  //     const next = { ...prev };
+  //     delete next[key];
+  //     return next;
+  //   });
+  
+  //   // Yield one tick — lets React flush both state updates above
+  //   // before fetchInventory reads fetchingKeys and lastFetched
+  //   await new Promise(resolve => setTimeout(resolve, 0));
+  
+  //   await fetchInventory(businessId);
+  // };
+
   const refreshInventory = async (businessId: string) => {
     const key = `${businessId}-inventory`;
   
-    setLastFetched((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
+    setRefreshingKeys((prev) => ({ ...prev, [key]: true }));
   
-    setFetchingKeys((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  
-    // Yield one tick — lets React flush both state updates above
-    // before fetchInventory reads fetchingKeys and lastFetched
-    await new Promise(resolve => setTimeout(resolve, 0));
-  
-    await fetchInventory(businessId);
+    try {
+      await fetchInventory(businessId);
+    } finally {
+      setRefreshingKeys((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
   };
 
   // ─── CUSTOMERS ────────────────────────────────────────────────────────────
@@ -350,7 +367,7 @@ export const DataProvider = ({ children }: any) => {
       inventory, customers, getSales, fetchSales,
       getRevenueAnalytics, fetchRevenueAnalytics,
       isFetching, revenue, loading, prefetchAll,
-      refreshInventory, fetchInventory,
+      refreshInventory, fetchInventory,refreshingKeys,
       refreshBusiness, refreshCustomers, refreshSales,
       business, fetchBusiness, injectSale, updateSaleReceipt,
     }}>
