@@ -679,7 +679,7 @@ export const SettingsPage = () => {
                   className={`relative group
                   w-40 h-40
                   md:w-48 md:h-48
-                  lg:w-52 lg:h-52
+                  lg:w-56 lg:h-56
                   rounded-3xl overflow-hidden border bg-muted flex items-center justify-center ${
                     isDragging
                       ? "border-primary"
