@@ -9,6 +9,8 @@ import { useData } from "@/contexts/DataContext";
 import { useAccess } from "@/hooks/useAccess";
 import { Crown, Zap, TrendingUp, Shield, Calendar, AlertTriangle } from "lucide-react";
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
+import { apiFetch } from '@/lib/apiFetch';
+import { SessionsModal } from '@/components/dashboard/modals/SessionsModal';
 
 
 import {
@@ -261,6 +263,8 @@ export const SettingsPage = () => {
   const { business, refreshBusiness } = useData();
 
   const { can, tier } = useAccess();
+
+  const [sessionsOpen, setSessionsOpen] = useState(false);
 
   /* ─────────────────────────────────────────────
      SETTINGS STATE
@@ -1229,12 +1233,28 @@ export const SettingsPage = () => {
                         You are currently logged in on this device.
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">View</Button>
+                    <Button variant="outline" size="sm" onClick={() => setSessionsOpen(true)}>
+                      View
+                    </Button>
                   </div>
 
                   {/* DANGER */}
                   <div className="border-t border-border/40 pt-6">
-                    <Button variant="destructive" size="sm">
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={async () => {
+                        if (!confirm('Sign out of all devices? You will need to log in again.')) return;
+                        try {
+                          await apiFetch('https://api.aflows.uk/api/v1/auth/logout-all', { method: 'POST' });
+                          toast.success('Signed out of all devices');
+                          // Force logout current session too
+                          setTimeout(() => window.location.href = '/login', 1500);
+                        } catch {
+                          toast.error('Failed to sign out');
+                        }
+                      }}
+                    >
                       Sign Out of All Devices
                     </Button>
                   </div>
@@ -1319,6 +1339,13 @@ export const SettingsPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {sessionsOpen && (
+        <SessionsModal
+          onClose={() => setSessionsOpen(false)}
+          businessId={user?.businessId || ''}
+          accessToken={accessToken || ''}
+        />
+      )}
     </div>
   );
 };
