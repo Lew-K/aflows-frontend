@@ -41,7 +41,7 @@ export const LoginSection = () => {
         password: data.password,
       });  
 
-      console.log('Full login response:', JSON.stringify(response));
+      // console.log('Full login response:', JSON.stringify(response));
 
       if (response.success && response.access_token && response.refresh_token) {
         login(
