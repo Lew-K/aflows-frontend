@@ -694,7 +694,7 @@ export const SettingsPage = () => {
                         settings.business_logo_url
                       }
                       alt="logo"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain p-4"
                     />
                   ) : (
                     <div className="text-4xl font-bold text-muted-foreground">
