@@ -105,7 +105,7 @@ const ReceiptPreview = ({ settings }) => {
           <img
             src={settings.business_logo_url}
             alt="logo"
-            className="w-14 h-14 object-contain mx-auto"
+            className="w-24 h-24 object-contain mx-auto"
           />
         ) : (
           <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-base font-bold text-primary">
