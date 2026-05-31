@@ -275,7 +275,7 @@ export const SettingsPage = () => {
     location: "Nairobi, Kenya",
 
     receipt_prefix: "RCT",
-    next_receipt_number: "42",
+    next_receipt_number: "0001",
 
     receipt_footer: "Thank you for your business",
 
@@ -332,7 +332,7 @@ export const SettingsPage = () => {
       receipt_prefix: business.receipt_prefix || "RCT",
 
       next_receipt_number:
-        business.next_receipt_number || "42",
+        business.next_receipt_number || "0001",
 
       receipt_footer:
         business.receipt_footer ||
