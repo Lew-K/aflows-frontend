@@ -91,7 +91,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             const verifyData = await verifyRes.json();
 
             if (verifyData.success) {
-              toast.success(`${PLANS[planKey].name} plan activated!`);
+              // toast.success(`${PLANS[planKey].name} plan activated!`);
             
               if (user) {
                 login(accessToken!, refreshToken!, {
@@ -110,9 +110,11 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
               }, 2000);
             } else {
               toast.error('Payment verification failed. Contact support.');
+              setLoading(null);
             }
           } catch {
             toast.error('Verification error. Your payment may have gone through — contact support.');
+            setLoading(null);
           }
         },
         onCancel: () => {
