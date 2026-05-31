@@ -72,7 +72,6 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
       await loadPaystackScript();
 
       // Step 3: Open Paystack popup — user never leaves aflows
-      
       const handler = window.PaystackPop.setup({
         key: data.public_key,
         email: user.email,
@@ -83,39 +82,96 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
           business_id: user.businessId,
           plan: planKey,
         },
-
-       
         onSuccess: async (transaction: any) => {
-          console.log('Paystack onSuccess fired', transaction);
-          // 1. Immediate UI update — don't wait for network
-          setPaymentSuccess(planKey);
+          console.log('Paystack execution confirmation:', transaction);
+          
+          // 1. Clear loading state and immediately swap the user's view to the success screen
           setLoading(null);
+          setPaymentSuccess(planKey);
+          toast.success(`${PLANS[planKey].name} plan activated!`);
 
-          // 2. Update local auth state immediately
-          if (user) {
-            login(accessToken!, refreshToken!, {
-              ...user,
-              subscriptionTier: planKey,
-              subscriptionStatus: 'active',
-              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            });
+          // 2. Perform a safe state switch across both common property casing definitions
+          try {
+            if (user && typeof login === 'function') {
+              login(accessToken ?? '', refreshToken ?? '', {
+                ...user,
+                subscriptionTier: planKey,
+                subscription_tier: planKey,
+                subscriptionStatus: 'active',
+                subscription_status: 'active',
+                currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              });
+            }
+          } catch (authError) {
+            console.error('Local session upgrade caught:', authError);
           }
 
-          // 3. Background verify — webhook already handled DB update
+          // 3. Background verification ping running cleanly in parallel
           apiFetch(
-            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
-          ).catch(() => {});
+            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction?.reference || data.reference}`
+          ).catch((fetchErr) => console.error('Verification fallback handled:', fetchErr));
 
-          // 4. Auto-close after 2.5s
+          // 4. Auto-close timing delay callback execution wrapper
           setTimeout(() => {
-            onSuccess?.();
-            onClose();
+            if (typeof onSuccess === 'function') {
+              onSuccess();
+            }
+            if (typeof onClose === 'function') {
+              onClose();
+            }
           }, 2500);
         },
         onCancel: () => {
           toast.info('Payment cancelled');
           setLoading(null);
         },
+
+      // // Step 3: Open Paystack popup — user never leaves aflows
+      
+      // const handler = window.PaystackPop.setup({
+      //   key: data.public_key,
+      //   email: user.email,
+      //   amount: data.amount,
+      //   currency: 'KES',
+      //   ref: data.reference,
+      //   metadata: {
+      //     business_id: user.businessId,
+      //     plan: planKey,
+      //   },
+
+       
+      //   onSuccess: async (transaction: any) => {
+      //     console.log('Paystack onSuccess fired', transaction);
+      //     // 1. Immediate UI update — don't wait for network
+      //     setPaymentSuccess(planKey);
+      //     setLoading(null);
+
+      //     // 2. Update local auth state immediately
+      //     if (user) {
+      //       login(accessToken!, refreshToken!, {
+      //         ...user,
+      //         subscriptionTier: planKey,
+      //         subscriptionStatus: 'active',
+      //         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      //       });
+      //     }
+
+      //     // 3. Background verify — webhook already handled DB update
+      //     apiFetch(
+      //       `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+      //     ).catch(() => {});
+
+      //     // 4. Auto-close after 2.5s
+      //     setTimeout(() => {
+      //       onSuccess?.();
+      //       onClose();
+      //     }, 2500);
+      //   },
+      //   onCancel: () => {
+      //     toast.info('Payment cancelled');
+      //     setLoading(null);
+      //   },
         // onSuccess: async (transaction: any) => {
         //   // Step 4: Verify with your backend (never trust frontend alone)
         //   try {
