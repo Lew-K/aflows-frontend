@@ -112,10 +112,10 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             onClose();
           }, 2500);
         },
-      //   onCancel: () => {
-      //     toast.info('Payment cancelled');
-      //     setLoading(null);
-      //   },
+        onCancel: () => {
+          toast.info('Payment cancelled');
+          setLoading(null);
+        },
         // onSuccess: async (transaction: any) => {
         //   // Step 4: Verify with your backend (never trust frontend alone)
         //   try {
@@ -151,10 +151,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         //     setLoading(null);
         //   }
         // },
-        onCancel: () => {
-          toast.info('Payment cancelled');
-          setLoading(null);
-        },
+        
       });
 
       handler.openIframe();
