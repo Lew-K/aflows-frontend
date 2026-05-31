@@ -82,41 +82,72 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
           business_id: user.businessId,
           plan: planKey,
         },
-        onSuccess: async (transaction: any) => {
-          // Step 4: Verify with your backend (never trust frontend alone)
-          try {
-            const verifyRes = await apiFetch(
-              `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
-            );
-            const verifyData = await verifyRes.json();
 
-            if (verifyData.success) {
-              // toast.success(`${PLANS[planKey].name} plan activated!`);
-            
-              if (user) {
-                login(accessToken!, refreshToken!, {
-                  ...user,
-                  subscriptionTier: planKey,
-                  subscriptionStatus: 'active',
-                  current_period_end: verifyData.expires_at,
-                });
-              }
-            
-              setPaymentSuccess(planKey);
-            
-              setTimeout(() => {
-                onSuccess?.();
-                onClose();
-              }, 2000);
-            } else {
-              toast.error('Payment verification failed. Contact support.');
-              setLoading(null);
-            }
-          } catch {
-            toast.error('Verification error. Your payment may have gone through — contact support.');
-            setLoading(null);
+        onSuccess: async (transaction: any) => {
+          // 1. Immediate UI update — don't wait for network
+          setPaymentSuccess(planKey);
+          setLoading(null);
+
+          // 2. Update local auth state immediately
+          if (user) {
+            login(accessToken!, refreshToken!, {
+              ...user,
+              subscriptionTier: planKey,
+              subscriptionStatus: 'active',
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            });
           }
+
+          // 3. Background verify — webhook already handled DB update
+          apiFetch(
+            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+          ).catch(() => {});
+
+          // 4. Auto-close after 2.5s
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 2500);
         },
+        onCancel: () => {
+          toast.info('Payment cancelled');
+          setLoading(null);
+        },
+        // onSuccess: async (transaction: any) => {
+        //   // Step 4: Verify with your backend (never trust frontend alone)
+        //   try {
+        //     const verifyRes = await apiFetch(
+        //       `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+        //     );
+        //     const verifyData = await verifyRes.json();
+
+        //     if (verifyData.success) {
+        //       // toast.success(`${PLANS[planKey].name} plan activated!`);
+            
+        //       if (user) {
+        //         login(accessToken!, refreshToken!, {
+        //           ...user,
+        //           subscriptionTier: planKey,
+        //           subscriptionStatus: 'active',
+        //           current_period_end: verifyData.expires_at,
+        //         });
+        //       }
+            
+        //       setPaymentSuccess(planKey);
+            
+        //       setTimeout(() => {
+        //         onSuccess?.();
+        //         onClose();
+        //       }, 2000);
+        //     } else {
+        //       toast.error('Payment verification failed. Contact support.');
+        //       setLoading(null);
+        //     }
+        //   } catch {
+        //     toast.error('Verification error. Your payment may have gone through — contact support.');
+        //     setLoading(null);
+        //   }
+        // },
         onCancel: () => {
           toast.info('Payment cancelled');
           setLoading(null);
