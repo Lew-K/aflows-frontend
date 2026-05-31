@@ -16,7 +16,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-import { adminApi } from "../lib/adminApi"; // Adjust the path if yours is different
+import { adminApi } from "../../lib/adminApi";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
