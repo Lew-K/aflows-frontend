@@ -58,6 +58,7 @@ export const LoginSection = () => {
             subscriptionTier: response.subscription_tier,
             subscriptionStatus: response.subscription_status,
             trialEndsAt: response.trial_ends_at ?? null,
+            currentPeriodEnd: response.current_period_end ?? null,
           }
         );
       
