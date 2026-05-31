@@ -16,6 +16,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
+import { adminApi } from "../lib/adminApi"; // Adjust the path if yours is different
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
@@ -35,36 +37,41 @@ const AdminDashboard = () => {
     localStorage.setItem("admin_theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  const stats = useMemo(
-    () => [
-      {
-        title: "Businesses",
-        value: "124",
-        change: "+12%",
-        icon: Building2,
-      },
-      {
-        title: "Revenue",
-        value: "KES 245K",
-        change: "+8.2%",
-        icon: Wallet,
-      },
-      {
-        title: "Daily Activity",
-        value: "18",
-        change: "+4 today",
-        icon: Activity,
-      },
-      {
-        title: "System Alerts",
-        value: "3",
-        change: "Needs attention",
-        icon: AlertTriangle,
-      },
-    ],
-    []
-  );
+  const [statsData, setStatsData] = useState<any>(null);
 
+  useEffect(() => {
+    adminApi.getStats()
+      .then(d => setStatsData(d))
+      .catch(() => {});
+  }, []);
+
+  const stats = useMemo(() => [
+    { 
+      title: 'Businesses', 
+      value: statsData?.businesses?.total ?? '...', 
+      change: `+${statsData?.businesses?.new_this_week ?? 0} this week`, 
+      icon: Building2 
+    },
+    { 
+      title: 'MRR', 
+      value: `KES ${Number(statsData?.revenue?.monthly_revenue ?? 0).toLocaleString()}`, 
+      change: 'Last 30 days', 
+      icon: Wallet 
+    },
+    { 
+      title: 'Active Today', 
+      value: statsData?.activity?.active_today ?? '...', 
+      change: 'Businesses with sales', 
+      icon: Activity 
+    },
+    { 
+      title: 'Overdue', 
+      value: statsData?.businesses?.overdue ?? '...', 
+      change: 'Need attention', 
+      icon: AlertTriangle 
+    },
+  ], [statsData]);
+  
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
       <div className="max-w-[1800px] mx-auto p-4 md:p-8 space-y-8">
@@ -183,17 +190,17 @@ const AdminDashboard = () => {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 p-5">
                   <p className="text-sm text-red-500 font-medium">Overdue Accounts</p>
-                  <h3 className="mt-2 text-3xl font-black text-red-600">6</h3>
+                  <h3 className="mt-2 text-3xl font-black text-red-600">{statsData?.businesses?.overdue ?? '...'}</h3>
                 </div>
 
                 <div className="rounded-2xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-950/20 p-5">
                   <p className="text-sm text-yellow-600 font-medium">Pending Approvals</p>
-                  <h3 className="mt-2 text-3xl font-black text-yellow-700">3</h3>
+                  <h3 className="mt-2 text-3xl font-black text-yellow-700">{statsData?.businesses?.trialing ?? '...'}</h3>
                 </div>
 
                 <div className="rounded-2xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20 p-5">
                   <p className="text-sm text-green-600 font-medium">Active Today</p>
-                  <h3 className="mt-2 text-3xl font-black text-green-700">18</h3>
+                  <h3 className="mt-2 text-3xl font-black text-green-700">{statsData?.activity?.active_today ?? '...'}</h3>
                 </div>
               </div>
             </section>
