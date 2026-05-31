@@ -412,11 +412,9 @@ const Businesses = () => {
         ).length,
       },
       {
-        label: "Premium",
+        label: "Pro",
         value: businesses.filter(
-          (b) =>
-            b.plan?.toLowerCase() ===
-            "premium"
+          (b) => b.subscription_tier?.toLowerCase() === "pro"
         ).length,
       },
     ];
