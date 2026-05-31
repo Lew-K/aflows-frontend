@@ -83,6 +83,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
           plan: planKey,
         },
         onSuccess: async (transaction: any) => {
+          // Step 4: Verify with your backend (never trust frontend alone)
           try {
             const verifyRes = await apiFetch(
               `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
@@ -90,7 +91,8 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             const verifyData = await verifyRes.json();
 
             if (verifyData.success) {
-              // Update user tier immediately — don't wait for token refresh
+              toast.success(`${PLANS[planKey].name} plan activated!`);
+            
               if (user) {
                 login(accessToken!, refreshToken!, {
                   ...user,
@@ -99,20 +101,18 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
                   current_period_end: verifyData.expires_at,
                 });
               }
-
-              // Show success, auto-close after 2s
+            
               setPaymentSuccess(planKey);
+            
               setTimeout(() => {
                 onSuccess?.();
                 onClose();
               }, 2000);
             } else {
               toast.error('Payment verification failed. Contact support.');
-              setLoading(null);
             }
           } catch {
             toast.error('Verification error. Your payment may have gone through — contact support.');
-            setLoading(null);
           }
         },
         onCancel: () => {
@@ -138,41 +138,60 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         className={`bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full ${showBothPlans ? 'sm:max-w-2xl' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto`}
         onClick={e => e.stopPropagation()}
       >
-        {/* SUCCESS STATE */}
+
         {paymentSuccess ? (
           <div className="p-12 flex flex-col items-center justify-center gap-4 text-center min-h-[300px]">
             <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
               <Check className="w-8 h-8 text-green-500" />
             </div>
-            <h2 className="text-2xl font-black">You're on {PLANS[paymentSuccess as 'growth' | 'pro']?.name}!</h2>
-            <p className="text-muted-foreground">Your plan has been activated. Enjoy your new features.</p>
+        
+            <h2 className="text-2xl font-black">
+              You're on {PLANS[paymentSuccess as 'growth' | 'pro'].name}!
+            </h2>
+        
+            <p className="text-muted-foreground">
+              Your plan has been activated. Enjoy your new features.
+            </p>
+        
             <div className="flex gap-1 mt-2">
               {[0, 1, 2].map(i => (
-                <div key={i} className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                <div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                />
               ))}
             </div>
           </div>
         ) : (
           <>
-            <div className="w-10 h-1 rounded-full bg-muted-foreground/30 mx-auto mt-3 sm:hidden" />
+            
+        <div className="w-10 h-1 rounded-full bg-muted-foreground/30 mx-auto mt-3 sm:hidden" />
 
-            <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-border">
-              ... {/* keep existing header */}
-            </div>
-
-            <div className={`p-6 ${showBothPlans ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : ''}`}>
-              ... {/* keep existing plans */}
-            </div>
-
-            {!locked && (
-              <div className="px-6 pb-5 text-center">
-                <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
-                  Maybe later
-                </button>
-              </div>
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-border">
+          <div>
+            {locked ? (
+              <>
+                <p className="text-xs font-bold uppercase tracking-wider text-destructive mb-1">Trial Ended</p>
+                <h2 className="text-xl font-black">Your 30-day trial has expired</h2>
+                <p className="text-sm text-muted-foreground mt-1">Your data is safe. Choose a plan to continue.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-1">Upgrade Required</p>
+                <h2 className="text-xl font-black">{featureName} requires an upgrade</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You're on <span className="font-semibold capitalize">{tier}</span>.
+                  {showBothPlans ? ' Choose a plan below.' : ' Upgrade to Pro to unlock this.'}
+                </p>
+              </>
             )}
-          </>
-        )}
+          </div>
+          {!locked && (
+            <button onClick={onClose} className="ml-4 text-muted-foreground hover:text-foreground mt-1">
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         <div className={`p-6 ${showBothPlans ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : ''}`}>
@@ -228,6 +247,8 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
               Maybe later
             </button>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
