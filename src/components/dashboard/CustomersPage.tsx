@@ -110,6 +110,21 @@ export const CustomersPage = () => {
     </div>
   );
 
+  if (!loading && customers.length === 0) return (
+    <div className="flex flex-col items-center justify-center h-[60vh] gap-4 text-center p-6">
+      <div className="p-5 bg-muted rounded-full">
+        <Users className="w-10 h-10 text-muted-foreground/40" />
+      </div>
+      <h2 className="text-xl font-bold">No customers yet</h2>
+      <p className="text-muted-foreground max-w-sm">
+        Customers are added automatically when you record a sale with a customer name. Try recording a sale first.
+      </p>
+      <Button variant="outline" onClick={() => window.history.back()}>
+        Go to Sales
+      </Button>
+    </div>
+  );
+
   return (
     <>
     {/* MOBILE BOTTOM SHEET */}
