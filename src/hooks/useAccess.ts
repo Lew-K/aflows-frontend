@@ -38,7 +38,9 @@ export const useAccess = () => {
       // 3. Map your page feature triggers directly to your subscription matrix definitions
       switch (feature) {
         case 'sales':
-          return hasPageAccess(tier, 'sales');
+        case 'operations':
+        case 'contact':
+          return true; // always available
           
         case 'inventory':
           return hasPageAccess(tier, 'inventory');
@@ -54,6 +56,9 @@ export const useAccess = () => {
         case 'analytics_custom_range':
         case 'analytics_segmentation':
           return tier === 'pro';
+
+        case 'reports':
+          return tier === 'growth' || tier === 'pro';
         
         // case 'analytics_advanced':
         // case 'analytics_custom_range':
