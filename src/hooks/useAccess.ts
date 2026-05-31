@@ -48,10 +48,17 @@ export const useAccess = () => {
           
         case 'operations':
         case 'reports':
+
         case 'analytics_advanced':
+          return tier === 'growth' || tier === 'pro';
         case 'analytics_custom_range':
         case 'analytics_segmentation':
-          return hasPageAccess(tier, 'analytics');
+          return tier === 'pro';
+        
+        // case 'analytics_advanced':
+        // case 'analytics_custom_range':
+        // case 'analytics_segmentation':
+        //   return hasPageAccess(tier, 'analytics');
     
         case 'team_members':
         case 'team_management':
