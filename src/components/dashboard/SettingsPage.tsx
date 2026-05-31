@@ -1113,7 +1113,7 @@ export const SettingsPage = () => {
                 )}
                 {user?.subscriptionStatus === 'active' && (
                   <p className="text-xs text-muted-foreground">
-                    Renews {user?.currentPeriodEnd ? new Date(user.currentPeriodEnd).toLocaleDateString() : '—'}
+                    Renews {user?.currentPeriodEnd ? new Date(user.currentPeriodEnd).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
                   </p>
                 )}
               </div>
