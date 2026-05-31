@@ -30,9 +30,15 @@ const queryClient = new QueryClient();
 
 
 const App = () => {
-
   useEffect(() => {
     initAuthGuard();
+    // Preload Paystack inline script for faster payment popup
+    if (!document.querySelector('script[src*="paystack"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://js.paystack.co/v1/inline.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
   }, []);
 
   return (
