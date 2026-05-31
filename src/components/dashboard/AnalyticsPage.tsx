@@ -1236,7 +1236,7 @@ export const AnalyticsPage = () => {
       </div>
 
       {/* Smart Recommendation, Today Snapshot & Monthly Projection — Growth+ only */}
-      {can('analytics_advanced') && (
+      {tier === 'pro' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <SmartRecommendationCard
             topItems={topSellingItems}
