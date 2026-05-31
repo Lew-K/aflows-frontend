@@ -22,7 +22,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { saleSchema, type SaleFormData } from '@/lib/validation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ShoppingCart, Download, Check, ReceiptText, History, Info } from 'lucide-react';
+import { ShoppingCart, Download, Check, ReceiptText, History, Info, ArrowLeft } from 'lucide-react';
 
 const paymentMethods = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -710,9 +710,18 @@ export const SalesPage = () => {
                     Loading sales...
                   </div>
                 ) : allSales.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center py-20 opacity-50">
-                    <Info className="w-8 h-8 mb-2" />
-                    <p>No sales activity found</p>
+                  <div className="h-full flex flex-col items-center justify-center py-16 text-center gap-3">
+                    <div className="p-4 bg-muted rounded-full">
+                      <ShoppingCart className="w-8 h-8 text-muted-foreground/40" />
+                    </div>
+                    <h3 className="font-semibold">No sales yet</h3>
+                    <p className="text-sm text-muted-foreground max-w-[200px]">
+                      Record your first sale using the form on the left.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-primary">
+                      <ArrowLeft className="w-3 h-3" />
+                      Start here
+                    </div>
                   </div>
                 ) : (
                   [...allSales]
