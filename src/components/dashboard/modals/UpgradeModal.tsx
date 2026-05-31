@@ -83,8 +83,11 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
           plan: planKey,
         },
 
-        onSuccess: async (transaction: any) => {
-          console.log('Paystack onSuccess fired', transaction);
+        callback: async (transaction: any) => {
+          console.log('PAYSTACK CALLBACK', transaction);
+
+        // onSuccess: async (transaction: any) => {
+        //   console.log('Paystack onSuccess fired', transaction);
           // 1. Immediate UI update — don't wait for network
           setPaymentSuccess(planKey);
           setLoading(null);
