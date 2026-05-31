@@ -72,91 +72,46 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
       await loadPaystackScript();
 
       // Step 3: Open Paystack popup — user never leaves aflows
+      
       const handler = window.PaystackPop.setup({
         key: data.public_key,
         email: user.email,
         amount: data.amount,
         currency: 'KES',
         ref: data.reference,
-        // 1. FIX: Paystack requires metadata to be an explicitly stringified JSON payload
-        metadata: JSON.stringify({
+        metadata: {
           business_id: user.businessId,
           plan: planKey,
-        }),
+        },
 
+       
         onSuccess: async (transaction: any) => {
-          console.log('Paystack onSuccess fired successfully', transaction);
-          
-          // 2. FIX: Force immediate UI success view updates and reset processing loaders
+          console.log('Paystack onSuccess fired', transaction);
+          // 1. Immediate UI update — don't wait for network
           setPaymentSuccess(planKey);
           setLoading(null);
-          toast.success(`${PLANS[planKey].name} plan activated!`);
 
-          // 3. FIX: Update key token definitions to match context expectations immediately
+          // 2. Update local auth state immediately
           if (user) {
             login(accessToken!, refreshToken!, {
               ...user,
-              subscriptionTier: planKey,     // Matches your tier resolution hook strings
+              subscriptionTier: planKey,
               subscriptionStatus: 'active',
-              // Standardizes key name formatting matching your context properties (camelCase vs snake_case)
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
               currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             });
           }
 
-          // 4. Background verification ping running cleanly in parallel
+          // 3. Background verify — webhook already handled DB update
           apiFetch(
-            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference || data.reference}`
-          ).catch((e) => console.error("Verification error fallback:", e));
+            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+          ).catch(() => {});
 
-          // 5. FIX: Auto-close timing delay wrapper cleanly executing callback sequences
+          // 4. Auto-close after 2.5s
           setTimeout(() => {
             onSuccess?.();
             onClose();
           }, 2500);
         },
-        
-
-      
-      // const handler = window.PaystackPop.setup({
-      //   key: data.public_key,
-      //   email: user.email,
-      //   amount: data.amount,
-      //   currency: 'KES',
-      //   ref: data.reference,
-      //   metadata: {
-      //     business_id: user.businessId,
-      //     plan: planKey,
-      //   },
-
-       
-      //   onSuccess: async (transaction: any) => {
-      //     console.log('Paystack onSuccess fired', transaction);
-      //     // 1. Immediate UI update — don't wait for network
-      //     setPaymentSuccess(planKey);
-      //     setLoading(null);
-
-      //     // 2. Update local auth state immediately
-      //     if (user) {
-      //       login(accessToken!, refreshToken!, {
-      //         ...user,
-      //         subscriptionTier: planKey,
-      //         subscriptionStatus: 'active',
-      //         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      //       });
-      //     }
-
-      //     // 3. Background verify — webhook already handled DB update
-      //     apiFetch(
-      //       `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
-      //     ).catch(() => {});
-
-      //     // 4. Auto-close after 2.5s
-      //     setTimeout(() => {
-      //       onSuccess?.();
-      //       onClose();
-      //     }, 2500);
-      //   },
       //   onCancel: () => {
       //     toast.info('Payment cancelled');
       //     setLoading(null);
