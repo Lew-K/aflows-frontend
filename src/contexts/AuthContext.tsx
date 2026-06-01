@@ -11,6 +11,7 @@ interface User {
   subscriptionTier?: 'starter' | 'growth' | 'pro';
   subscriptionStatus?: 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid';
   trialEndsAt?: string | null;
+  currentPeriodEnd?: string | null; // ADD THIS
 }
 
 interface AuthContextType {
@@ -170,14 +171,27 @@ useEffect(() => {
   //   setUser(newUser);
   // };
 
-  const login = async (newAccessToken: string, newRefreshToken: string, newUser: User) => {
+  // In login function, normalize incoming data:
+  const login = async (newAccessToken: string, newRefreshToken: string, newUser: any) => {
+    const normalized: User = {
+      businessId: newUser.businessId,
+      businessName: newUser.businessName,
+      ownerName: newUser.ownerName,
+      email: newUser.email,
+      role: newUser.role || 'owner',
+      staffId: newUser.staffId,
+      mustChangePassword: newUser.mustChangePassword,
+      subscriptionTier: newUser.subscriptionTier || newUser.subscription_tier,
+      subscriptionStatus: newUser.subscriptionStatus || newUser.subscription_status,
+      trialEndsAt: newUser.trialEndsAt || newUser.trial_ends_at,
+      currentPeriodEnd: newUser.currentPeriodEnd || newUser.current_period_end,
+    };
     localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
-  
+    localStorage.setItem(USER_KEY, JSON.stringify(normalized));
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
-    setUser(newUser);
+    setUser(normalized);
   };
 
   return (
