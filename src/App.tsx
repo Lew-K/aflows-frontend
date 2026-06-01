@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/About";
 import { PricingPage } from "./pages/PricingPage";
+import { PaymentVerifyPage } from "./pages/PaymentVerifyPage";
+
 
 
 import AdminLogin from "@/components/internal-admin/AdminLogin";
@@ -59,6 +61,7 @@ const App = () => {
                   <Route path="/register" element={<Register />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/payment/verify" element={<PaymentVerifyPage />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
