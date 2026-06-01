@@ -347,7 +347,6 @@ export const SalesPage = () => {
                       {...register('customerName')}
                     />
 
-                    // SalesPage.tsx - replace the phone input with:
                     <div className="flex">
                       <span className="flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">+254</span>
                       <Input
