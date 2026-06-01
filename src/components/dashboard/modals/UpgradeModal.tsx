@@ -84,29 +84,23 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         currency: 'KES',
         ref: data.reference,
         metadata: data.metadata,
-        // metadata: {
-        //   business_id: user.businessId,
-        //   plan: planKey,
-        // },
-
-       
-        // onSuccess: async (transaction: any) => {
-
+      
         callback: function(transaction: any) {
           console.log('CALLBACK FIRED', transaction);
         },
-        
+      
         onSuccess: function(transaction: any) {
           console.log('ONSUCCESS FIRED', transaction);
         },
-        
+      
         onClose: function() {
           console.log('ONCLOSE FIRED');
         },
-        
+      
         onCancel: function() {
           console.log('ONCANCEL FIRED');
         },
+      });
           console.log('=== PAYSTACK SUCCESS ===', transaction);
           // 1. Immediate UI update — don't wait for network
           setPaymentSuccess(planKey);
