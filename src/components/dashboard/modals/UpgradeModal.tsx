@@ -100,32 +100,19 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
               ...user,
               subscriptionTier: planKey,
               subscriptionStatus: 'active',
-              // 👇 Add the extra snake_case properties to ensure absolute compatibility 
               subscription_tier: planKey,
               subscription_status: 'active',
               currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             });
           }
-          // if (user) {
-          //   login(accessToken!, refreshToken!, {
-          //     ...user,
-          //     subscriptionTier: planKey,
-          //     subscriptionStatus: 'active',
-          //     currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          //   });
-          // }
-
-          // 3. Background verify — webhook already handled DB update
-          apiFetch(
-            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
-          ).catch(() => {});
-
-          // 4. Auto-close after 2.5s
-          setTimeout(() => {
-            onSuccess?.();
-            onClose();
-          }, 2500);
+        
+          // Background verify
+          apiFetch(`https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`).catch(() => {});
+        
+          // Wait for success animation, then call onSuccess and close
+          await new Promise(r => setTimeout(r, 2500));
+          onSuccess?.();
+          onClose();
         },
         onCancel: () => {
           toast.info('Payment cancelled');
