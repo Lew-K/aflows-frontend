@@ -71,9 +71,6 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
       // Step 2: Load Paystack inline script if not already loaded
       await loadPaystackScript();
 
-      console.log('PAYSTACK OBJECT', window.PaystackPop);
-      console.log('PAYSTACK KEYS', Object.keys(window.PaystackPop || {}));
-
       
       // Step 3: Open Paystack popup — user never leaves aflows
       
@@ -84,23 +81,13 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         currency: 'KES',
         ref: data.reference,
         metadata: data.metadata,
-      
-        callback: function(transaction: any) {
-          console.log('CALLBACK FIRED', transaction);
-        },
-      
-        onSuccess: function(transaction: any) {
-          console.log('ONSUCCESS FIRED', transaction);
-        },
-      
-        onClose: function() {
-          console.log('ONCLOSE FIRED');
-        },
-      
-        onCancel: function() {
-          console.log('ONCANCEL FIRED');
-        },
-      });
+        // metadata: {
+        //   business_id: user.businessId,
+        //   plan: planKey,
+        // },
+
+       
+        onSuccess: async (transaction: any) => {
           console.log('=== PAYSTACK SUCCESS ===', transaction);
           // 1. Immediate UI update — don't wait for network
           setPaymentSuccess(planKey);
