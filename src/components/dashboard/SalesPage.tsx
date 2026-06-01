@@ -233,13 +233,27 @@ export const SalesPage = () => {
       s => s.receipt_id || s.receipt_number
     );
   
-    for (const sale of withReceipts) {
-      await handleDownload(sale);
-  
-      await new Promise(resolve =>
-        setTimeout(resolve, 300)
-      );
+    if (withReceipts.length === 0) {
+      toast.error("No receipts available to download");
+      return;
     }
+  
+    toast.message(`Downloading ${withReceipts.length} receipts...`);
+  
+    for (let i = 0; i < withReceipts.length; i++) {
+      const sale = withReceipts[i];
+  
+      try {
+        await handleDownload(sale);
+      } catch (err) {
+        console.error("Failed downloading receipt:", sale.id);
+      }
+  
+      // small delay to prevent browser blocking
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  
+    toast.success("Download complete");
   };
 
   const onSubmit = async (data: SaleFormData) => {
