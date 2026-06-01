@@ -791,7 +791,7 @@ export const SalesPage = () => {
               </div>
             
               <div className="flex flex-wrap gap-2 items-center mt-2">
-                {(['all', 'this_week', 'this_month'] as const).map((f) => (
+                {(['all', 'this_week', 'this_month', 'custom'] as const).map((f) => (
                   <button
                     key={f}
                     type="button"
@@ -806,7 +806,9 @@ export const SalesPage = () => {
                       ? 'All'
                       : f === 'this_week'
                       ? 'This Week'
-                      : 'This Month'}
+                      : f === 'this_month'
+                      ? 'This Month'
+                      : 'Custom'}
                   </button>
                 ))}
             
@@ -829,6 +831,39 @@ export const SalesPage = () => {
                   </button>
                 )}
               </div>
+
+              {receiptFilter === 'custom' && (
+                <div className="flex flex-wrap gap-2 items-end mt-2 w-full">
+              
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-muted-foreground">
+                      From
+                    </label>
+              
+                    <input
+                      type="date"
+                      value={receiptDateStart}
+                      onChange={(e) => setReceiptDateStart(e.target.value)}
+                      className="text-xs border rounded px-2 py-1 bg-background"
+                    />
+                  </div>
+              
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-muted-foreground">
+                      To
+                    </label>
+              
+                    <input
+                      type="date"
+                      value={receiptDateEnd}
+                      onChange={(e) => setReceiptDateEnd(e.target.value)}
+                      className="text-xs border rounded px-2 py-1 bg-background"
+                    />
+                  </div>
+              
+                </div>
+              )}
+              
             </CardHeader>
             <CardContent className="flex-grow overflow-auto">
               <div className="">
