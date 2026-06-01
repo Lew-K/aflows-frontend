@@ -39,6 +39,13 @@ export const SalesPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(7);
 
+  const [receiptFilter, setReceiptFilter] = useState<
+    'all' | 'this_week' | 'this_month' | 'custom'
+  >('all');
+  
+  const [receiptDateStart, setReceiptDateStart] = useState('');
+  const [receiptDateEnd, setReceiptDateEnd] = useState('');
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,7 +68,7 @@ export const SalesPage = () => {
 
   
   const businessId = user?.businessId;
-  const period = "this_month"; 
+  const period = "all"; 
   const rawWeeklySales = getSales(businessId, "this_week");
 
   const weeklySales = useMemo(() => {
@@ -79,6 +86,53 @@ export const SalesPage = () => {
 
   const cachedSales = getSales(businessId, period) || [];
   const allSales = cachedSales;
+
+  const displaySales = useMemo(() => {
+    let sales = [...allSales].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+    );
+  
+    if (receiptFilter === 'this_week') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+  
+      sales = sales.filter(
+        s => new Date(s.created_at) >= weekAgo
+      );
+  
+    } else if (receiptFilter === 'this_month') {
+      const now = new Date();
+  
+      sales = sales.filter(s => {
+        const d = new Date(s.created_at);
+  
+        return (
+          d.getMonth() === now.getMonth() &&
+          d.getFullYear() === now.getFullYear()
+        );
+      });
+  
+    } else if (
+      receiptFilter === 'custom' &&
+      receiptDateStart &&
+      receiptDateEnd
+    ) {
+      sales = sales.filter(
+        s =>
+          s.created_at >= receiptDateStart &&
+          s.created_at <= receiptDateEnd + 'T23:59:59'
+      );
+    }
+  
+    return sales;
+  }, [
+    allSales,
+    receiptFilter,
+    receiptDateStart,
+    receiptDateEnd,
+  ]);
 
   const isLoadingSales = isFetching(`${businessId}-${period}`);
   const { items: inventoryItems = [] } = useInventory(businessId || "");
@@ -104,11 +158,12 @@ export const SalesPage = () => {
 
 
   useEffect(() => {
-    if (!businessId) return;
-    fetchSales(businessId, period);
-    fetchSales(businessId, "this_week");
-    fetchInventory(businessId);
-  }, [businessId]);
+  if (!businessId) return;
+
+  fetchSales(businessId, "all");
+  fetchSales(businessId, "this_week");
+  fetchInventory(businessId);
+}, [businessId]);
 
   const {
     register,
@@ -170,6 +225,20 @@ export const SalesPage = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       toast.error("Failed to download receipt");
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    const withReceipts = displaySales.filter(
+      s => s.receipt_id || s.receipt_number
+    );
+  
+    for (const sale of withReceipts) {
+      await handleDownload(sale);
+  
+      await new Promise(resolve =>
+        setTimeout(resolve, 300)
+      );
     }
   };
 
@@ -707,13 +776,58 @@ export const SalesPage = () => {
         {/* Recent Sales - Equal Height */}
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
           <Card className="h-full flex flex-col overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-primary" />
-                  Recent Sales
-                </CardTitle>
-                <CardDescription>Your latest activities.</CardDescription>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-primary" />
+                    Recent Sales
+                  </CardTitle>
+            
+                  <CardDescription>
+                    Your latest activities.
+                  </CardDescription>
+                </div>
+              </div>
+            
+              <div className="flex flex-wrap gap-2 items-center mt-2">
+                {(['all', 'this_week', 'this_month'] as const).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      receiptFilter === f
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                    onClick={() => setReceiptFilter(f)}
+                  >
+                    {f === 'all'
+                      ? 'All'
+                      : f === 'this_week'
+                      ? 'This Week'
+                      : 'This Month'}
+                  </button>
+                ))}
+            
+                {displaySales.filter(
+                  (s) => s.receipt_id || s.receipt_number
+                ).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDownload}
+                    className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary flex items-center gap-1"
+                  >
+                    <Download className="w-3 h-3" />
+                    Download All (
+                    {
+                      displaySales.filter(
+                        (s) => s.receipt_id || s.receipt_number
+                      ).length
+                    }
+                    )
+                  </button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="flex-grow overflow-auto">
@@ -737,8 +851,7 @@ export const SalesPage = () => {
                     </div>
                   </div>
                 ) : (
-                  [...allSales]
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  {displaySales
                     .slice(0, visibleCount)
                     .map((sale) => (
                       <div key={sale.id ?? sale.created_at} className="p-3 rounded-lg border bg-card/50 flex items-center justify-between group hover:border-primary/50 transition-all">
@@ -771,7 +884,7 @@ export const SalesPage = () => {
                       </div>
                     ))
                 )}
-                {allSales.length > visibleCount && (
+                {displaySales.length > visibleCount && (
                   <Button
                     variant="outline"
                     size="sm"
