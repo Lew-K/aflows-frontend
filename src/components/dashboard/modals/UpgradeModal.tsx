@@ -73,23 +73,19 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
 
       // Step 3: Instantiate Paystack Pop V2 cleanly
       try {
-        const paystack = new window.PaystackPop();
-        
-        paystack.newTransaction({
+        // 👇 FIXED: Paystack V2 uses a functional initial setup method signature
+        const paystack = window.PaystackPop.setup({
           key: data.public_key,
           email: user.email,
           amount: data.amount,
           currency: 'KES',
           ref: data.reference,
-          metadata: {
-            business_id: user.businessId,
-            plan: planKey,
-          },
-          // Modern V2 explicit completion callback handler hook
+          metadata: data.metadata, // Reads your month-aware metadata cleanly from NestJS
+
           onSuccess: async (transaction: any) => {
-            console.log('=== PAYSTACK PAYMENT CONFIRMED ===', transaction);
+            console.log('=== PAYSTACK V2 SUCCESS EVENT FIRED ===', transaction);
             
-            // 1. Swap layout screen instantly to your beautiful checkmark template
+            // 1. Immediate UI update — swap layout screen instantly
             setPaymentSuccess(planKey);
             setLoading(null);
             toast.success(`${PLANS[planKey].name} plan activated!`);
@@ -106,7 +102,6 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
                   ...user,
                   subscriptionTier: planKey,
                   subscriptionStatus: 'active',
-                  // Feeds your exact backend calendar logic back into the active context
                   currentPeriodEnd: verifyData.expires_at, 
                   current_period_end: verifyData.expires_at,
                 });
@@ -126,12 +121,15 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             setLoading(null);
           },
         });
+
+        // 👇 Launches the iframe container safely
+        paystack.openIframe();
+
       } catch (scriptLoadError) {
         console.error("Paystack SDK constructor initialization failure:", scriptLoadError);
         toast.error("Unable to load payment processing widget. Please retry.");
         setLoading(null);
       }
-
       handler.openIframe();
     } catch (err) {
       toast.error('Something went wrong. Please try again.');
