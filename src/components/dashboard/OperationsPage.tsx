@@ -186,9 +186,9 @@ export function OperationsPage() {
       <div className="p-6 space-y-6 mx-auto">
         {/* HEADER */}
         <div>
-          <h1 className="text-4xl font-extrabold">Operations</h1>
+          <h1 className="text-4xl font-extrabold">Task List</h1>
           <p className="text-muted-foreground mt-1">
-            Your business, on autopilot.
+            Track your daily business tasks and set up recurring reminders so nothing slips through.
           </p>
         </div>
 
@@ -358,7 +358,7 @@ export function OperationsPage() {
               </CardHeader>
               <CardContent>
                 <Input
-                  placeholder="Task name... (Enter)"
+                  placeholder="Add a task... (press Enter)"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const value = (e.target as HTMLInputElement).value
@@ -386,7 +386,7 @@ export function OperationsPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Repeat className="h-4 w-4" />
-                  {editingTemplate ? "Edit Rule" : "New Automation"}
+                  {editingTemplate ? "Edit Recurring Task" : "Add Recurring Task"}
                 </CardTitle>
               </CardHeader>
 
@@ -436,10 +436,10 @@ export function OperationsPage() {
               </CardContent>
             </Card>
 
-            {/* ACTIVE AUTOMATIONS */}
+            {/* Recurring Tasks */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Active Automations</CardTitle>
+                <CardTitle className="text-base">Recurring Tasks</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
