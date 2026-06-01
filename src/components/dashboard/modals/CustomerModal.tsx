@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Receipt, ShoppingBag, TrendingUp } from "lucide-react"; // Added icons for flair
+import { X, Receipt, ShoppingBag, TrendingUp, Phone } from "lucide-react"; // Added icons for flair
 
 export const CustomerModal = ({ customer, sales = [], onClose }) => {
   if (!customer) return null;
@@ -45,6 +45,17 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
             <Badge className="bg-primary/10 text-primary border-none hover:bg-primary/20 mt-1">
               {customer.segment.replace("_", " ")}
             </Badge>
+
+            {customer.customer_phone && (
+              <a
+                href={`tel:${customer.customer_phone}`}
+                className="text-sm text-primary flex items-center gap-1 mt-1"
+              >
+                <Phone className="w-3 h-3" />
+                {customer.customer_phone}
+              </a>
+            )}
+            
           </div>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
@@ -70,32 +81,51 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
         <div className="space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Order History</h3>
           <div className="space-y-3">
-            {sales.map((sale) => (
-              <div key={sale.id} className="p-4 rounded-xl border bg-card/50 hover:shadow-md transition-all">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {new Date(sale.created_at).toLocaleDateString()}
-                  </span>
-                  <span className="text-sm font-bold tracking-tight">KES {Number(sale.total_amount || sale.amount || 0).toLocaleString()}</span>
-                </div>
-                {/* Visual indicator for items */}
-                <div className="mt-3 pt-3 border-t space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {sale.receipt_number || "—"}
-                    </span>
-                    <Badge variant="outline" className="text-[9px] uppercase">
-                      {sale.payment_method || "Unknown"}
-                    </Badge>
-                  </div>
-                  {sale.payment_reference && (
-                    <p className="text-[10px] text-muted-foreground">
-                      Ref: {sale.payment_reference}
-                    </p>
-                  )}
-                </div>
+            {sales.length === 0 ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-16 rounded-xl bg-muted animate-pulse"
+                  />
+                ))}
               </div>
-            ))}
+            ) : (
+              sales.map((sale) => (
+                <div
+                  key={sale.id}
+                  className="p-4 rounded-xl border bg-card/50 hover:shadow-md transition-all"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {new Date(sale.created_at).toLocaleDateString()}
+                    </span>
+          
+                    <span className="text-sm font-bold tracking-tight">
+                      KES {Number(sale.total_amount || sale.amount || 0).toLocaleString()}
+                    </span>
+                  </div>
+          
+                  <div className="mt-3 pt-3 border-t space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        {sale.receipt_number || "—"}
+                      </span>
+          
+                      <Badge variant="outline" className="text-[9px] uppercase">
+                        {sale.payment_method || "Unknown"}
+                      </Badge>
+                    </div>
+          
+                    {sale.payment_reference && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Ref: {sale.payment_reference}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
