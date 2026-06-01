@@ -71,65 +71,104 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
       // Step 2: Load Paystack inline script if not already loaded
       await loadPaystackScript();
 
-      // Step 3: Instantiate Paystack Pop V2 cleanly
-      try {
-        // 👇 FIXED: Paystack V2 uses a functional initial setup method signature
-        const paystack = window.PaystackPop.setup({
-          key: data.public_key,
-          email: user.email,
-          amount: data.amount,
-          currency: 'KES',
-          ref: data.reference,
-          metadata: data.metadata, // Reads your month-aware metadata cleanly from NestJS
+      
+      // Step 3: Open Paystack popup — user never leaves aflows
+      
+      const handler = window.PaystackPop.setup({
+        key: data.public_key,
+        email: user.email,
+        amount: data.amount,
+        currency: 'KES',
+        ref: data.reference,
+        metadata: data.metadata,
+        // metadata: {
+        //   business_id: user.businessId,
+        //   plan: planKey,
+        // },
 
-          onSuccess: async (transaction: any) => {
-            console.log('=== PAYSTACK V2 SUCCESS EVENT FIRED ===', transaction);
+       
+        onSuccess: async (transaction: any) => {
+          console.log('=== PAYSTACK SUCCESS ===', transaction);
+          // 1. Immediate UI update — don't wait for network
+          setPaymentSuccess(planKey);
+          setLoading(null);
+
+          // 2. Update local auth state immediately
+
+          if (user) {
+            login(accessToken!, refreshToken!, {
+              ...user,
+              subscriptionTier: planKey,
+              subscriptionStatus: 'active',
+              // 👇 Add the extra snake_case properties to ensure absolute compatibility 
+              subscription_tier: planKey,
+              subscription_status: 'active',
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            });
+          }
+          // if (user) {
+          //   login(accessToken!, refreshToken!, {
+          //     ...user,
+          //     subscriptionTier: planKey,
+          //     subscriptionStatus: 'active',
+          //     currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          //   });
+          // }
+
+          // 3. Background verify — webhook already handled DB update
+          apiFetch(
+            `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+          ).catch(() => {});
+
+          // 4. Auto-close after 2.5s
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 2500);
+        },
+        onCancel: () => {
+          toast.info('Payment cancelled');
+          setLoading(null);
+        },
+        // onSuccess: async (transaction: any) => {
+        //   // Step 4: Verify with your backend (never trust frontend alone)
+        //   try {
+        //     const verifyRes = await apiFetch(
+        //       `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`
+        //     );
+        //     const verifyData = await verifyRes.json();
+
+        //     if (verifyData.success) {
+        //       // toast.success(`${PLANS[planKey].name} plan activated!`);
             
-            // 1. Immediate UI update — swap layout screen instantly
-            setPaymentSuccess(planKey);
-            setLoading(null);
-            toast.success(`${PLANS[planKey].name} plan activated!`);
+        //       if (user) {
+        //         login(accessToken!, refreshToken!, {
+        //           ...user,
+        //           subscriptionTier: planKey,
+        //           subscriptionStatus: 'active',
+        //           current_period_end: verifyData.expires_at,
+        //         });
+        //       }
+            
+        //       setPaymentSuccess(planKey);
+            
+        //       setTimeout(() => {
+        //         onSuccess?.();
+        //         onClose();
+        //       }, 2000);
+        //     } else {
+        //       toast.error('Payment verification failed. Contact support.');
+        //       setLoading(null);
+        //     }
+        //   } catch {
+        //     toast.error('Verification error. Your payment may have gone through — contact support.');
+        //     setLoading(null);
+        //   }
+        // },
+        
+      });
 
-            // 2. Synchronize your custom month-overflow expiration dates from NestJS in parallel
-            try {
-              const verifyRes = await apiFetch(
-                `https://api.aflows.uk/api/v1/payments/verify?reference=${transaction?.reference || data.reference}`
-              );
-              const verifyData = await verifyRes.json();
-
-              if (verifyData.success && user) {
-                login(accessToken!, refreshToken!, {
-                  ...user,
-                  subscriptionTier: planKey,
-                  subscriptionStatus: 'active',
-                  currentPeriodEnd: verifyData.expires_at, 
-                  current_period_end: verifyData.expires_at,
-                });
-              }
-            } catch (verifyErr) {
-              console.error('Backend synchronization delayed slightly:', verifyErr);
-            }
-
-            // 3. Smoothly close the modal after 2.5 seconds
-            setTimeout(() => {
-              onSuccess?.();
-              onClose();
-            }, 2500);
-          },
-          onCancel: () => {
-            toast.info('Payment cancelled');
-            setLoading(null);
-          },
-        });
-
-        // 👇 Launches the iframe container safely
-        paystack.openIframe();
-
-      } catch (scriptLoadError) {
-        console.error("Paystack SDK constructor initialization failure:", scriptLoadError);
-        toast.error("Unable to load payment processing widget. Please retry.");
-        setLoading(null);
-      }
       handler.openIframe();
     } catch (err) {
       toast.error('Something went wrong. Please try again.');
