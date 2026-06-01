@@ -307,7 +307,7 @@ function loadPaystackScript(): Promise<void> {
   return new Promise((resolve) => {
     if (window.PaystackPop) { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'https://js.paystack.co/v2/inline.js';
+    script.src = 'https://js.paystack.co/v1/inline.js';
     script.onload = () => resolve();
     document.head.appendChild(script);
   });
