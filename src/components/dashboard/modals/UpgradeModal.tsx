@@ -80,10 +80,11 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         amount: data.amount,
         currency: 'KES',
         ref: data.reference,
-        metadata: {
-          business_id: user.businessId,
-          plan: planKey,
-        },
+        metadata: data.metadata,
+        // metadata: {
+        //   business_id: user.businessId,
+        //   plan: planKey,
+        // },
 
        
         onSuccess: async (transaction: any) => {
