@@ -851,7 +851,7 @@ export const SalesPage = () => {
                     </div>
                   </div>
                 ) : (
-                  {displaySales
+                  displaySales
                     .slice(0, visibleCount)
                     .map((sale) => (
                       <div key={sale.id ?? sale.created_at} className="p-3 rounded-lg border bg-card/50 flex items-center justify-between group hover:border-primary/50 transition-all">
