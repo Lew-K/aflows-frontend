@@ -94,14 +94,27 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
           setLoading(null);
 
           // 2. Update local auth state immediately
+
           if (user) {
             login(accessToken!, refreshToken!, {
               ...user,
               subscriptionTier: planKey,
               subscriptionStatus: 'active',
+              // 👇 Add the extra snake_case properties to ensure absolute compatibility 
+              subscription_tier: planKey,
+              subscription_status: 'active',
               currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             });
           }
+          // if (user) {
+          //   login(accessToken!, refreshToken!, {
+          //     ...user,
+          //     subscriptionTier: planKey,
+          //     subscriptionStatus: 'active',
+          //     currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          //   });
+          // }
 
           // 3. Background verify — webhook already handled DB update
           apiFetch(
@@ -294,7 +307,7 @@ function loadPaystackScript(): Promise<void> {
   return new Promise((resolve) => {
     if (window.PaystackPop) { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'https://js.paystack.co/v1/inline.js';
+    script.src = 'https://js.paystack.co/v2/inline.js';
     script.onload = () => resolve();
     document.head.appendChild(script);
   });
