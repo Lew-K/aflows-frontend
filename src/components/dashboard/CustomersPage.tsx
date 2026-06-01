@@ -61,6 +61,30 @@ export const CustomersPage = () => {
 
   useEffect(() => { setCurrentPage(1); }, [search, segmentFilter, sortBy]);
 
+  useEffect(() => {
+    if (!customers.length || !businessId) return;
+  
+    const top20 = customers.slice(0, 20);
+  
+    top20.forEach(c => {
+      if (salesCache[c.id]) return;
+  
+      apiFetch(
+        `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
+      )
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            setSalesCache(prev => ({
+              ...prev,
+              [c.id]: d.sales,
+            }));
+          }
+        })
+        .catch(() => {});
+    });
+  }, [customers, businessId]);
+
   const handleSelectCustomer = async (c: any) => {
     setSelectedCustomer(c);
     setMobileSheetOpen(true);
@@ -197,9 +221,10 @@ export const CustomersPage = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{c.customer_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {c.total_orders} orders · Last {new Date(c.last_seen_at).toLocaleDateString()}
-                      </p>
+                     <p className="text-xs text-muted-foreground truncate">
+                       {c.customer_phone && <span>{c.customer_phone} · </span>}
+                       {c.total_orders} orders · Last {new Date(c.last_seen_at).toLocaleDateString()}
+                     </p>
                     </div>
                   </div>
                   <div className="text-right">
