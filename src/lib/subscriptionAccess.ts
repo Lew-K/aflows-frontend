@@ -92,7 +92,7 @@ export const subscriptionAccess: Record<
     },
 
     customers: {
-      enabled: false,
+      enabled: true,
     },
 
     expenses: {
