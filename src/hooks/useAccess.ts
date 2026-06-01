@@ -46,7 +46,7 @@ export const useAccess = () => {
           return hasPageAccess(tier, 'inventory');
           
         case 'customers':
-          return hasPageAccess(tier, 'customers'); // 🟢 This will safely evaluate to false on Starter/Growth, true on Pro
+          return tier === 'growth' || tier === 'pro'; // Growth gets customers
           
         case 'operations':
         case 'reports':
