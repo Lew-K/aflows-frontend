@@ -346,11 +346,25 @@ export const SalesPage = () => {
                       className="h-9"
                       {...register('customerName')}
                     />
-                    <Input
+
+                    // SalesPage.tsx - replace the phone input with:
+                    <div className="flex">
+                      <span className="flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">+254</span>
+                      <Input
+                        placeholder="7XXXXXXXX"
+                        className="h-9 rounded-l-none"
+                        {...register('customerPhone')}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').replace(/^0/, '');
+                          setValue('customerPhone', val ? `+254${val}` : '');
+                        }}
+                      />
+                    </div>
+                    {/* <Input
                       placeholder="Phone number (optional)"
                       className="h-9"
                       {...register('customerPhone')}
-                    />
+                    /> */}
                   </div>
                 </div>
               
