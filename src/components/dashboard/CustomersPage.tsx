@@ -61,29 +61,29 @@ export const CustomersPage = () => {
 
   useEffect(() => { setCurrentPage(1); }, [search, segmentFilter, sortBy]);
 
-  useEffect(() => {
-    if (!customers.length || !businessId) return;
+  // useEffect(() => {
+  //   if (!customers.length || !businessId) return;
   
-    const top20 = customers.slice(0, 20);
+  //   const top20 = customers.slice(0, 20);
   
-    top20.forEach(c => {
-      if (salesCache[c.id]) return;
+  //   top20.forEach(c => {
+  //     if (salesCache[c.id]) return;
   
-      apiFetch(
-        `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
-      )
-        .then(r => r.json())
-        .then(d => {
-          if (d.success) {
-            setSalesCache(prev => ({
-              ...prev,
-              [c.id]: d.sales,
-            }));
-          }
-        })
-        .catch(() => {});
-    });
-  }, [customers, businessId]);
+  //     apiFetch(
+  //       `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
+  //     )
+  //       .then(r => r.json())
+  //       .then(d => {
+  //         if (d.success) {
+  //           setSalesCache(prev => ({
+  //             ...prev,
+  //             [c.id]: d.sales,
+  //           }));
+  //         }
+  //       })
+  //       .catch(() => {});
+  //   });
+  // }, [customers, businessId]);
 
   const handleSelectCustomer = async (c: any) => {
     setSelectedCustomer(c);
