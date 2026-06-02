@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserPlus, Trash2, Mail, Shield, RefreshCw, X, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNotifications } from '@/contexts/NotificationContext';
+
 
 interface StaffMember {
   id: string;
@@ -45,6 +47,9 @@ export const TeamManagementModal = ({
   const { tier } = useAccess();
   const staffLimit = STAFF_LIMITS[tier] ?? 1;
   const atLimit = staffList.length >= staffLimit;
+
+  const { addNotification } = useNotifications();
+
 
   
   
@@ -102,6 +107,7 @@ export const TeamManagementModal = ({
       if (!data.success) throw new Error(data.message);
 
       toast.success(`${inviteName} has been added as staff`);
+      addNotification('info', 'Staff member added', `${inviteName} can now log in to the dashboard with their email and password.`);
       setInviteName('');
       setInviteEmail('');
       setInvitePassword('');
