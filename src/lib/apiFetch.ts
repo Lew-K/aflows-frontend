@@ -1,6 +1,6 @@
 let refreshPromise: Promise<string | null> | null = null;
 
-const REFRESH_URL = "https://n8n.aflows.uk/webhook/refresh-token";
+const REFRESH_URL = "https://api.aflows.uk/api/v1/auth/refresh";
 
 export const apiFetch = async (
   input: RequestInfo,
