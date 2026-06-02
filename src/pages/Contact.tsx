@@ -7,8 +7,11 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20"> {/* offset for fixed navbar */}
+
+      <div className="pt-20">
         <ContactSection />
+      </div>
+
       <Footer />
     </div>
   );
