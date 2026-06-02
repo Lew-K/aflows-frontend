@@ -1173,53 +1173,44 @@ export const AnalyticsPage = () => {
         />
       </div>
 
-      {/* Stats Grid - Dynamically scales between 3 or 4 columns based on access tier */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      {/* Stats Grid - Unified Stat Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {[
           { 
             label: 'Total Revenue', 
             value: revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue),
-            subtext: revenueSummary?.previousRevenue ? `vs ${formatCurrency(revenueSummary.previousRevenue)} last period` : undefined,
-            show: true
+            subtext: revenueSummary?.previousRevenue ? `vs ${formatCurrency(revenueSummary.previousRevenue)} last period` : undefined
           },
           { 
             label: 'Total Sales', 
             value: loading ? '...' : totalSales.toString(),
             subtext: totalSales > 0 && revenueSummary?.totalRevenue
               ? `avg ${formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} / sale`
-              : undefined,
-            show: true
+              : undefined
           },
           { 
             label: 'Top Payment Method', 
             value: paymentChartData.length > 0 ? paymentChartData[0].name : '—',
-            subtext: paymentChartData.length > 0 ? `${paymentChartData[0].percentage}% of revenue` : undefined,
-            show: true
+            subtext: paymentChartData.length > 0 ? `${paymentChartData[0].percentage}% of revenue` : undefined
           },
           { 
             label: 'Top Customer', 
-            value: loading ? '...' : (topCustomer?.name || 'N/A'),
-            subtext: topCustomer ? formatCurrency(topCustomer.totalSpend) : undefined,
-            show: can('analytics_advanced') // Only includes this card configuration if they aren't on Starter
+            value: !can('analytics_advanced') ? 'Locked' : (loading ? '...' : topCustomer?.name || 'N/A'),
+            subtext: can('analytics_advanced') && topCustomer ? formatCurrency(topCustomer.totalSpend) : undefined
           }
-        ]
-          .filter(stat => stat.show) // Removals happen before compilation to prevent phantom layout spacing
-          .map((stat, i) => (
-            <div 
-              key={i} 
-              className="p-5 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between min-w-0 h-full"
-            >
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-                <p className="text-2xl font-black mt-1 text-foreground truncate">{stat.value}</p>
-              </div>
-              {stat.subtext && (
-                <p className="text-xs text-muted-foreground mt-2 truncate border-t border-border/30 pt-1.5">
-                  {stat.subtext}
-                </p>
-              )}
+        ].map((stat, i) => (
+          <div key={i} className="p-5 flex flex-col justify-between min-w-0">
+            <div>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+              <p className="text-2xl font-black mt-1 text-foreground truncate">{stat.value}</p>
             </div>
-          ))}
+            {stat.subtext && (
+              <p className="text-xs text-muted-foreground mt-2 truncate border-t border-border/30 pt-1.5">
+                {stat.subtext}
+              </p>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Stats Grid - 4 columns with balanced spacing */}
