@@ -1,4 +1,6 @@
 import React from 'react';
+import { OnboardingTour } from '@/components/dashboard/modals/OnboardingTour';
+import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { AnalyticsPage } from '@/components/dashboard/AnalyticsPage';
@@ -25,6 +27,15 @@ const Dashboard = () => {
 
   const { user } = useAuth();
   const { prefetchAll } = useData();
+
+  const [showTour, setShowTour] = useState(() => {
+    return !localStorage.getItem('aflows_tour_completed');
+  });
+  
+  const handleTourClose = () => {
+    localStorage.setItem('aflows_tour_completed', '1');
+  setShowTour(false);
+};
   
   useEffect(() => {
     if (user?.businessId) {
@@ -49,6 +60,7 @@ const Dashboard = () => {
       </Routes>
     </DashboardLayout>
   );
+  {showTour && <OnboardingTour onClose={handleTourClose} />}
 };
 
 export default Dashboard;
