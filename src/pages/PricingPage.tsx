@@ -100,15 +100,7 @@ export const PricingPage = () => {
                       Upgrade to {plan.name}
                     </Button>
                   )
-                ) : (
-                  <Button
-                    className="w-full"
-                    variant={plan.highlight ? 'default' : 'outline'}
-                    onClick={() => navigate('/register')}
-                  >
-                    Start free trial <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                )}
+                ) : null}
               </div>
             );
           })}
