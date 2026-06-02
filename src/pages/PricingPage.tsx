@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
+import { Navbar } from '@/components/landing/Navbar';
+import { Footer } from '@/components/landing/Footer';
 
 const PLANS = [
   {
@@ -36,6 +38,9 @@ export const PricingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
+  
+      <div className="pt-20">
       <div className="max-w-5xl mx-auto px-6 py-16 space-y-12">
         <div className="text-center space-y-4">
           <p className="text-xs font-bold uppercase tracking-widest text-primary">Pricing</p>
@@ -113,6 +118,8 @@ export const PricingPage = () => {
           All plans include a 30-day free trial with full Pro access. No credit card required to start.
         </p>
       </div>
+
+      <Footer />
 
       {upgradeModal && (
         <UpgradeModal
