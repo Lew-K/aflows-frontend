@@ -92,7 +92,7 @@ export const Navbar = () => {
     { label: 'Features', megaMenu: true },
     { label: 'About',    action: () => navigate('/about') },
     { label: 'Pricing', action: () => navigate('/pricing') },
-    { label: 'Contact',  action: () => scrollToSection('contact') },
+    { label: 'Contact', action: () => navigate('/contact') }
   ];
 
   // Determine active link for highlight indicator
