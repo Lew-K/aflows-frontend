@@ -230,11 +230,26 @@ export const ReportsPage = () => {
         </div>
         <Button
           className="w-full md:w-auto gap-2"
-          onClick={() => {
-            if (financial?.data) downloadCSV(financial.data, 'financial-summary');
-            if (stock?.data) downloadCSV(stock.data, 'stock-list');
-            if (customers?.data) downloadCSV(customers.data, 'customer-insights');
-            if (salesPerf?.data) downloadCSV(salesPerf.data, 'sales-performance');
+          // Replace the onClick of the "Download All Reports" button:
+          onClick={async () => {
+            const exports = [
+              { data: financial?.data, name: 'financial-summary' },
+              { data: stock?.data, name: 'stock-list' },
+              { data: customers?.data, name: 'customer-insights' },
+              { data: salesPerf?.data, name: 'sales-performance' },
+            ].filter(e => e.data && e.data.length > 0);
+          
+            if (exports.length === 0) {
+              toast.info('No report data available. Try a different date range.');
+              return;
+            }
+          
+            for (const exp of exports) {
+              downloadCSV(exp.data!, exp.name);
+              await new Promise(r => setTimeout(r, 400)); // 400ms between each to avoid browser blocking
+            }
+            
+            toast.success(`${exports.length} reports downloaded`);
           }}
         >
           <Download className="w-4 h-4" />
