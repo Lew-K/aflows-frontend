@@ -118,6 +118,8 @@ export const PricingPage = () => {
           All plans include a 30-day free trial with full Pro access. No credit card required to start.
         </p>
       </div>
+    </div>
+
 
       <Footer />
 
@@ -131,3 +133,5 @@ export const PricingPage = () => {
     </div>
   );
 };
+
+export default PricingPage;
