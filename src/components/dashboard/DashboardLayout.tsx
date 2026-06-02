@@ -162,25 +162,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             </div>
           )}
 
-          {/* /* {role === 'owner' && tier !== 'pro' && (
-            <button
-              className="mx-3 mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors w-[calc(100%-24px)]"
-              onClick={() => setUpgradeModalOpen(true)}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Upgrade Plan
-            </button>
-          )}
-
-          <div className="p-4 border-t border-sidebar-border flex-shrink-0">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
-              onClick={logout}
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              Logout
-            </Button> */ */}
           </div>
         </div>
       </aside>
