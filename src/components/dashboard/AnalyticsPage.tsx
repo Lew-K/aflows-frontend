@@ -393,261 +393,261 @@ const TopCustomerCard = ({
   </motion.div>
 );
 
-const AnalyticsSummaryStrip = ({
-  revenueSummary,
-  revenueLoading,
-  totalSales,
-  loading,
-  paymentChartData,
-  topCustomer,
-  newCustomersCount,
-  returningCustomersCount,
-  canViewAdvanced,
-}: {
-  revenueSummary: any;
-  revenueLoading: boolean;
-  totalSales: number;
-  loading: boolean;
-  paymentChartData: any[];
-  topCustomer: { name: string; totalSpend: number } | null;
-  newCustomersCount: number;
-  returningCustomersCount: number;
-  canViewAdvanced: boolean;
-}) => {
-  const topPaymentMethod = paymentChartData?.[0];
+// const AnalyticsSummaryStrip = ({
+//   revenueSummary,
+//   revenueLoading,
+//   totalSales,
+//   loading,
+//   paymentChartData,
+//   topCustomer,
+//   newCustomersCount,
+//   returningCustomersCount,
+//   canViewAdvanced,
+// }: {
+//   revenueSummary: any;
+//   revenueLoading: boolean;
+//   totalSales: number;
+//   loading: boolean;
+//   paymentChartData: any[];
+//   topCustomer: { name: string; totalSpend: number } | null;
+//   newCustomersCount: number;
+//   returningCustomersCount: number;
+//   canViewAdvanced: boolean;
+// }) => {
+//   const topPaymentMethod = paymentChartData?.[0];
 
-  return (
-    <motion.div
-      initial={ANIMATION_VARIANTS.card.initial}
-      animate={ANIMATION_VARIANTS.card.animate}
-      transition={{ duration: 0.4 }}
-    >
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+//   return (
+//     <motion.div
+//       initial={ANIMATION_VARIANTS.card.initial}
+//       animate={ANIMATION_VARIANTS.card.animate}
+//       transition={{ duration: 0.4 }}
+//     >
+//       <Card className="overflow-hidden">
+//         <CardContent className="p-0">
 
-          {/* Scope Labels */}
-          <div
-            className={`grid ${
-              canViewAdvanced
-                ? "lg:grid-cols-[2fr_2fr]"
-                : "lg:grid-cols-[2fr_1fr]"
-            } border-b bg-muted/20`}
-          >
-            <div className="px-4 py-2 border-r">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Filtered
-              </p>
-            </div>
+//           {/* Scope Labels */}
+//           <div
+//             className={`grid ${
+//               canViewAdvanced
+//                 ? "lg:grid-cols-[2fr_2fr]"
+//                 : "lg:grid-cols-[2fr_1fr]"
+//             } border-b bg-muted/20`}
+//           >
+//             <div className="px-4 py-2 border-r">
+//               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+//                 Filtered
+//               </p>
+//             </div>
 
-            <div className="px-4 py-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                This Month
-              </p>
-            </div>
-          </div>
+//             <div className="px-4 py-2">
+//               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+//                 This Month
+//               </p>
+//             </div>
+//           </div>
 
-          {/* Metrics */}
-          <div
-            className={`grid ${
-              canViewAdvanced
-                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-                : "grid-cols-1 md:grid-cols-3"
-            }`}
-          >
-            {/* Revenue */}
-            <div className="p-4 lg:p-5 border-b md:border-r md:border-b-0">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-primary" />
-                </div>
+//           {/* Metrics */}
+//           <div
+//             className={`grid ${
+//               canViewAdvanced
+//                 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+//                 : "grid-cols-1 md:grid-cols-3"
+//             }`}
+//           >
+//             {/* Revenue */}
+//             <div className="p-4 lg:p-5 border-b md:border-r md:border-b-0">
+//               <div className="flex items-center gap-2 mb-2">
+//                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+//                   <DollarSign className="w-4 h-4 text-primary" />
+//                 </div>
 
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Revenue
-                </span>
-              </div>
+//                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+//                   Revenue
+//                 </span>
+//               </div>
 
-              <p className="text-2xl font-black">
-                {revenueLoading
-                  ? "..."
-                  : formatCurrency(revenueSummary?.totalRevenue)}
-              </p>
+//               <p className="text-2xl font-black">
+//                 {revenueLoading
+//                   ? "..."
+//                   : formatCurrency(revenueSummary?.totalRevenue)}
+//               </p>
 
-              {revenueSummary?.percentageChange !== undefined && (
-                <div
-                  className={`flex items-center gap-1 text-xs font-medium mt-1 ${
-                    revenueSummary?.trend === "up"
-                      ? "text-success"
-                      : revenueSummary?.trend === "down"
-                      ? "text-destructive"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {formatPercentage(revenueSummary?.percentageChange)}
+//               {revenueSummary?.percentageChange !== undefined && (
+//                 <div
+//                   className={`flex items-center gap-1 text-xs font-medium mt-1 ${
+//                     revenueSummary?.trend === "up"
+//                       ? "text-success"
+//                       : revenueSummary?.trend === "down"
+//                       ? "text-destructive"
+//                       : "text-muted-foreground"
+//                   }`}
+//                 >
+//                   {formatPercentage(revenueSummary?.percentageChange)}
 
-                  {revenueSummary?.trend === "up" && (
-                    <ArrowUpRight className="w-3 h-3" />
-                  )}
+//                   {revenueSummary?.trend === "up" && (
+//                     <ArrowUpRight className="w-3 h-3" />
+//                   )}
 
-                  {revenueSummary?.trend === "down" && (
-                    <ArrowDownRight className="w-3 h-3" />
-                  )}
-                </div>
-              )}
+//                   {revenueSummary?.trend === "down" && (
+//                     <ArrowDownRight className="w-3 h-3" />
+//                   )}
+//                 </div>
+//               )}
 
-              {revenueSummary?.previousRevenue && (
-                <p className="text-xs text-muted-foreground mt-1 truncate">
-                  vs {formatCurrency(revenueSummary.previousRevenue)}
-                </p>
-              )}
-            </div>
+//               {revenueSummary?.previousRevenue && (
+//                 <p className="text-xs text-muted-foreground mt-1 truncate">
+//                   vs {formatCurrency(revenueSummary.previousRevenue)}
+//                 </p>
+//               )}
+//             </div>
 
-            {/* Sales */}
-            <div
-              className={`p-4 lg:p-5 border-b ${
-                canViewAdvanced ? "lg:border-r" : ""
-              } md:border-b-0`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <ShoppingCart className="w-4 h-4 text-primary" />
-                </div>
+//             {/* Sales */}
+//             <div
+//               className={`p-4 lg:p-5 border-b ${
+//                 canViewAdvanced ? "lg:border-r" : ""
+//               } md:border-b-0`}
+//             >
+//               <div className="flex items-center gap-2 mb-2">
+//                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+//                   <ShoppingCart className="w-4 h-4 text-primary" />
+//                 </div>
 
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Sales
-                </span>
-              </div>
+//                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+//                   Sales
+//                 </span>
+//               </div>
 
-              <p className="text-2xl font-black">
-                {loading ? "..." : totalSales}
-              </p>
+//               <p className="text-2xl font-black">
+//                 {loading ? "..." : totalSales}
+//               </p>
 
-              {revenueSummary?.totalRevenue && totalSales > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Avg{" "}
-                  {formatCurrency(
-                    Math.round(revenueSummary.totalRevenue / totalSales)
-                  )}
-                </p>
-              )}
+//               {revenueSummary?.totalRevenue && totalSales > 0 && (
+//                 <p className="text-xs text-muted-foreground mt-1">
+//                   Avg{" "}
+//                   {formatCurrency(
+//                     Math.round(revenueSummary.totalRevenue / totalSales)
+//                   )}
+//                 </p>
+//               )}
 
-              {revenueSummary?.percentageChange !== undefined && (
-                <p className="text-xs mt-1 text-muted-foreground">
-                  {formatPercentage(revenueSummary?.percentageChange)}
-                </p>
-              )}
-            </div>
+//               {revenueSummary?.percentageChange !== undefined && (
+//                 <p className="text-xs mt-1 text-muted-foreground">
+//                   {formatPercentage(revenueSummary?.percentageChange)}
+//                 </p>
+//               )}
+//             </div>
 
-            {/* Payments */}
-            <div
-              className={`p-4 lg:p-5 ${
-                canViewAdvanced ? "md:border-r" : ""
-              } border-b md:border-b-0`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-primary" />
-                </div>
+//             {/* Payments */}
+//             <div
+//               className={`p-4 lg:p-5 ${
+//                 canViewAdvanced ? "md:border-r" : ""
+//               } border-b md:border-b-0`}
+//             >
+//               <div className="flex items-center gap-2 mb-3">
+//                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+//                   <DollarSign className="w-4 h-4 text-primary" />
+//                 </div>
 
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Payments
-                </span>
-              </div>
+//                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+//                   Payments
+//                 </span>
+//               </div>
 
-              {revenueLoading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
-              ) : paymentChartData.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No payment data
-                </p>
-              ) : (
-                <div className="space-y-1.5">
-                  {paymentChartData.slice(0, 3).map((method) => (
-                    <div
-                      key={method.name}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="truncate">{method.name}</span>
-                      <span className="font-semibold">
-                        {method.percentage}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+//               {revenueLoading ? (
+//                 <p className="text-sm text-muted-foreground">Loading...</p>
+//               ) : paymentChartData.length === 0 ? (
+//                 <p className="text-sm text-muted-foreground">
+//                   No payment data
+//                 </p>
+//               ) : (
+//                 <div className="space-y-1.5">
+//                   {paymentChartData.slice(0, 3).map((method) => (
+//                     <div
+//                       key={method.name}
+//                       className="flex items-center justify-between text-sm"
+//                     >
+//                       <span className="truncate">{method.name}</span>
+//                       <span className="font-semibold">
+//                         {method.percentage}%
+//                       </span>
+//                     </div>
+//                   ))}
+//                 </div>
+//               )}
 
-              {topPaymentMethod && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  Top:{" "}
-                  <span className="font-medium text-foreground">
-                    {topPaymentMethod.name}
-                  </span>
-                </p>
-              )}
-            </div>
+//               {topPaymentMethod && (
+//                 <p className="text-xs text-muted-foreground mt-3">
+//                   Top:{" "}
+//                   <span className="font-medium text-foreground">
+//                     {topPaymentMethod.name}
+//                   </span>
+//                 </p>
+//               )}
+//             </div>
 
-            {/* Customers */}
-            {canViewAdvanced && (
-              <div className="p-4 lg:p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-primary" />
-                  </div>
+//             {/* Customers */}
+//             {canViewAdvanced && (
+//               <div className="p-4 lg:p-5">
+//                 <div className="flex items-center gap-2 mb-3">
+//                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+//                     <Users className="w-4 h-4 text-primary" />
+//                   </div>
 
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Customers
-                  </span>
-                </div>
+//                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+//                     Customers
+//                   </span>
+//                 </div>
 
-                {/* New vs Returning */}
-                <div className="rounded-lg border bg-muted/20 p-2 mb-3">
-                  <div className="grid grid-cols-2 divide-x">
-                    <div className="text-center">
-                      <p className="text-lg font-black text-green-600">
-                        {newCustomersCount}
-                      </p>
+//                 {/* New vs Returning */}
+//                 <div className="rounded-lg border bg-muted/20 p-2 mb-3">
+//                   <div className="grid grid-cols-2 divide-x">
+//                     <div className="text-center">
+//                       <p className="text-lg font-black text-green-600">
+//                         {newCustomersCount}
+//                       </p>
 
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">
-                        New
-                      </p>
-                    </div>
+//                       <p className="text-[10px] uppercase font-bold text-muted-foreground">
+//                         New
+//                       </p>
+//                     </div>
 
-                    <div className="text-center">
-                      <p className="text-lg font-black text-blue-600">
-                        {returningCustomersCount}
-                      </p>
+//                     <div className="text-center">
+//                       <p className="text-lg font-black text-blue-600">
+//                         {returningCustomersCount}
+//                       </p>
 
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Returning
-                      </p>
-                    </div>
-                  </div>
-                </div>
+//                       <p className="text-[10px] uppercase font-bold text-muted-foreground">
+//                         Returning
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
 
-                {/* Top Customer */}
-                <div className="flex items-center justify-between gap-3">
-                  <span
-                    className="font-semibold text-sm truncate"
-                    title={topCustomer?.name}
-                  >
-                    {topCustomer?.name || "N/A"}
-                  </span>
+//                 {/* Top Customer */}
+//                 <div className="flex items-center justify-between gap-3">
+//                   <span
+//                     className="font-semibold text-sm truncate"
+//                     title={topCustomer?.name}
+//                   >
+//                     {topCustomer?.name || "N/A"}
+//                   </span>
 
-                  <span className="font-black text-sm shrink-0">
-                    {formatCurrency(topCustomer?.totalSpend)}
-                  </span>
-                </div>
+//                   <span className="font-black text-sm shrink-0">
+//                     {formatCurrency(topCustomer?.totalSpend)}
+//                   </span>
+//                 </div>
 
-                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mt-1">
-                  Top Customer
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+//                 <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mt-1">
+//                   Top Customer
+//                 </p>
+//               </div>
+//             )}
+//           </div>
+//         </CardContent>
+//       </Card>
+//     </motion.div>
+//   );
+// };
 
 // Smart Recommendation Card Component (NEW)
 const SmartRecommendationCard = ({
@@ -1432,7 +1432,7 @@ export const AnalyticsPage = () => {
     
 
       {/* Stats Grid - 4 columns with balanced spacing */}
-      <AnalyticsSummaryStrip
+      {/* <AnalyticsSummaryStrip
         revenueSummary={revenueSummary}
         revenueLoading={revenueLoading}
         totalSales={totalSales}
@@ -1442,8 +1442,8 @@ export const AnalyticsPage = () => {
         newCustomersCount={newCustomersCount}
         returningCustomersCount={returningCustomersCount}
         canViewAdvanced={can('analytics_advanced')}
-      />
-      {/* <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      /> */}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -1481,7 +1481,7 @@ export const AnalyticsPage = () => {
             isLoading={isFetching(`${businessId}-this_month--`)}
           />
         )}
-      </div> */}
+      </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
