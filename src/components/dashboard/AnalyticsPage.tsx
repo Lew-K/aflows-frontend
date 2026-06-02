@@ -1429,21 +1429,63 @@ export const AnalyticsPage = () => {
         />
       </div>
 
-    
 
-      {/* Stats Grid - 4 columns with balanced spacing */}
-      {/* <AnalyticsSummaryStrip
-        revenueSummary={revenueSummary}
-        revenueLoading={revenueLoading}
-        totalSales={totalSales}
-        loading={loading}
-        paymentChartData={paymentChartData}
-        topCustomer={topCustomer}
-        newCustomersCount={newCustomersCount}
-        returningCustomersCount={returningCustomersCount}
-        canViewAdvanced={can('analytics_advanced')}
-      /> */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      {/* Stats Row — replaces 4 separate cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 divide-x-0 lg:divide-x divide-border rounded-xl border border-border bg-card overflow-hidden">
+        <div className="p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Revenue</p>
+          <p className="text-2xl font-black mt-1">
+            {revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue)}
+          </p>
+          {revenueSummary?.percentageChange != null && (
+            <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${
+              revenueSummary.trend === 'up' ? 'text-green-600' : revenueSummary.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
+            }`}>
+              {revenueSummary.trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+              {formatPercentage(revenueSummary.percentageChange)} vs last period
+            </p>
+          )}
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-2">Revenue</p>
+        </div>
+      
+        <div className="p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Sales</p>
+          <p className="text-2xl font-black mt-1">{loading ? '...' : totalSales}</p>
+          {totalSales > 0 && revenueSummary?.totalRevenue && (
+            <p className="text-xs text-muted-foreground mt-1">
+              avg {formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} per sale
+            </p>
+          )}
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-2">Transactions</p>
+        </div>
+      
+        <div className="p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">Top Payment</p>
+          <p className="text-2xl font-black mt-1 truncate">
+            {revenueLoading ? '...' : paymentChartData[0]?.name || '—'}
+          </p>
+          {paymentChartData[0] && (
+            <p className="text-xs text-muted-foreground mt-1">{paymentChartData[0].percentage}% of revenue</p>
+          )}
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-2">Payment Method</p>
+        </div>
+      
+        {can('analytics_advanced') && (
+          <div className="p-5">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Customers</p>
+            <p className="text-2xl font-black mt-1">
+              {isFetching(`${businessId}-this_month--`) ? '...' : newCustomersCount + returningCustomersCount}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {newCustomersCount} new · {returningCustomersCount} returning
+            </p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-2">This Month</p>
+          </div>
+        )}
+      </div>
+
+      
+      {/* <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -1481,7 +1523,7 @@ export const AnalyticsPage = () => {
             isLoading={isFetching(`${businessId}-this_month--`)}
           />
         )}
-      </div>
+      </div> */}
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
