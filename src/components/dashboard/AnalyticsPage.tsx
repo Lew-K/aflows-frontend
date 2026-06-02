@@ -1173,48 +1173,8 @@ export const AnalyticsPage = () => {
         />
       </div>
 
-      {/* Stats Grid - Unified Stat Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        {[
-          { 
-            label: 'Total Revenue', 
-            value: revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue),
-            subtext: revenueSummary?.previousRevenue ? `vs ${formatCurrency(revenueSummary.previousRevenue)} last period` : undefined
-          },
-          { 
-            label: 'Total Sales', 
-            value: loading ? '...' : totalSales.toString(),
-            subtext: totalSales > 0 && revenueSummary?.totalRevenue
-              ? `avg ${formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} / sale`
-              : undefined
-          },
-          { 
-            label: 'Top Payment Method', 
-            value: paymentChartData.length > 0 ? paymentChartData[0].name : '—',
-            subtext: paymentChartData.length > 0 ? `${paymentChartData[0].percentage}% of revenue` : undefined
-          },
-          { 
-            label: 'Top Customer', 
-            value: !can('analytics_advanced') ? 'Locked' : (loading ? '...' : topCustomer?.name || 'N/A'),
-            subtext: can('analytics_advanced') && topCustomer ? formatCurrency(topCustomer.totalSpend) : undefined
-          }
-        ].map((stat, i) => (
-          <div key={i} className="p-5 flex flex-col justify-between min-w-0">
-            <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-              <p className="text-2xl font-black mt-1 text-foreground truncate">{stat.value}</p>
-            </div>
-            {stat.subtext && (
-              <p className="text-xs text-muted-foreground mt-2 truncate border-t border-border/30 pt-1.5">
-                {stat.subtext}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
       {/* Stats Grid - 4 columns with balanced spacing */}
-      {/* <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -1252,7 +1212,7 @@ export const AnalyticsPage = () => {
             isLoading={isFetching(`${businessId}-this_month--`)}
           />
         )}
-      </div> */}
+      </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
