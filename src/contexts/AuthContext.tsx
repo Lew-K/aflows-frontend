@@ -20,7 +20,7 @@ interface AuthContextType {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (accessToken: string, refreshToken: string, user: User) => void;
+  login: (accessToken: string, refreshToken: string, user: any) => void;
   logout: () => void;
 }
 
