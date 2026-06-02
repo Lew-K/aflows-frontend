@@ -47,22 +47,57 @@ const getDateRange = (range: string): { start: string; end: string } => {
 };
 
 /* ── CSV export helper ── */
+// Replace the existing downloadCSV function with:
 const downloadCSV = (data: any[], filename: string) => {
-  if (!data || data.length === 0) return;
-  const headers = Object.keys(data[0]).join(',');
+  if (!data || data.length === 0) {
+    toast.info('No data available to export for this period');
+    return;
+  }
+
+  // Human-readable header mapping
+  const headerMap: Record<string, string> = {
+    date: 'Date', total_revenue: 'Total Revenue (KES)', transaction_count: 'Transactions',
+    avg_transaction: 'Avg Transaction (KES)', payment_method: 'Payment Method',
+    amount: 'Amount (KES)', customer_name: 'Customer Name', total_spent: 'Total Spent (KES)',
+    total_orders: 'Total Orders', last_seen_at: 'Last Purchase Date', segment: 'Segment',
+    name: 'Product Name', stock: 'Current Stock', cost_price: 'Cost Price (KES)',
+    selling_price: 'Selling Price (KES)', low_stock_threshold: 'Low Stock Alert',
+    status: 'Status', percentage: 'Percentage (%)',
+  };
+
+  const rawKeys = Object.keys(data[0]);
+  const displayHeaders = rawKeys.map(k => headerMap[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+
   const rows = data.map(row =>
-    Object.values(row).map(val =>
-      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
-    ).join(',')
+    rawKeys.map(k => {
+      const val = row[k];
+      if (val == null) return '';
+      // Format currency fields
+      if (['total_revenue', 'avg_transaction', 'amount', 'total_spent', 'cost_price', 'selling_price'].includes(k)) {
+        return Number(val).toLocaleString('en-KE');
+      }
+      // Format dates
+      if (k.includes('date') || k.includes('at') || k.includes('created')) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) return d.toLocaleDateString('en-KE');
+      }
+      const str = String(val);
+      // Wrap in quotes if contains comma or newline
+      return str.includes(',') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
+    }).join(',')
   );
-  const csv = [headers, ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+
+  const csv = [displayHeaders.join(','), ...rows].join('\n');
+  // BOM (\uFEFF) ensures Excel opens with correct encoding
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${filename}.csv`;
+  const dateStr = new Date().toLocaleDateString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  a.download = `${filename}_${dateStr}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+  toast.success(`${filename} exported successfully`);
 };
 
 /* ── Types ── */
