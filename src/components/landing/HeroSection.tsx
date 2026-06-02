@@ -152,7 +152,7 @@ export const HeroSection = () => {
             </Button>
 
             <Button
-              onClick={() => navigate('/about')}
+              onClick={() => navigate('/how-it-works')}
               variant="outline"
               size="xl"
               className="h-14 w-full rounded-full px-10 text-lg
