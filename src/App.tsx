@@ -14,6 +14,9 @@ import { DataProvider } from "@/contexts/DataContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/About";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
+import HowItWorks from "./pages/HowItWorks";
 import { PricingPage } from "./pages/PricingPage";
 import { PaymentVerifyPage } from "./pages/PaymentVerifyPage";
 
@@ -62,6 +65,9 @@ const App = () => {
                   <Route path="/about" element={<About />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/payment/verify" element={<PaymentVerifyPage />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
