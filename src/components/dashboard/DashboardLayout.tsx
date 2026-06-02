@@ -162,7 +162,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             </div>
           )}
 
-          {role === 'owner' && tier !== 'pro' && (
+          {/* /* {role === 'owner' && tier !== 'pro' && (
             <button
               className="mx-3 mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors w-[calc(100%-24px)]"
               onClick={() => setUpgradeModalOpen(true)}
@@ -172,7 +172,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             </button>
           )}
 
-          {/* User Section */}
           <div className="p-4 border-t border-sidebar-border flex-shrink-0">
             <Button
               variant="ghost"
@@ -181,7 +180,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             >
               <LogOut className="w-5 h-5 mr-3" />
               Logout
-            </Button>
+            </Button> */ */}
           </div>
         </div>
       </aside>
@@ -280,6 +279,18 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   >
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
                     Help & Support
+                  </button>
+
+                  // In the dropdown menu, add:
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('aflows_tour_completed');
+                      window.location.reload(); // simplest way to re-trigger
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    Tour Guide
                   </button>
 
                   <div className="border-t border-border mt-1 pt-1">
