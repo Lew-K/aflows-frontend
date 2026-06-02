@@ -78,13 +78,7 @@ export const Footer = () => {
             </div>
 
             {/* Center */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:absolute md:left-1/2 md:-translate-x-1/2">
-              <button
-                onClick={() => navigate('/features')}
-                className="text-sm font-medium text-zinc-400 transition-colors hover:text-white"
-              >
-                Product
-              </button>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 md:absolute md:left-1/2 md:-translate-x-1/2">
 
               <button
                 onClick={() => navigate('/pricing')}
