@@ -69,7 +69,7 @@ export const CustomersPage = () => {
   useEffect(() => { setCurrentPage(1); }, [search, segmentFilter, sortBy]);
 
   // CustomersPage.tsx — replace handleSelectCustomer with:
-const { getSales } = useData();
+// const { getSales } = useData();
   const allCachedSales = getSales(businessId, 'all');
   
   const handleSelectCustomer = (c: any) => {
