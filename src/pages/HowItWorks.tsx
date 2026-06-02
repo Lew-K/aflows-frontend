@@ -3,7 +3,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { Footer } from '@/components/landing/Footer';
 
-const About = () => {
+const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -14,4 +14,4 @@ const About = () => {
   );
 };
 
-export default About;
+export default HowItWorks;
