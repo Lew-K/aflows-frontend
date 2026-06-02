@@ -162,8 +162,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               </p>
             </div>
           )}
-
-          </div>
         </div>
       </aside>
 
