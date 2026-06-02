@@ -13,7 +13,7 @@ import { CustomerModal } from "./modals/CustomerModal";
 
 export const CustomersPage = () => {
   const { user, accessToken } = useAuth();
-  const { customers: contextCustomers, isFetching } = useData();
+  const { customers: contextCustomers, isFetching, getSales, fetchSales } = useData();
   const businessId = user?.businessId || "";
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
@@ -29,6 +29,8 @@ export const CustomersPage = () => {
   const PAGE_SIZE = 15;
 
   useEffect(() => {
+
+    
     if (!businessId) return;
   
     // Use prefetched data from DataContext if available
@@ -59,46 +61,57 @@ export const CustomersPage = () => {
       .finally(() => setLoading(false));
   }, [businessId, contextCustomers]);
 
+  useEffect(() => {
+    if (!businessId) return;
+    fetchSales(businessId, 'all'); // ensure sales cache is populated
+  }, [businessId, fetchSales]);
+
   useEffect(() => { setCurrentPage(1); }, [search, segmentFilter, sortBy]);
 
-  // useEffect(() => {
-  //   if (!customers.length || !businessId) return;
+  // CustomersPage.tsx — replace handleSelectCustomer with:
+const { getSales } = useData();
+  const allCachedSales = getSales(businessId, 'all');
   
-  //   const top20 = customers.slice(0, 20);
-  
-  //   top20.forEach(c => {
-  //     if (salesCache[c.id]) return;
-  
-  //     apiFetch(
-  //       `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
-  //     )
-  //       .then(r => r.json())
-  //       .then(d => {
-  //         if (d.success) {
-  //           setSalesCache(prev => ({
-  //             ...prev,
-  //             [c.id]: d.sales,
-  //           }));
-  //         }
-  //       })
-  //       .catch(() => {});
-  //   });
-  // }, [customers, businessId]);
-
-  const handleSelectCustomer = async (c: any) => {
+  const handleSelectCustomer = (c: any) => {
     setSelectedCustomer(c);
     setMobileSheetOpen(true);
-    if (salesCache[c.id]) return; // already cached
+  
+    // Check cache first
+    if (salesCache[c.id]) return;
+  
+    // Try to derive from already-fetched sales in DataContext
+    const fromCache = allCachedSales.filter(
+      (s: any) => s.customer_name === c.customer_name
+    ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+    if (fromCache.length > 0) {
+      setSalesCache(prev => ({ ...prev, [c.id]: fromCache }));
+      return; // no network request needed
+    }
+  
+    // Only fetch if not in cache
     setLoadingSales(true);
-    try {
-      const res = await apiFetch(
-        `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
-      );
-      const d = await res.json();
-      if (d.success) setSalesCache(prev => ({ ...prev, [c.id]: d.sales }));
-    } catch {}
-    setLoadingSales(false);
+    apiFetch(`https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setSalesCache(prev => ({ ...prev, [c.id]: d.sales })); })
+      .catch(() => {})
+      .finally(() => setLoadingSales(false));
   };
+
+  // const handleSelectCustomer = async (c: any) => {
+  //   setSelectedCustomer(c);
+  //   setMobileSheetOpen(true);
+  //   if (salesCache[c.id]) return; // already cached
+  //   setLoadingSales(true);
+  //   try {
+  //     const res = await apiFetch(
+  //       `https://api.aflows.uk/api/v1/customers/${c.id}/sales?businessId=${businessId}`
+  //     );
+  //     const d = await res.json();
+  //     if (d.success) setSalesCache(prev => ({ ...prev, [c.id]: d.sales }));
+  //   } catch {}
+  //   setLoadingSales(false);
+  // };
 
   const now = new Date();
   const totalRevenue = customers.reduce((s, c) => s + Number(c.total_spent), 0);
