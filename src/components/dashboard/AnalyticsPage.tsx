@@ -1173,8 +1173,129 @@ export const AnalyticsPage = () => {
         />
       </div>
 
+      {/* Stats Grid - Rich Metric Row */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+        
+        {/* Card 1: Total Revenue */}
+        <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Revenue</p>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+            <p className="text-2xl font-black text-foreground mt-1">
+              {revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue)}
+            </p>
+          </div>
+          {revenueSummary?.percentageChange !== undefined && (
+            <div className={`flex items-center gap-1 text-xs font-bold mt-3 ${
+              revenueSummary?.trend === 'up' ? 'text-success' : revenueSummary?.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
+            }`}>
+              {formatPercentage(revenueSummary?.percentageChange)}
+              {revenueSummary?.trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />}
+              {revenueSummary?.trend === 'down' && <ArrowDownRight className="w-3.5 h-3.5" />}
+              {revenueSummary?.previousRevenue && (
+                <span className="font-medium text-muted-foreground ml-1">
+                  vs last period
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      
+        {/* Card 2: Total Sales */}
+        <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Sales</p>
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ShoppingCart className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+            <p className="text-2xl font-black text-foreground mt-1">
+              {loading ? '...' : totalSales.toString()}
+            </p>
+          </div>
+          {totalSales > 0 && revenueSummary?.totalRevenue ? (
+            <p className="text-xs text-muted-foreground mt-3 font-medium truncate">
+              avg <span className="font-bold text-foreground">{formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))}</span> per sale
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-3 italic">No sales this period</p>
+          )}
+        </div>
+      
+        {/* Card 3: Payment Breakdown Widget */}
+        <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Payment Breakdown
+            </p>
+            <div 
+              className="mt-1" 
+              style={{ height: `${Math.max(paymentChartData.length * 20, 40)}px`, maxHeight: '60px' }}
+            >
+              {revenueLoading ? (
+                <p className="text-xs text-muted-foreground">Loading...</p>
+              ) : paymentChartData.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">No data</p>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart layout="vertical" data={paymentChartData.slice(0, 2)} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                    <XAxis type="number" domain={[0, 100]} hide />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={55} fontSize={10} />
+                    <Bar dataKey="percentage" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]}>
+                      <LabelList dataKey="percentage" position="insideRight" formatter={(v: any) => `${v}%`} style={{ fill: "hsl(var(--primary-foreground))", fontSize: 9, fontWeight: 700 }} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+          <div className="border-t border-border/50 pt-2 mt-2 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground font-medium">Top Method:</span>
+            <span className="font-black text-foreground">
+              {paymentChartData.length > 0 ? `${paymentChartData[0].name} (${paymentChartData[0].percentage}%)` : '—'}
+            </span>
+          </div>
+        </div>
+      
+        {/* Card 4: Customers & Top Customer (Only visible if not Starter tier) */}
+        {can('analytics_advanced') && (
+          <div className="p-5 rounded-xl border border-border bg-card shadow-sm flex flex-col justify-between h-full">
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                Customers This Month
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-center bg-muted/30 p-2 rounded-lg border border-border/40">
+                <div>
+                  <p className="text-xl font-black text-green-600">{loading ? '...' : newCustomersCount}</p>
+                  <p className="text-[9px] font-bold text-green-600/80 uppercase tracking-widest mt-0.5">New</p>
+                </div>
+                <div className="border-l border-border/60">
+                  <p className="text-xl font-black text-blue-600">{loading ? '...' : returningCustomersCount}</p>
+                  <p className="text-[9px] font-bold text-blue-600/80 uppercase tracking-widest mt-0.5">Returning</p>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-border/50 pt-2 mt-2 flex items-center justify-between text-xs min-w-0">
+              <div className="truncate pr-1">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Top Customer</p>
+                <p className="font-black text-foreground truncate mt-0.5">{loading ? '...' : topCustomer?.name || 'N/A'}</p>
+              </div>
+              <span className="font-bold text-foreground text-right shrink-0 mt-3">
+                {loading ? '...' : formatCurrency(topCustomer?.totalSpend)}
+              </span>
+            </div>
+          </div>
+        )}
+      
+      </div>
+
       {/* Stats Grid - 4 columns with balanced spacing */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      {/* <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
@@ -1212,7 +1333,7 @@ export const AnalyticsPage = () => {
             isLoading={isFetching(`${businessId}-this_month--`)}
           />
         )}
-      </div>
+      </div> */}
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
