@@ -440,6 +440,7 @@ export const SettingsPage = () => {
       setOriginalSettings(settings);
 
       toast.success("Settings saved successfully");
+      addNotification('success', 'Settings updated', 'Your business profile and receipt settings have been saved.');
     } catch (err) {
       console.error(err);
 
