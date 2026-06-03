@@ -57,6 +57,10 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
 
   const handlePayment = async (planKey: 'growth' | 'pro') => {
     if (!user?.email) { toast.error('No email found'); return; }
+    if (!window.PaystackPop) {
+      toast.error('Payment system is loading. Please try again.');
+      return;
+    }
     setLoading(planKey);
   
     try {
@@ -65,9 +69,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         body: JSON.stringify({ plan: planKey, email: user.email }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error('Failed to initialize');
-  
-      await loadPaystackScript();
+      if (!data.success) throw new Error('Failed to initialize payment');
   
       const handler = window.PaystackPop.setup({
         key: data.public_key,
@@ -75,38 +77,52 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         amount: data.amount,
         currency: 'KES',
         ref: data.reference,
-        onSuccess: async (transaction: any) => {
-          console.log('=== onSuccess callback fired ===', transaction);
-          setPaymentSuccess(planKey);
+        metadata: data.metadata,
+  
+        onSuccess: (transaction: any) => {
+          // 1. Update loading state
           setLoading(null);
-          
-          // Silently verify in background
+  
+          // 2. Immediately update local auth — don't wait for verify
+          if (user) {
+            login(accessToken!, refreshToken!, {
+              ...user,
+              subscriptionTier: planKey,
+              subscriptionStatus: 'active',
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            });
+          }
+  
+          // 3. Show success notification
+          addNotification(
+            'success',
+            `Welcome to ${PLANS[planKey].name}!`,
+            'Your plan has been activated. New features are now unlocked.'
+          );
+  
+          // 4. Show success screen
+          setPaymentSuccess(planKey);
+  
+          // 5. Background verify — fire and forget
           apiFetch(`https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`)
-            .then(r => r.json())
-            .then(d => {
-              if (d.success && user) {
-                // Update user tier in auth state
-                login(accessToken!, refreshToken!, {
-                  ...user,
-                  subscriptionTier: d.plan,
-                  subscriptionStatus: 'active',
-                  currentPeriodEnd: d.expires_at,
-                });
-                toast.success(`Upgraded to ${planKey}!`);
-                setTimeout(() => onSuccess?.(), 2000);
-              }
-            })
-            .catch(err => console.error('Verify failed:', err));
+            .catch(() => {});
+  
+          // 6. Auto-close after animation
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 2500);
         },
+  
         onClose: () => {
-          console.log('=== onClose fired ===');
           setLoading(null);
         },
       });
   
       handler.openIframe();
+  
     } catch (err) {
-      console.error('Payment init error:', err);
+      console.error('Payment error:', err);
       toast.error('Something went wrong. Please try again.');
       setLoading(null);
     }
@@ -115,76 +131,61 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
   // const handlePayment = async (planKey: 'growth' | 'pro') => {
   //   if (!user?.email) { toast.error('No email found'); return; }
   //   setLoading(planKey);
-
+  
   //   try {
-  //     // Step 1: Get reference from your backend
   //     const res = await apiFetch('https://api.aflows.uk/api/v1/payments/initialize', {
   //       method: 'POST',
   //       body: JSON.stringify({ plan: planKey, email: user.email }),
   //     });
   //     const data = await res.json();
   //     if (!data.success) throw new Error('Failed to initialize');
-
-  //     // Step 2: Load Paystack inline script if not already loaded
+  
   //     await loadPaystackScript();
-
-      
-  //     // Step 3: Open Paystack popup — user never leaves aflows
-      
+  
   //     const handler = window.PaystackPop.setup({
   //       key: data.public_key,
   //       email: user.email,
   //       amount: data.amount,
   //       currency: 'KES',
   //       ref: data.reference,
-  //       metadata: data.metadata,
-  //       // metadata: {
-  //       //   business_id: user.businessId,
-  //       //   plan: planKey,
-  //       // },
-
-       
   //       onSuccess: async (transaction: any) => {
-  //         console.log('=== PAYSTACK SUCCESS ===', transaction);
-  //         // 1. Immediate UI update — don't wait for network
+  //         console.log('=== onSuccess callback fired ===', transaction);
   //         setPaymentSuccess(planKey);
   //         setLoading(null);
-
-  //         // 2. Update local auth state immediately
-
-  //         if (user) {
-  //           login(accessToken!, refreshToken!, {
-  //             ...user,
-  //             subscriptionTier: planKey,
-  //             subscriptionStatus: 'active',
-  //             subscription_tier: planKey,
-  //             subscription_status: 'active',
-  //             currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-  //           });
-  //         }
-        
-  //         // Background verify
-  //         apiFetch(`https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`).catch(() => {});
-        
-  //         // Wait for success animation, then call onSuccess and close
-  //         await new Promise(r => setTimeout(r, 2500));
-  //         onSuccess?.();
-  //         onClose();
+          
+  //         // Silently verify in background
+  //         apiFetch(`https://api.aflows.uk/api/v1/payments/verify?reference=${transaction.reference}`)
+  //           .then(r => r.json())
+  //           .then(d => {
+  //             if (d.success && user) {
+  //               // Update user tier in auth state
+  //               login(accessToken!, refreshToken!, {
+  //                 ...user,
+  //                 subscriptionTier: d.plan,
+  //                 subscriptionStatus: 'active',
+  //                 currentPeriodEnd: d.expires_at,
+  //               });
+  //               toast.success(`Upgraded to ${planKey}!`);
+  //               setTimeout(() => onSuccess?.(), 2000);
+  //             }
+  //           })
+  //           .catch(err => console.error('Verify failed:', err));
   //       },
-  //       onCancel: () => {
-  //         toast.info('Payment cancelled');
+  //       onClose: () => {
+  //         console.log('=== onClose fired ===');
   //         setLoading(null);
-  //       },  
+  //       },
   //     });
-
+  
   //     handler.openIframe();
   //   } catch (err) {
+  //     console.error('Payment init error:', err);
   //     toast.error('Something went wrong. Please try again.');
-  //   } finally {
   //     setLoading(null);
   //   }
   // };
 
+ 
   return (
     <div
       className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm`}
