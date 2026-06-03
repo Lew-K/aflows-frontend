@@ -1,6 +1,8 @@
 import { apiFetch } from '@/lib/apiFetch';
 import { useData } from '@/contexts/DataContext';
 import { useInventory } from "@/hooks/useInventory";
+import { downloadReceiptsAsZip } from '@/lib/zipDownloader';
+
 
 
 import React, { useState, useEffect ,useMemo ,useRef } from 'react';
@@ -225,6 +227,25 @@ export const SalesPage = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       toast.error("Failed to download receipt");
+    }
+  };
+
+  // Near your download button logic:
+  const handleDownloadAllReceipts = async () => {
+    const dateStart = /* your date picker value */;
+    const dateEnd = /* your date picker value */;
+    
+    // Fetch receipts for the date range
+    const res = await apiFetch(
+      `https://api.aflows.uk/api/v1/receipts?businessId=${businessId}&start=${dateStart}&end=${dateEnd}`
+    );
+    const data = await res.json();
+    
+    if (data.success && data.receipts.length > 0) {
+      await downloadReceiptsAsZip(data.receipts, user?.businessName || 'Business');
+      toast.success(`Downloaded ${data.receipts.length} receipts`);
+    } else {
+      toast.info('No receipts found for this period');
     }
   };
 
