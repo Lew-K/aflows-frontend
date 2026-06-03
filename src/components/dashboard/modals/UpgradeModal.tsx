@@ -6,6 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiFetch } from '@/lib/apiFetch';
 import { toast } from 'sonner';
 
+import { useNotifications } from '@/contexts/NotificationContext';
+
+
 declare global {
   interface Window { PaystackPop: any; }
 }
@@ -51,6 +54,9 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
   const { user, login, accessToken, refreshToken } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
+
+  const { addNotification } = useNotifications();
+
 
   const showBothPlans = tier === 'starter';
   const plansToShow = showBothPlans ? [PLANS.growth, PLANS.pro] : [PLANS.pro];
