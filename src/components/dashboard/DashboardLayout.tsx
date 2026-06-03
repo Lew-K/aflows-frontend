@@ -28,6 +28,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
 
+import { OnboardingTour } from '@/components/dashboard/modals/OnboardingTour';
+
 const allNavItems = [
   { icon: BarChart3, label: 'Analytics', path: '/dashboard', feature: null },
   { icon: ShoppingCart, label: 'Sales', path: '/dashboard/sales', feature: 'sales' as const },
@@ -51,6 +53,15 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
+  const [showTour, setShowTour] = React.useState(() => {
+    return !localStorage.getItem('aflows_tour_completed');
+  });
+  
+  const handleTourClose = () => {
+    localStorage.setItem('aflows_tour_completed', '1');
+    setShowTour(false);
+  };
+  
   const avatarRef = React.useRef<HTMLDivElement>(null);
 
   // Close avatar menu when clicking outside
@@ -265,11 +276,12 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   <button
                     onClick={() => {
                       localStorage.removeItem('aflows_tour_completed');
-                      window.location.reload(); // simplest way to re-trigger
+                      setShowTour(true);        // just open the modal directly
+                      setAvatarMenuOpen(false);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
                   >
-                    <Compass className="w-4 h-4 text-muted-foreground" />
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
                     Tour Guide
                   </button>
 
@@ -309,7 +321,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           locked={true}
         />
       )}
-      
+      {showTour && <OnboardingTour onClose={handleTourClose} />}
     </div>
   );
 };
