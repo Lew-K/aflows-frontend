@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight, Check, BarChart3, ShoppingCart, Package, Users, FileBarChart, Settings, ClipboardCheck } from 'lucide-react';
+import { X, ArrowRight, Check, BarChart3, ShoppingCart, Package, Users, FileBarChart, Settings, ClipboardCheck, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ interface TourStep {
   description: string;
   tips: string[];
   path?: string;
-  actionLabel?: string;
+  targetSelector?: string; // CSS selector for element to highlight
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -19,123 +19,129 @@ const TOUR_STEPS: TourStep[] = [
     page: 'Welcome',
     icon: '👋',
     title: 'Welcome to Aflows',
-    description: 'This quick tour will walk you through everything in about 2 minutes. You can skip at any time and come back later.',
-    tips: ['Your data is saved automatically', 'Use the sidebar to navigate between pages', 'Everything you see is live data'],
+    description: 'This quick tour walks you through everything. You can skip at any time and reopen it from the account menu.',
+    tips: [
+      'Your data saves automatically — nothing to configure',
+      'Use the sidebar on the left to switch between pages',
+      'The tour covers every page and feature',
+    ],
   },
   {
     page: 'Sales',
     icon: <ShoppingCart className="w-6 h-6 text-primary" />,
     title: 'Recording Sales',
-    description: 'The Sales page is where you record every transaction. Add the customer name, what was sold, the amount, and how they paid.',
+    description: 'Use the Sales page to record every transaction. Fill in what was sold, the amount, and how the customer paid.',
     tips: [
-      'Customer name is optional — use "Walk-in" for anonymous sales',
-      'Add multiple items in one sale using the "+ Add Another Item" button',
-      'M-Pesa and card sales require a payment reference number',
-      'A PDF receipt is generated automatically after each sale',
-      'Use the period filter above Recent Sales to download receipts by date range',
+      'Customer name is optional — anonymous sales record as "Walk-in"',
+      'Add multiple items in one sale using "+ Add Another Item"',
+      'M-Pesa and card payments require a transaction reference number',
+      'A PDF receipt is generated automatically after each recorded sale',
+      'Use the period filter on Recent Sales to download receipts by date range',
+      'The bulk download button lets you download all receipts for a period as a ZIP file',
     ],
     path: '/dashboard/sales',
-    actionLabel: 'Go to Sales',
   },
   {
     page: 'Analytics',
     icon: <BarChart3 className="w-6 h-6 text-primary" />,
-    title: 'Understanding Your Analytics',
-    description: 'Analytics gives you a live view of your business performance. Here is what each section means:',
+    title: 'Understanding Analytics',
+    description: 'Analytics shows your business performance in real time. Here is what each section means:',
     tips: [
-      'Total Revenue & Sales cards — your performance vs last period. Green arrow = improvement',
-      'Payment Breakdown — shows which payment method brings in the most money this month',
-      'Revenue Trend — switch between Monthly view (for long-term patterns) and Daily view (for this week)',
-      'Top Selling Items — switch between Items Sold (quantity) and Revenue to see what earns most vs what moves most',
-      'Today Snapshot — compares today\'s sales pace vs your daily average (Pro plan)',
-      'Monthly Projection — estimates your end-of-month revenue based on your current pace (Pro plan)',
-      'Use the period filter at the top to analyse any custom date range',
+      'Total Revenue — your earnings for the selected period, with % change vs the previous period',
+      'Total Sales — number of transactions, with your average sale value below',
+      'Payment Breakdown — which payment method brings in the most revenue this month',
+      'Revenue Trend chart — switch between Monthly (long-term patterns) and Daily (recent activity)',
+      'Top Selling Items — switch between Items Sold (volume) and Revenue (earnings)',
+      'Today Snapshot — compares today\'s pace against your daily average (Pro)',
+      'Monthly Projection — estimates your end-of-month revenue based on current pace (Pro)',
+      'Use the period selector at the top right to analyse any custom date range',
     ],
     path: '/dashboard',
-    actionLabel: 'View Analytics',
   },
   {
     page: 'Inventory',
     icon: <Package className="w-6 h-6 text-primary" />,
-    title: 'Managing Your Inventory',
-    description: 'Inventory tracks your stock levels so you always know what you have and what needs restocking.',
+    title: 'Managing Inventory',
+    description: 'Inventory tracks what you have in stock so you always know what needs restocking.',
     tips: [
-      '"New Product" — adds a single product with its name, starting stock, cost price, and a low-stock alert threshold',
-      '"Bulk Restock" — update stock for many products at once (use Add mode to add units, or Set mode to fix an exact quantity)',
-      '"Import Excel" — download the template, fill it in with your products, and upload it to add hundreds of items at once',
-      '"Restock" button on each row — adds new stock units for a single product',
-      'The Low Stock Alert card at the top shows how many items are below their threshold — click the filter to see them',
-      'When you record a sale with an inventory item, stock is automatically deducted',
+      '"New Product" — add a product with name, starting stock, cost price, and a low-stock threshold',
+      '"Bulk Restock" — update many products at once. Add mode adds units; Set mode fixes the exact quantity',
+      '"Import Excel" — download the template, fill in your products, upload to add hundreds at once',
+      '"Restock" on each row — add new stock units to a single product',
+      'Low Stock Alert card at top — shows how many items are below threshold',
+      'When you record a sale with a tracked item, stock is automatically deducted',
     ],
     path: '/dashboard/inventory',
-    actionLabel: 'Go to Inventory',
   },
   {
     page: 'Customers',
     icon: <Users className="w-6 h-6 text-primary" />,
     title: 'Customer Profiles',
-    description: 'Customers are created automatically when you record a sale with a customer name. No manual entry needed.',
+    description: 'Customers are created automatically when you record a sale with a customer name. Nothing to set up.',
     tips: [
       'Click any customer row to see their full purchase history in the side panel',
       'VIP customers are your highest spenders — they deserve extra attention',
-      'At Risk customers haven\'t bought in over 30 days — good candidates for a follow-up',
+      'At Risk customers haven\'t bought in 30+ days — good candidates for follow-up',
       'Use the segment filter to target specific groups',
-      'The Repeat Rate at the top shows the percentage of customers who have bought more than once',
+      'The phone number shown is the one recorded at the time of their most recent sale',
     ],
     path: '/dashboard/customers',
-    actionLabel: 'View Customers',
   },
   {
-    page: 'Operations',
+    page: 'Task List',
     icon: <ClipboardCheck className="w-6 h-6 text-primary" />,
-    title: 'Task List & Reminders',
-    description: 'Operations is your business to-do list. Use it to track things you need to do and set up recurring reminders so nothing gets forgotten.',
+    title: 'Tasks & Reminders',
+    description: 'Operations is your business to-do list. Use it to track tasks and set recurring reminders so nothing gets forgotten.',
     tips: [
-      'Quick Add (right sidebar) — type a task and press Enter to add it instantly',
-      'Advanced Task — set a priority, due date, tags, and even attach a link to a document or Google Sheet',
-      'Recurring Tasks — create automations that generate a task every day, week, or month automatically (e.g. "Send weekly sales report")',
-      'High priority tasks get a red left border so they stand out',
-      'Overdue tasks turn orange and get bumped up in priority automatically',
-      'Use the tag filters to see only Sales, Inventory, or Admin tasks',
+      'Quick Add (right sidebar) — type a task name and press Enter to add it instantly',
+      'Advanced Task — set priority, due date, tags, and attach an external link',
+      'Recurring Tasks — set a task to auto-generate daily, weekly, or monthly',
+      'High priority tasks show a red left border so they stand out',
+      'Overdue tasks turn orange and automatically increase in priority',
+      'Tag filters let you see only Sales, Inventory, or Admin tasks',
     ],
     path: '/dashboard/operations',
-    actionLabel: 'Go to Operations',
   },
   {
     page: 'Reports',
     icon: <FileBarChart className="w-6 h-6 text-primary" />,
-    title: 'Downloading Reports',
-    description: 'Reports lets you export your business data as CSV files that open in Excel or Google Sheets.',
+    title: 'Exporting Reports',
+    description: 'Reports exports your business data as CSV files that open directly in Excel or Google Sheets.',
     tips: [
-      'Use the date range selector at the top to pick the period you want',
-      'Financial Health — shows your daily revenue breakdown and average transaction value',
-      'Smart Stock List — automatically identifies items that need restocking',
-      'Customer Loyalty — lists your customers ranked by total spend with their last purchase date',
-      'Sales Performance — breaks down transactions by payment method',
-      '"Download All Reports" generates all four CSV files at once',
+      'Use the date range at the top to pick any period you want',
+      'Financial Health — daily revenue breakdown and average transaction value',
+      'Smart Stock List — auto-generated restock list based on current stock levels',
+      'Customer Loyalty — customers ranked by spend with their last purchase date',
+      'Sales Performance — transaction breakdown by payment method',
+      '"Download All Reports" generates all four reports as a ZIP file',
     ],
     path: '/dashboard/reports',
-    actionLabel: 'View Reports',
   },
   {
     page: 'Settings',
     icon: <Settings className="w-6 h-6 text-primary" />,
-    title: 'Setting Up Your Business',
-    description: 'Settings is where you customize how Aflows represents your business and manage security.',
+    title: 'Business Settings',
+    description: 'Settings is where you customize your business identity, receipts, and manage who has access.',
     tips: [
-      'Upload your logo — it will appear on every receipt sent to customers',
-      'Set your Receipt Prefix (e.g. "INV" or "RCT") and the next receipt number',
-      'Add your KRA PIN and Paybill/Till number — these print on receipts automatically',
-      'Receipt Footer — the message printed at the bottom of every receipt (e.g. "No refunds after 7 days")',
-      'Tax Rate — if you charge VAT, set it here and it will be calculated automatically',
-      'Team Members — invite staff who need access. Staff can only record sales and manage tasks',
-      'Active Sessions — see all devices logged into your account. Revoke any you don\'t recognize',
-      'Change Password — use a strong password with uppercase letters and numbers',
+      'Upload your logo — it appears on every receipt automatically',
+      'Set your Receipt Prefix (e.g. "INV") and starting receipt number',
+      'Add your KRA PIN and Paybill/Till number to print them on receipts',
+      'Receipt Footer — the message at the bottom of every receipt',
+      'Tax Rate — set your VAT percentage and it calculates automatically',
+      'Team Members — invite staff accounts that can only record sales and manage tasks',
+      'Active Sessions — see all logged-in devices. Revoke anything you don\'t recognize',
+      'Change Password — always use a strong password with uppercase letters and numbers',
     ],
     path: '/dashboard/settings',
-    actionLabel: 'Open Settings',
   },
 ];
+
+interface SpotlightRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
 
 export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
   const [step, setStep] = useState(0);
@@ -144,108 +150,408 @@ export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
   const isLast = step === TOUR_STEPS.length - 1;
   const isFirst = step === 0;
 
-  const handleNavigate = () => {
-    if (current.path) {
-      navigate(current.path);
-    }
-    if (!isLast) setStep(s => s + 1);
-    else onClose();
+  // Position the modal at bottom-right on desktop, bottom on mobile
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const goNext = () => {
+    if (isLast) { onClose(); return; }
+    setStep(s => s + 1);
+  };
+
+  const goPrev = () => {
+    if (!isFirst) setStep(s => s - 1);
+  };
+
+  const navigateToPage = () => {
+    if (current.path) navigate(current.path);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2 }}
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col"
+    <>
+      {/* Semi-transparent overlay — does NOT block clicks on the page */}
+      <div className="fixed inset-0 z-40 bg-black/30 pointer-events-none" />
+
+      {/* Tour panel — anchored bottom-right on desktop, bottom on mobile */}
+      <div
+        ref={panelRef}
+        className="fixed z-50 bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:w-[420px]"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border flex-shrink-0">
-          <div className="flex gap-1.5">
-            {TOUR_STEPS.map((_, i) => (
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[70vh]"
+        >
+          {/* Progress bar + controls */}
+          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">
+            <div className="flex gap-1">
+              {TOUR_STEPS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setStep(i)}
+                  className={`h-1.5 rounded-full transition-all duration-200 ${
+                    i === step
+                      ? 'w-6 bg-primary'
+                      : i < step
+                      ? 'w-3 bg-primary/40'
+                      : 'w-3 bg-muted-foreground/20'
+                  }`}
+                  aria-label={`Go to step ${i + 1}`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {step + 1} / {TOUR_STEPS.length}
+              </span>
               <button
-                key={i}
-                onClick={() => setStep(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === step ? 'w-6 bg-primary' : i < step ? 'w-3 bg-primary/40' : 'w-3 bg-muted'
-                }`}
-              />
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{step + 1} / {TOUR_STEPS.length}</span>
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl flex-shrink-0">
-              {typeof current.icon === 'string' ? current.icon : current.icon}
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{current.page}</p>
-              <h3 className="text-lg font-bold leading-tight">{current.title}</h3>
+                onClick={onClose}
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                aria-label="Close tour"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground leading-relaxed mb-5">{current.description}</p>
-
-          <div className="space-y-2.5">
-            {current.tips.map((tip, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/40">
-                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-[10px] font-bold text-primary">{i + 1}</span>
-                </div>
-                <p className="text-sm text-foreground leading-relaxed">{tip}</p>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            {/* Icon + Title */}
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
+                {typeof current.icon === 'string' ? current.icon : current.icon}
               </div>
-            ))}
-          </div>
-        </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {current.page}
+                </p>
+                <h3 className="text-base font-bold leading-tight">{current.title}</h3>
+              </div>
+            </div>
 
-        {/* Footer */}
-        <div className="px-6 pb-5 pt-3 border-t border-border flex-shrink-0 space-y-3">
-          <div className="flex gap-3">
-            {!isFirst && (
-              <Button variant="outline" className="flex-1" onClick={() => setStep(s => s - 1)}>
-                Back
-              </Button>
-            )}
-            <Button
-              className="flex-1"
-              onClick={() => {
-                if (isLast) { onClose(); return; }
-                setStep(s => s + 1);
-              }}
-            >
-              {isLast ? (
-                <><Check className="w-4 h-4 mr-1" /> All done!</>
-              ) : (
-                <>Next <ArrowRight className="w-4 h-4 ml-1" /></>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {current.description}
+            </p>
+
+            {/* Tips */}
+            <div className="space-y-2">
+              {current.tips.map((tip, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40"
+                >
+                  <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-5 pb-5 pt-3 border-t border-border flex-shrink-0 space-y-2.5">
+            {/* Navigate + step buttons */}
+            <div className="flex gap-2.5">
+              {!isFirst && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goPrev}
+                  className="flex-shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
               )}
-            </Button>
-          </div>
 
-          {current.path && !isLast && (
+              {current.path && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={navigateToPage}
+                  className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+                >
+                  Open {current.page}
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                onClick={goNext}
+                className="flex-1"
+              >
+                {isLast ? (
+                  <><Check className="w-4 h-4 mr-1" /> Finish</>
+                ) : (
+                  <>Next <ArrowRight className="w-4 h-4 ml-1" /></>
+                )}
+              </Button>
+            </div>
+
             <button
-              onClick={handleNavigate}
-              className="w-full text-center text-xs text-primary hover:underline"
+              onClick={onClose}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5"
             >
-              Take me to {current.page} →
+              Skip tour
             </button>
-          )}
-
-          <button onClick={onClose} className="w-full text-center text-xs text-muted-foreground hover:text-foreground">
-            Skip tour — I'll explore on my own
-          </button>
-        </div>
-      </motion.div>
-    </div>
+          </div>
+        </motion.div>
+      </div>
+    </>
   );
 };
+
+
+// import React, { useState } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { X, ArrowRight, Check, BarChart3, ShoppingCart, Package, Users, FileBarChart, Settings, ClipboardCheck } from 'lucide-react';
+// import { Button } from '@/components/ui/button';
+// import { useNavigate } from 'react-router-dom';
+
+// interface TourStep {
+//   page: string;
+//   icon: React.ReactNode;
+//   title: string;
+//   description: string;
+//   tips: string[];
+//   path?: string;
+//   actionLabel?: string;
+// }
+
+// const TOUR_STEPS: TourStep[] = [
+//   {
+//     page: 'Welcome',
+//     icon: '👋',
+//     title: 'Welcome to Aflows',
+//     description: 'This quick tour will walk you through everything in about 2 minutes. You can skip at any time and come back later.',
+//     tips: ['Your data is saved automatically', 'Use the sidebar to navigate between pages', 'Everything you see is live data'],
+//   },
+//   {
+//     page: 'Sales',
+//     icon: <ShoppingCart className="w-6 h-6 text-primary" />,
+//     title: 'Recording Sales',
+//     description: 'The Sales page is where you record every transaction. Add the customer name, what was sold, the amount, and how they paid.',
+//     tips: [
+//       'Customer name is optional — use "Walk-in" for anonymous sales',
+//       'Add multiple items in one sale using the "+ Add Another Item" button',
+//       'M-Pesa and card sales require a payment reference number',
+//       'A PDF receipt is generated automatically after each sale',
+//       'Use the period filter above Recent Sales to download receipts by date range',
+//     ],
+//     path: '/dashboard/sales',
+//     actionLabel: 'Go to Sales',
+//   },
+//   {
+//     page: 'Analytics',
+//     icon: <BarChart3 className="w-6 h-6 text-primary" />,
+//     title: 'Understanding Your Analytics',
+//     description: 'Analytics gives you a live view of your business performance. Here is what each section means:',
+//     tips: [
+//       'Total Revenue & Sales cards — your performance vs last period. Green arrow = improvement',
+//       'Payment Breakdown — shows which payment method brings in the most money this month',
+//       'Revenue Trend — switch between Monthly view (for long-term patterns) and Daily view (for this week)',
+//       'Top Selling Items — switch between Items Sold (quantity) and Revenue to see what earns most vs what moves most',
+//       'Today Snapshot — compares today\'s sales pace vs your daily average (Pro plan)',
+//       'Monthly Projection — estimates your end-of-month revenue based on your current pace (Pro plan)',
+//       'Use the period filter at the top to analyse any custom date range',
+//     ],
+//     path: '/dashboard',
+//     actionLabel: 'View Analytics',
+//   },
+//   {
+//     page: 'Inventory',
+//     icon: <Package className="w-6 h-6 text-primary" />,
+//     title: 'Managing Your Inventory',
+//     description: 'Inventory tracks your stock levels so you always know what you have and what needs restocking.',
+//     tips: [
+//       '"New Product" — adds a single product with its name, starting stock, cost price, and a low-stock alert threshold',
+//       '"Bulk Restock" — update stock for many products at once (use Add mode to add units, or Set mode to fix an exact quantity)',
+//       '"Import Excel" — download the template, fill it in with your products, and upload it to add hundreds of items at once',
+//       '"Restock" button on each row — adds new stock units for a single product',
+//       'The Low Stock Alert card at the top shows how many items are below their threshold — click the filter to see them',
+//       'When you record a sale with an inventory item, stock is automatically deducted',
+//     ],
+//     path: '/dashboard/inventory',
+//     actionLabel: 'Go to Inventory',
+//   },
+//   {
+//     page: 'Customers',
+//     icon: <Users className="w-6 h-6 text-primary" />,
+//     title: 'Customer Profiles',
+//     description: 'Customers are created automatically when you record a sale with a customer name. No manual entry needed.',
+//     tips: [
+//       'Click any customer row to see their full purchase history in the side panel',
+//       'VIP customers are your highest spenders — they deserve extra attention',
+//       'At Risk customers haven\'t bought in over 30 days — good candidates for a follow-up',
+//       'Use the segment filter to target specific groups',
+//       'The Repeat Rate at the top shows the percentage of customers who have bought more than once',
+//     ],
+//     path: '/dashboard/customers',
+//     actionLabel: 'View Customers',
+//   },
+//   {
+//     page: 'Operations',
+//     icon: <ClipboardCheck className="w-6 h-6 text-primary" />,
+//     title: 'Task List & Reminders',
+//     description: 'Operations is your business to-do list. Use it to track things you need to do and set up recurring reminders so nothing gets forgotten.',
+//     tips: [
+//       'Quick Add (right sidebar) — type a task and press Enter to add it instantly',
+//       'Advanced Task — set a priority, due date, tags, and even attach a link to a document or Google Sheet',
+//       'Recurring Tasks — create automations that generate a task every day, week, or month automatically (e.g. "Send weekly sales report")',
+//       'High priority tasks get a red left border so they stand out',
+//       'Overdue tasks turn orange and get bumped up in priority automatically',
+//       'Use the tag filters to see only Sales, Inventory, or Admin tasks',
+//     ],
+//     path: '/dashboard/operations',
+//     actionLabel: 'Go to Operations',
+//   },
+//   {
+//     page: 'Reports',
+//     icon: <FileBarChart className="w-6 h-6 text-primary" />,
+//     title: 'Downloading Reports',
+//     description: 'Reports lets you export your business data as CSV files that open in Excel or Google Sheets.',
+//     tips: [
+//       'Use the date range selector at the top to pick the period you want',
+//       'Financial Health — shows your daily revenue breakdown and average transaction value',
+//       'Smart Stock List — automatically identifies items that need restocking',
+//       'Customer Loyalty — lists your customers ranked by total spend with their last purchase date',
+//       'Sales Performance — breaks down transactions by payment method',
+//       '"Download All Reports" generates all four CSV files at once',
+//     ],
+//     path: '/dashboard/reports',
+//     actionLabel: 'View Reports',
+//   },
+//   {
+//     page: 'Settings',
+//     icon: <Settings className="w-6 h-6 text-primary" />,
+//     title: 'Setting Up Your Business',
+//     description: 'Settings is where you customize how Aflows represents your business and manage security.',
+//     tips: [
+//       'Upload your logo — it will appear on every receipt sent to customers',
+//       'Set your Receipt Prefix (e.g. "INV" or "RCT") and the next receipt number',
+//       'Add your KRA PIN and Paybill/Till number — these print on receipts automatically',
+//       'Receipt Footer — the message printed at the bottom of every receipt (e.g. "No refunds after 7 days")',
+//       'Tax Rate — if you charge VAT, set it here and it will be calculated automatically',
+//       'Team Members — invite staff who need access. Staff can only record sales and manage tasks',
+//       'Active Sessions — see all devices logged into your account. Revoke any you don\'t recognize',
+//       'Change Password — use a strong password with uppercase letters and numbers',
+//     ],
+//     path: '/dashboard/settings',
+//     actionLabel: 'Open Settings',
+//   },
+// ];
+
+// export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
+//   const [step, setStep] = useState(0);
+//   const navigate = useNavigate();
+//   const current = TOUR_STEPS[step];
+//   const isLast = step === TOUR_STEPS.length - 1;
+//   const isFirst = step === 0;
+
+//   const handleNavigate = () => {
+//     if (current.path) {
+//       navigate(current.path);
+//     }
+//     if (!isLast) setStep(s => s + 1);
+//     else onClose();
+//   };
+
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
+//       <motion.div
+//         key={step}
+//         initial={{ opacity: 0, y: 10 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         exit={{ opacity: 0, y: -10 }}
+//         transition={{ duration: 0.2 }}
+//         className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col"
+//       >
+//         {/* Header */}
+//         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border flex-shrink-0">
+//           <div className="flex gap-1.5">
+//             {TOUR_STEPS.map((_, i) => (
+//               <button
+//                 key={i}
+//                 onClick={() => setStep(i)}
+//                 className={`h-1.5 rounded-full transition-all ${
+//                   i === step ? 'w-6 bg-primary' : i < step ? 'w-3 bg-primary/40' : 'w-3 bg-muted'
+//                 }`}
+//               />
+//             ))}
+//           </div>
+//           <div className="flex items-center gap-2">
+//             <span className="text-xs text-muted-foreground">{step + 1} / {TOUR_STEPS.length}</span>
+//             <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
+//               <X className="w-4 h-4" />
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Content */}
+//         <div className="flex-1 overflow-y-auto px-6 py-5">
+//           <div className="flex items-center gap-3 mb-4">
+//             <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl flex-shrink-0">
+//               {typeof current.icon === 'string' ? current.icon : current.icon}
+//             </div>
+//             <div>
+//               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{current.page}</p>
+//               <h3 className="text-lg font-bold leading-tight">{current.title}</h3>
+//             </div>
+//           </div>
+
+//           <p className="text-sm text-muted-foreground leading-relaxed mb-5">{current.description}</p>
+
+//           <div className="space-y-2.5">
+//             {current.tips.map((tip, i) => (
+//               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/40">
+//                 <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+//                   <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+//                 </div>
+//                 <p className="text-sm text-foreground leading-relaxed">{tip}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Footer */}
+//         <div className="px-6 pb-5 pt-3 border-t border-border flex-shrink-0 space-y-3">
+//           <div className="flex gap-3">
+//             {!isFirst && (
+//               <Button variant="outline" className="flex-1" onClick={() => setStep(s => s - 1)}>
+//                 Back
+//               </Button>
+//             )}
+//             <Button
+//               className="flex-1"
+//               onClick={() => {
+//                 if (isLast) { onClose(); return; }
+//                 setStep(s => s + 1);
+//               }}
+//             >
+//               {isLast ? (
+//                 <><Check className="w-4 h-4 mr-1" /> All done!</>
+//               ) : (
+//                 <>Next <ArrowRight className="w-4 h-4 ml-1" /></>
+//               )}
+//             </Button>
+//           </div>
+
+//           {current.path && !isLast && (
+//             <button
+//               onClick={handleNavigate}
+//               className="w-full text-center text-xs text-primary hover:underline"
+//             >
+//               Take me to {current.page} →
+//             </button>
+//           )}
+
+//           <button onClick={onClose} className="w-full text-center text-xs text-muted-foreground hover:text-foreground">
+//             Skip tour — I'll explore on my own
+//           </button>
+//         </div>
+//       </motion.div>
+//     </div>
+//   );
+// };
