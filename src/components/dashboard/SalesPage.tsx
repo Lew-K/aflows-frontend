@@ -232,8 +232,8 @@ export const SalesPage = () => {
 
   // Near your download button logic:
   const handleDownloadAllReceipts = async () => {
-    const dateStart = /* your date picker value */;
-    const dateEnd = /* your date picker value */;
+    const dateStart = receiptDateStart;
+    const dateEnd = receiptDateEnd;
     
     // Fetch receipts for the date range
     const res = await apiFetch(
