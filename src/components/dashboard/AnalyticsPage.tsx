@@ -1473,6 +1473,23 @@ export const AnalyticsPage = () => {
         )}
       </div>
 
+      {/* New month empty state — shown when current period has no data */}
+      {!revenueSummary?.totalRevenue && !revenueLoading && period === 'this_month' && (
+        <div className="rounded-xl border border-border/50 bg-muted/20 p-6 text-center">
+          <TrendingUp className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="font-semibold text-foreground">New month, fresh start</p>
+          <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+            No sales recorded yet this month. Charts will fill in as you record sales.{' '}
+            <button
+              className="text-primary underline hover:no-underline"
+              onClick={() => setPeriod('last_month')}
+            >
+              View last month instead
+            </button>
+          </p>
+        </div>
+      )}
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueTrend
