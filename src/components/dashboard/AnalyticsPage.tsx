@@ -1433,7 +1433,7 @@ export const AnalyticsPage = () => {
       
 
       
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${can('analytics_advanced') ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      <div className={`grid grid-cols-2 ${can('analytics_advanced') ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}>
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
