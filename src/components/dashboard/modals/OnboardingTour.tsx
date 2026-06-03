@@ -145,16 +145,41 @@ interface SpotlightRect {
 
 export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
   const [step, setStep] = useState(0);
+
+  const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const navigate = useNavigate();
   const current = TOUR_STEPS[step];
   const isLast = step === TOUR_STEPS.length - 1;
   const isFirst = step === 0;
 
+  // Resume tour on load
+  useEffect(() => {
+    const saved = localStorage.getItem('tour-step');
+    const completed = localStorage.getItem('tour-completed');
+  
+    if (saved && !completed) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed)) setStep(parsed);
+    }
+  }, []);
+  
+  // Save step on change
+  useEffect(() => {
+    localStorage.setItem('tour-step', step.toString());
+  }, [step]);
+  
+  // Complete handler
+  const handleComplete = () => {
+    localStorage.setItem('tour-completed', new Date().toISOString());
+    localStorage.removeItem('tour-step');
+    onClose();
+  };
+
   // Position the modal at bottom-right on desktop, bottom on mobile
   const panelRef = useRef<HTMLDivElement>(null);
 
   const goNext = () => {
-    if (isLast) { onClose(); return; }
+    if (isLast) { handleComplete(); return; }
     setStep(s => s + 1);
   };
 
@@ -166,10 +191,68 @@ export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
     if (current.path) navigate(current.path);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && !isLast) goNext();
+      if (e.key === 'ArrowLeft' && !isFirst) goPrev();
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [step, isLast, isFirst]);
+
+  useEffect(() => {
+    if (!current.targetSelector) {
+      setSpotlightRect(null);
+      return;
+    }
+  
+    const update = () => {
+      const el = document.querySelector(current.targetSelector!);
+      if (!el) {
+        setSpotlightRect(null);
+        return;
+      }
+  
+      const rect = el.getBoundingClientRect();
+  
+      setSpotlightRect({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      });
+    };
+  
+    update();
+  
+    window.addEventListener('scroll', update);
+    window.addEventListener('resize', update);
+  
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [step, current.targetSelector]);
+
   return (
     <>
       {/* Semi-transparent overlay — does NOT block clicks on the page */}
-      <div className="fixed inset-0 z-40 bg-black/30 pointer-events-none" />
+      {/* <div className="fixed inset-0 z-40 bg-black/30 pointer-events-none" /> */}
+      <div className="fixed inset-0 z-40 bg-black/40" />
+
+      {spotlightRect && (
+        <div
+          className="fixed z-40 border-2 border-primary rounded-lg shadow-lg shadow-primary/30 pointer-events-none animate-pulse"
+          style={{
+            top: spotlightRect.top - 4,
+            left: spotlightRect.left - 4,
+            width: spotlightRect.width + 8,
+            height: spotlightRect.height + 8,
+          }}
+        />
+      )}
 
       {/* Tour panel — anchored bottom-right on desktop, bottom on mobile */}
       <div
@@ -217,7 +300,7 @@ export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-5 py-4 pb-24 sm:pb-4 space-y-4">
             {/* Icon + Title */}
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
