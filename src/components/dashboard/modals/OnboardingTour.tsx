@@ -1,139 +1,63 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight, Check, BarChart3, ShoppingCart, Package, Users, FileBarChart, Settings, ClipboardCheck, ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, ArrowRight, Check, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface TourStep {
-  page: string;
-  icon: React.ReactNode;
+  pageTitle: string;
+  stepNumber: number;
+  targetSelector: string;
   title: string;
   description: string;
-  tips: string[];
-  path?: string;
-  targetSelector?: string; // CSS selector for element to highlight
+  hint?: string;
+  path?: string; // Navigate to this page if not already there
 }
 
 const TOUR_STEPS: TourStep[] = [
-  {
-    page: 'Welcome',
-    icon: '👋',
-    title: 'Welcome to Aflows',
-    description: 'This quick tour walks you through everything. You can skip at any time and reopen it from the account menu.',
-    tips: [
-      'Your data saves automatically — nothing to configure',
-      'Use the sidebar on the left to switch between pages',
-      'The tour covers every page and feature',
-    ],
-  },
-  {
-    page: 'Sales',
-    icon: <ShoppingCart className="w-6 h-6 text-primary" />,
-    title: 'Recording Sales',
-    description: 'Use the Sales page to record every transaction. Fill in what was sold, the amount, and how the customer paid.',
-    tips: [
-      'Customer name is optional — anonymous sales record as "Walk-in"',
-      'Add multiple items in one sale using "+ Add Another Item"',
-      'M-Pesa and card payments require a transaction reference number',
-      'A PDF receipt is generated automatically after each recorded sale',
-      'Use the period filter on Recent Sales to download receipts by date range',
-      'The bulk download button lets you download all receipts for a period as a ZIP file',
-    ],
-    path: '/dashboard/sales',
-  },
-  {
-    page: 'Analytics',
-    icon: <BarChart3 className="w-6 h-6 text-primary" />,
-    title: 'Understanding Analytics',
-    description: 'Analytics shows your business performance in real time. Here is what each section means:',
-    tips: [
-      'Total Revenue — your earnings for the selected period, with % change vs the previous period',
-      'Total Sales — number of transactions, with your average sale value below',
-      'Payment Breakdown — which payment method brings in the most revenue this month',
-      'Revenue Trend chart — switch between Monthly (long-term patterns) and Daily (recent activity)',
-      'Top Selling Items — switch between Items Sold (volume) and Revenue (earnings)',
-      'Today Snapshot — compares today\'s pace against your daily average (Pro)',
-      'Monthly Projection — estimates your end-of-month revenue based on current pace (Pro)',
-      'Use the period selector at the top right to analyse any custom date range',
-    ],
-    path: '/dashboard',
-  },
-  {
-    page: 'Inventory',
-    icon: <Package className="w-6 h-6 text-primary" />,
-    title: 'Managing Inventory',
-    description: 'Inventory tracks what you have in stock so you always know what needs restocking.',
-    tips: [
-      '"New Product" — add a product with name, starting stock, cost price, and a low-stock threshold',
-      '"Bulk Restock" — update many products at once. Add mode adds units; Set mode fixes the exact quantity',
-      '"Import Excel" — download the template, fill in your products, upload to add hundreds at once',
-      '"Restock" on each row — add new stock units to a single product',
-      'Low Stock Alert card at top — shows how many items are below threshold',
-      'When you record a sale with a tracked item, stock is automatically deducted',
-    ],
-    path: '/dashboard/inventory',
-  },
-  {
-    page: 'Customers',
-    icon: <Users className="w-6 h-6 text-primary" />,
-    title: 'Customer Profiles',
-    description: 'Customers are created automatically when you record a sale with a customer name. Nothing to set up.',
-    tips: [
-      'Click any customer row to see their full purchase history in the side panel',
-      'VIP customers are your highest spenders — they deserve extra attention',
-      'At Risk customers haven\'t bought in 30+ days — good candidates for follow-up',
-      'Use the segment filter to target specific groups',
-      'The phone number shown is the one recorded at the time of their most recent sale',
-    ],
-    path: '/dashboard/customers',
-  },
-  {
-    page: 'Task List',
-    icon: <ClipboardCheck className="w-6 h-6 text-primary" />,
-    title: 'Tasks & Reminders',
-    description: 'Operations is your business to-do list. Use it to track tasks and set recurring reminders so nothing gets forgotten.',
-    tips: [
-      'Quick Add (right sidebar) — type a task name and press Enter to add it instantly',
-      'Advanced Task — set priority, due date, tags, and attach an external link',
-      'Recurring Tasks — set a task to auto-generate daily, weekly, or monthly',
-      'High priority tasks show a red left border so they stand out',
-      'Overdue tasks turn orange and automatically increase in priority',
-      'Tag filters let you see only Sales, Inventory, or Admin tasks',
-    ],
-    path: '/dashboard/operations',
-  },
-  {
-    page: 'Reports',
-    icon: <FileBarChart className="w-6 h-6 text-primary" />,
-    title: 'Exporting Reports',
-    description: 'Reports exports your business data as CSV files that open directly in Excel or Google Sheets.',
-    tips: [
-      'Use the date range at the top to pick any period you want',
-      'Financial Health — daily revenue breakdown and average transaction value',
-      'Smart Stock List — auto-generated restock list based on current stock levels',
-      'Customer Loyalty — customers ranked by spend with their last purchase date',
-      'Sales Performance — transaction breakdown by payment method',
-      '"Download All Reports" generates all four reports as a ZIP file',
-    ],
-    path: '/dashboard/reports',
-  },
-  {
-    page: 'Settings',
-    icon: <Settings className="w-6 h-6 text-primary" />,
-    title: 'Business Settings',
-    description: 'Settings is where you customize your business identity, receipts, and manage who has access.',
-    tips: [
-      'Upload your logo — it appears on every receipt automatically',
-      'Set your Receipt Prefix (e.g. "INV") and starting receipt number',
-      'Add your KRA PIN and Paybill/Till number to print them on receipts',
-      'Receipt Footer — the message at the bottom of every receipt',
-      'Tax Rate — set your VAT percentage and it calculates automatically',
-      'Team Members — invite staff accounts that can only record sales and manage tasks',
-      'Active Sessions — see all logged-in devices. Revoke anything you don\'t recognize',
-      'Change Password — always use a strong password with uppercase letters and numbers',
-    ],
-    path: '/dashboard/settings',
-  },
+  // WELCOME
+  { pageTitle: 'Welcome', stepNumber: 1, targetSelector: 'body', title: 'Welcome to Aflows', description: 'Let\'s take a quick tour. This will help you get started in 2 minutes.', hint: 'Each step highlights a specific feature.' },
+
+  // SALES PAGE
+  { pageTitle: 'Sales', stepNumber: 2, targetSelector: '[data-tour="sales-form"]', title: 'Quick Sales Entry', description: 'Record any transaction here — customer name is optional.', path: '/dashboard/sales' },
+  { pageTitle: 'Sales', stepNumber: 3, targetSelector: '[data-tour="sales-customer-name"]', title: 'Customer Name', description: 'Optional. Use "Walk-in" for anonymous sales, or enter a name to track repeat customers.' },
+  { pageTitle: 'Sales', stepNumber: 4, targetSelector: '[data-tour="sales-items"]', title: 'Add Items', description: 'Type the product name or service. If tracked in inventory, it auto-selects with the price.' },
+  { pageTitle: 'Sales', stepNumber: 5, targetSelector: '[data-tour="sales-payment"]', title: 'Payment Method', description: 'Choose how the customer paid. M-Pesa and card payments require a transaction reference.' },
+  { pageTitle: 'Sales', stepNumber: 6, targetSelector: '[data-tour="recent-sales"]', title: 'Receipt Receipts', description: 'Your transactions appear here. Click the download icon to save the PDF receipt.' },
+
+  // ANALYTICS PAGE
+  { pageTitle: 'Analytics', stepNumber: 7, targetSelector: '[data-tour="analytics-kpis"]', title: 'Key Metrics', description: 'Total Revenue, Sales, and % change vs last period. Green = improvement.', path: '/dashboard' },
+  { pageTitle: 'Analytics', stepNumber: 8, targetSelector: '[data-tour="revenue-trend"]', title: 'Revenue Trend', description: 'Switch between Monthly and Daily view to see patterns in your sales.' },
+  { pageTitle: 'Analytics', stepNumber: 9, targetSelector: '[data-tour="top-items"]', title: 'Top Selling Items', description: 'See which products move the most (Items Sold) or earn the most (Revenue).' },
+  { pageTitle: 'Analytics', stepNumber: 10, targetSelector: '[data-tour="payment-breakdown"]', title: 'Payment Methods', description: 'Which payment method brings in the most revenue? See the breakdown here.' },
+
+  // INVENTORY PAGE
+  { pageTitle: 'Inventory', stepNumber: 11, targetSelector: '[data-tour="low-stock-alert"]', title: 'Low Stock Alert', description: 'Items below their threshold appear here. Click to see the full list.', path: '/dashboard/inventory' },
+  { pageTitle: 'Inventory', stepNumber: 12, targetSelector: '[data-tour="inventory-actions"]', title: 'Manage Inventory', description: 'New Product adds one item. Bulk Restock updates many at once. Import Excel loads hundreds.' },
+  { pageTitle: 'Inventory', stepNumber: 13, targetSelector: '[data-tour="inventory-table"]', title: 'Inventory List', description: 'All your products with stock levels and cost/selling price. Click Restock to add units.' },
+
+  // CUSTOMERS PAGE
+  { pageTitle: 'Customers', stepNumber: 14, targetSelector: '[data-tour="customer-kpis"]', title: 'Customer Insights', description: 'Total customers, active this month, avg spend, and repeat rate.', path: '/dashboard/customers' },
+  { pageTitle: 'Customers', stepNumber: 15, targetSelector: '[data-tour="customer-filters"]', title: 'Filter Customers', description: 'Search by name or filter by segment: VIP (high spenders), Regular, or At Risk (lapsed).' },
+  { pageTitle: 'Customers', stepNumber: 16, targetSelector: '[data-tour="customer-list"]', title: 'Customer Profiles', description: 'Click any customer to see their full purchase history in the side panel.' },
+
+  // OPERATIONS PAGE
+  { pageTitle: 'Operations', stepNumber: 17, targetSelector: '[data-tour="operations-quick-add"]', title: 'Add Tasks', description: 'Type a task and press Enter for quick add, or use Advanced for due dates and recurring tasks.', path: '/dashboard/operations' },
+  { pageTitle: 'Operations', stepNumber: 18, targetSelector: '[data-tour="operations-filters"]', title: 'Filter Tasks', description: 'View only Sales, Inventory, or Admin tasks using these filters.' },
+  { pageTitle: 'Operations', stepNumber: 19, targetSelector: '[data-tour="operations-tasks"]', title: 'Task List', description: 'Red border = high priority. Orange = overdue. Drag to reorder or mark as done.' },
+
+  // REPORTS PAGE
+  { pageTitle: 'Reports', stepNumber: 20, targetSelector: '[data-tour="reports-date-range"]', title: 'Date Range', description: 'Choose any period to analyze: today, this week, custom range, year-to-date, etc.', path: '/dashboard/reports' },
+  { pageTitle: 'Reports', stepNumber: 21, targetSelector: '[data-tour="reports-cards"]', title: 'Export Reports', description: 'Each card shows key metrics and has a Download button to export as CSV for Excel.' },
+
+  // SETTINGS PAGE
+  { pageTitle: 'Settings', stepNumber: 22, targetSelector: '[data-tour="settings-logo"]', title: 'Business Logo', description: 'Upload your logo — it appears on all receipts automatically.', path: '/dashboard/settings' },
+  { pageTitle: 'Settings', stepNumber: 23, targetSelector: '[data-tour="settings-subscription"]', title: 'Subscription Status', description: 'See your plan, usage, and when it renews. Upgrade anytime.' },
+  { pageTitle: 'Settings', stepNumber: 24, targetSelector: '[data-tour="settings-team"]', title: 'Team Members', description: 'Invite staff who can record sales and manage tasks, but cannot access settings.' },
+  { pageTitle: 'Settings', stepNumber: 25, targetSelector: '[data-tour="settings-sessions"]', title: 'Active Sessions', description: 'See all logged-in devices. Revoke any you don\'t recognize for security.' },
+
+  // FINISH
+  { pageTitle: 'Finish', stepNumber: 26, targetSelector: 'body', title: 'You\'re All Set!', description: 'You now know the basics. Start recording sales and watch your insights grow in real-time.' },
 ];
 
 interface SpotlightRect {
@@ -145,41 +69,70 @@ interface SpotlightRect {
 
 export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
   const [step, setStep] = useState(0);
-
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const navigate = useNavigate();
   const current = TOUR_STEPS[step];
   const isLast = step === TOUR_STEPS.length - 1;
   const isFirst = step === 0;
-
-  // Resume tour on load
-  useEffect(() => {
-    const saved = localStorage.getItem('tour-step');
-    const completed = localStorage.getItem('tour-completed');
-  
-    if (saved && !completed) {
-      const parsed = parseInt(saved, 10);
-      if (!isNaN(parsed)) setStep(parsed);
-    }
-  }, []);
-  
-  // Save step on change
-  useEffect(() => {
-    localStorage.setItem('tour-step', step.toString());
-  }, [step]);
-  
-  // Complete handler
-  const handleComplete = () => {
-    localStorage.setItem('tour-completed', new Date().toISOString());
-    localStorage.removeItem('tour-step');
-    onClose();
-  };
-
-  // Position the modal at bottom-right on desktop, bottom on mobile
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // Auto-navigate to page if needed
+  useEffect(() => {
+    if (current.path) {
+      navigate(current.path);
+    }
+  }, [step, current.path, navigate]);
+
+  // Calculate spotlight
+  useEffect(() => {
+    if (!current.targetSelector || current.targetSelector === 'body') {
+      setSpotlightRect(null);
+      return;
+    }
+
+    const findElement = () => {
+      const el = document.querySelector(current.targetSelector);
+      if (!el) return null;
+
+      const rect = el.getBoundingClientRect();
+      return rect;
+    };
+
+    let attempts = 0;
+    const tryFind = () => {
+      const rect = findElement();
+      if (rect && rect.width > 0 && rect.height > 0) {
+        setSpotlightRect({
+          top: window.scrollY + rect.top - 8,
+          left: rect.left - 8,
+          width: rect.width + 16,
+          height: rect.height + 16,
+        });
+
+        // Scroll into view smoothly
+        const el = document.querySelector(current.targetSelector);
+        if (el) {
+          const elementTop = rect.top + window.scrollY;
+          window.scrollTo({
+            top: Math.max(0, elementTop - 150),
+            behavior: 'smooth',
+          });
+        }
+      } else if (attempts < 10) {
+        attempts++;
+        setTimeout(tryFind, 200);
+      }
+    };
+
+    tryFind();
+  }, [step, current.targetSelector]);
+
   const goNext = () => {
-    if (isLast) { handleComplete(); return; }
+    if (isLast) {
+      localStorage.setItem('tour-completed', new Date().toISOString());
+      onClose();
+      return;
+    }
     setStep(s => s + 1);
   };
 
@@ -187,204 +140,541 @@ export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
     if (!isFirst) setStep(s => s - 1);
   };
 
-  const navigateToPage = () => {
-    if (current.path) navigate(current.path);
-  };
-
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight' && !isLast) goNext();
       if (e.key === 'ArrowLeft' && !isFirst) goPrev();
     };
-  
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [step, isLast, isFirst]);
 
-  useEffect(() => {
-    if (!current.targetSelector) {
-      setSpotlightRect(null);
-      return;
-    }
-  
-    const update = () => {
-      const el = document.querySelector(current.targetSelector!);
-      if (!el) {
-        setSpotlightRect(null);
-        return;
-      }
-  
-      const rect = el.getBoundingClientRect();
-  
-      setSpotlightRect({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      });
-    };
-  
-    update();
-  
-    window.addEventListener('scroll', update);
-    window.addEventListener('resize', update);
-  
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-    };
-  }, [step, current.targetSelector]);
-
   return (
     <>
-      {/* Semi-transparent overlay — does NOT block clicks on the page */}
-      {/* <div className="fixed inset-0 z-40 bg-black/30 pointer-events-none" /> */}
-      <div className="fixed inset-0 z-40 bg-black/40" />
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-40 bg-black/50 pointer-events-none" />
 
-      {spotlightRect && (
-        <div
-          className="fixed z-40 border-2 border-primary rounded-lg shadow-lg shadow-primary/30 pointer-events-none animate-pulse"
-          style={{
-            top: spotlightRect.top - 4,
-            left: spotlightRect.left - 4,
-            width: spotlightRect.width + 8,
-            height: spotlightRect.height + 8,
-          }}
-        />
+      {/* Spotlight effect */}
+      {spotlightRect && spotlightRect.width > 0 && (
+        <>
+          <div
+            className="fixed z-40 bg-black/60 pointer-events-none transition-all duration-300"
+            style={{
+              top: 0,
+              left: 0,
+              right: 0,
+              height: spotlightRect.top,
+            }}
+          />
+          <div
+            className="fixed z-40 bg-black/60 pointer-events-none transition-all duration-300"
+            style={{
+              top: spotlightRect.top + spotlightRect.height,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+          <div
+            className="fixed z-40 bg-black/60 pointer-events-none transition-all duration-300"
+            style={{
+              top: spotlightRect.top,
+              left: 0,
+              width: spotlightRect.left,
+              height: spotlightRect.height,
+            }}
+          />
+          <div
+            className="fixed z-40 bg-black/60 pointer-events-none transition-all duration-300"
+            style={{
+              top: spotlightRect.top,
+              right: 0,
+              width: window.innerWidth - (spotlightRect.left + spotlightRect.width),
+              height: spotlightRect.height,
+            }}
+          />
+          <div
+            className="fixed z-40 border-2 border-primary rounded-lg shadow-lg shadow-primary/50 pointer-events-none transition-all duration-300"
+            style={{
+              top: spotlightRect.top,
+              left: spotlightRect.left,
+              width: spotlightRect.width,
+              height: spotlightRect.height,
+            }}
+          />
+        </>
       )}
 
-      {/* Tour panel — anchored bottom-right on desktop, bottom on mobile */}
+      {/* Tour panel */}
       <div
         ref={panelRef}
-        className="fixed z-50 bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:w-[420px]"
+        className="fixed z-50 bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:w-[400px]"
       >
         <motion.div
           key={step}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 16 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[70vh]"
+          transition={{ duration: 0.2 }}
+          className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl"
         >
-          {/* Progress bar + controls */}
-          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b">
             <div className="flex gap-1">
               {TOUR_STEPS.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setStep(i)}
-                  className={`h-1.5 rounded-full transition-all duration-200 ${
-                    i === step
-                      ? 'w-6 bg-primary'
-                      : i < step
-                      ? 'w-3 bg-primary/40'
-                      : 'w-3 bg-muted-foreground/20'
+                  className={`h-1 rounded-full transition-all ${
+                    i === step ? 'w-8 bg-primary' : i < step ? 'w-2 bg-primary/40' : 'w-2 bg-muted'
                   }`}
                   aria-label={`Go to step ${i + 1}`}
                 />
               ))}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {step + 1} / {TOUR_STEPS.length}
-              </span>
-              <button
-                onClick={onClose}
-                className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
-                aria-label="Close tour"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            <div className="text-xs text-muted-foreground">
+              {step + 1}/{TOUR_STEPS.length}
             </div>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 pb-24 sm:pb-4 space-y-4">
-            {/* Icon + Title */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
-                {typeof current.icon === 'string' ? current.icon : current.icon}
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {current.page}
-                </p>
-                <h3 className="text-base font-bold leading-tight">{current.title}</h3>
-              </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1">
+                {current.pageTitle}
+              </p>
+              <h3 className="text-lg font-bold">{current.title}</h3>
             </div>
 
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {current.description}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{current.description}</p>
 
-            {/* Tips */}
-            <div className="space-y-2">
-              {current.tips.map((tip, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40"
-                >
-                  <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-primary">{i + 1}</span>
-                  </div>
-                  <p className="text-sm text-foreground leading-relaxed">{tip}</p>
-                </div>
-              ))}
-            </div>
+            {current.hint && (
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-xs text-primary font-medium">💡 {current.hint}</p>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
-          <div className="px-5 pb-5 pt-3 border-t border-border flex-shrink-0 space-y-2.5">
-            {/* Navigate + step buttons */}
-            <div className="flex gap-2.5">
-              {!isFirst && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goPrev}
-                  className="flex-shrink-0"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-              )}
-
-              {current.path && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={navigateToPage}
-                  className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
-                >
-                  Open {current.page}
-                </Button>
-              )}
-
-              <Button
-                size="sm"
-                onClick={goNext}
-                className="flex-1"
-              >
-                {isLast ? (
-                  <><Check className="w-4 h-4 mr-1" /> Finish</>
-                ) : (
-                  <>Next <ArrowRight className="w-4 h-4 ml-1" /></>
-                )}
+          <div className="px-5 pb-5 pt-3 border-t flex items-center gap-2">
+            {!isFirst && (
+              <Button variant="outline" size="sm" onClick={goPrev}>
+                <ChevronLeft className="w-4 h-4" />
               </Button>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5"
+            )}
+            <Button
+              size="sm"
+              onClick={goNext}
+              className="flex-1"
             >
-              Skip tour
-            </button>
+              {isLast ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" /> Finish
+                </>
+              ) : (
+                <>
+                  Next <ArrowRight className="w-4 h-4 ml-1" />
+                </>
+              )}
+            </Button>
           </div>
         </motion.div>
       </div>
     </>
   );
 };
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { X, ArrowRight, Check, BarChart3, ShoppingCart, Package, Users, FileBarChart, Settings, ClipboardCheck, ChevronLeft } from 'lucide-react';
+// import { Button } from '@/components/ui/button';
+// import { useNavigate } from 'react-router-dom';
+
+// interface TourStep {
+//   page: string;
+//   icon: React.ReactNode;
+//   title: string;
+//   description: string;
+//   tips: string[];
+//   path?: string;
+//   targetSelector?: string; // CSS selector for element to highlight
+// }
+
+// const TOUR_STEPS: TourStep[] = [
+//   {
+//     page: 'Welcome',
+//     icon: '👋',
+//     title: 'Welcome to Aflows',
+//     description: 'This quick tour walks you through everything. You can skip at any time and reopen it from the account menu.',
+//     tips: [
+//       'Your data saves automatically — nothing to configure',
+//       'Use the sidebar on the left to switch between pages',
+//       'The tour covers every page and feature',
+//     ],
+//   },
+//   {
+//     page: 'Sales',
+//     icon: <ShoppingCart className="w-6 h-6 text-primary" />,
+//     title: 'Recording Sales',
+//     description: 'Use the Sales page to record every transaction. Fill in what was sold, the amount, and how the customer paid.',
+//     tips: [
+//       'Customer name is optional — anonymous sales record as "Walk-in"',
+//       'Add multiple items in one sale using "+ Add Another Item"',
+//       'M-Pesa and card payments require a transaction reference number',
+//       'A PDF receipt is generated automatically after each recorded sale',
+//       'Use the period filter on Recent Sales to download receipts by date range',
+//       'The bulk download button lets you download all receipts for a period as a ZIP file',
+//     ],
+//     path: '/dashboard/sales',
+//   },
+//   {
+//     page: 'Analytics',
+//     icon: <BarChart3 className="w-6 h-6 text-primary" />,
+//     title: 'Understanding Analytics',
+//     description: 'Analytics shows your business performance in real time. Here is what each section means:',
+//     tips: [
+//       'Total Revenue — your earnings for the selected period, with % change vs the previous period',
+//       'Total Sales — number of transactions, with your average sale value below',
+//       'Payment Breakdown — which payment method brings in the most revenue this month',
+//       'Revenue Trend chart — switch between Monthly (long-term patterns) and Daily (recent activity)',
+//       'Top Selling Items — switch between Items Sold (volume) and Revenue (earnings)',
+//       'Today Snapshot — compares today\'s pace against your daily average (Pro)',
+//       'Monthly Projection — estimates your end-of-month revenue based on current pace (Pro)',
+//       'Use the period selector at the top right to analyse any custom date range',
+//     ],
+//     path: '/dashboard',
+//   },
+//   {
+//     page: 'Inventory',
+//     icon: <Package className="w-6 h-6 text-primary" />,
+//     title: 'Managing Inventory',
+//     description: 'Inventory tracks what you have in stock so you always know what needs restocking.',
+//     tips: [
+//       '"New Product" — add a product with name, starting stock, cost price, and a low-stock threshold',
+//       '"Bulk Restock" — update many products at once. Add mode adds units; Set mode fixes the exact quantity',
+//       '"Import Excel" — download the template, fill in your products, upload to add hundreds at once',
+//       '"Restock" on each row — add new stock units to a single product',
+//       'Low Stock Alert card at top — shows how many items are below threshold',
+//       'When you record a sale with a tracked item, stock is automatically deducted',
+//     ],
+//     path: '/dashboard/inventory',
+//   },
+//   {
+//     page: 'Customers',
+//     icon: <Users className="w-6 h-6 text-primary" />,
+//     title: 'Customer Profiles',
+//     description: 'Customers are created automatically when you record a sale with a customer name. Nothing to set up.',
+//     tips: [
+//       'Click any customer row to see their full purchase history in the side panel',
+//       'VIP customers are your highest spenders — they deserve extra attention',
+//       'At Risk customers haven\'t bought in 30+ days — good candidates for follow-up',
+//       'Use the segment filter to target specific groups',
+//       'The phone number shown is the one recorded at the time of their most recent sale',
+//     ],
+//     path: '/dashboard/customers',
+//   },
+//   {
+//     page: 'Task List',
+//     icon: <ClipboardCheck className="w-6 h-6 text-primary" />,
+//     title: 'Tasks & Reminders',
+//     description: 'Operations is your business to-do list. Use it to track tasks and set recurring reminders so nothing gets forgotten.',
+//     tips: [
+//       'Quick Add (right sidebar) — type a task name and press Enter to add it instantly',
+//       'Advanced Task — set priority, due date, tags, and attach an external link',
+//       'Recurring Tasks — set a task to auto-generate daily, weekly, or monthly',
+//       'High priority tasks show a red left border so they stand out',
+//       'Overdue tasks turn orange and automatically increase in priority',
+//       'Tag filters let you see only Sales, Inventory, or Admin tasks',
+//     ],
+//     path: '/dashboard/operations',
+//   },
+//   {
+//     page: 'Reports',
+//     icon: <FileBarChart className="w-6 h-6 text-primary" />,
+//     title: 'Exporting Reports',
+//     description: 'Reports exports your business data as CSV files that open directly in Excel or Google Sheets.',
+//     tips: [
+//       'Use the date range at the top to pick any period you want',
+//       'Financial Health — daily revenue breakdown and average transaction value',
+//       'Smart Stock List — auto-generated restock list based on current stock levels',
+//       'Customer Loyalty — customers ranked by spend with their last purchase date',
+//       'Sales Performance — transaction breakdown by payment method',
+//       '"Download All Reports" generates all four reports as a ZIP file',
+//     ],
+//     path: '/dashboard/reports',
+//   },
+//   {
+//     page: 'Settings',
+//     icon: <Settings className="w-6 h-6 text-primary" />,
+//     title: 'Business Settings',
+//     description: 'Settings is where you customize your business identity, receipts, and manage who has access.',
+//     tips: [
+//       'Upload your logo — it appears on every receipt automatically',
+//       'Set your Receipt Prefix (e.g. "INV") and starting receipt number',
+//       'Add your KRA PIN and Paybill/Till number to print them on receipts',
+//       'Receipt Footer — the message at the bottom of every receipt',
+//       'Tax Rate — set your VAT percentage and it calculates automatically',
+//       'Team Members — invite staff accounts that can only record sales and manage tasks',
+//       'Active Sessions — see all logged-in devices. Revoke anything you don\'t recognize',
+//       'Change Password — always use a strong password with uppercase letters and numbers',
+//     ],
+//     path: '/dashboard/settings',
+//   },
+// ];
+
+// interface SpotlightRect {
+//   top: number;
+//   left: number;
+//   width: number;
+//   height: number;
+// }
+
+// export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
+//   const [step, setStep] = useState(0);
+
+//   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
+//   const navigate = useNavigate();
+//   const current = TOUR_STEPS[step];
+//   const isLast = step === TOUR_STEPS.length - 1;
+//   const isFirst = step === 0;
+
+//   // Resume tour on load
+//   useEffect(() => {
+//     const saved = localStorage.getItem('tour-step');
+//     const completed = localStorage.getItem('tour-completed');
+  
+//     if (saved && !completed) {
+//       const parsed = parseInt(saved, 10);
+//       if (!isNaN(parsed)) setStep(parsed);
+//     }
+//   }, []);
+  
+//   // Save step on change
+//   useEffect(() => {
+//     localStorage.setItem('tour-step', step.toString());
+//   }, [step]);
+  
+//   // Complete handler
+//   const handleComplete = () => {
+//     localStorage.setItem('tour-completed', new Date().toISOString());
+//     localStorage.removeItem('tour-step');
+//     onClose();
+//   };
+
+//   // Position the modal at bottom-right on desktop, bottom on mobile
+//   const panelRef = useRef<HTMLDivElement>(null);
+
+//   const goNext = () => {
+//     if (isLast) { handleComplete(); return; }
+//     setStep(s => s + 1);
+//   };
+
+//   const goPrev = () => {
+//     if (!isFirst) setStep(s => s - 1);
+//   };
+
+//   const navigateToPage = () => {
+//     if (current.path) navigate(current.path);
+//   };
+
+//   useEffect(() => {
+//     const handleKeyDown = (e: KeyboardEvent) => {
+//       if (e.key === 'Escape') onClose();
+//       if (e.key === 'ArrowRight' && !isLast) goNext();
+//       if (e.key === 'ArrowLeft' && !isFirst) goPrev();
+//     };
+  
+//     window.addEventListener('keydown', handleKeyDown);
+//     return () => window.removeEventListener('keydown', handleKeyDown);
+//   }, [step, isLast, isFirst]);
+
+//   useEffect(() => {
+//     if (!current.targetSelector) {
+//       setSpotlightRect(null);
+//       return;
+//     }
+  
+//     const update = () => {
+//       const el = document.querySelector(current.targetSelector!);
+//       if (!el) {
+//         setSpotlightRect(null);
+//         return;
+//       }
+  
+//       const rect = el.getBoundingClientRect();
+  
+//       setSpotlightRect({
+//         top: rect.top,
+//         left: rect.left,
+//         width: rect.width,
+//         height: rect.height,
+//       });
+//     };
+  
+//     update();
+  
+//     window.addEventListener('scroll', update);
+//     window.addEventListener('resize', update);
+  
+//     return () => {
+//       window.removeEventListener('scroll', update);
+//       window.removeEventListener('resize', update);
+//     };
+//   }, [step, current.targetSelector]);
+
+//   return (
+//     <>
+//       {/* Semi-transparent overlay — does NOT block clicks on the page */}
+//       {/* <div className="fixed inset-0 z-40 bg-black/30 pointer-events-none" /> */}
+//       <div className="fixed inset-0 z-40 bg-black/40" />
+
+//       {spotlightRect && (
+//         <div
+//           className="fixed z-40 border-2 border-primary rounded-lg shadow-lg shadow-primary/30 pointer-events-none animate-pulse"
+//           style={{
+//             top: spotlightRect.top - 4,
+//             left: spotlightRect.left - 4,
+//             width: spotlightRect.width + 8,
+//             height: spotlightRect.height + 8,
+//           }}
+//         />
+//       )}
+
+//       {/* Tour panel — anchored bottom-right on desktop, bottom on mobile */}
+//       <div
+//         ref={panelRef}
+//         className="fixed z-50 bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:w-[420px]"
+//       >
+//         <motion.div
+//           key={step}
+//           initial={{ opacity: 0, y: 16 }}
+//           animate={{ opacity: 1, y: 0 }}
+//           exit={{ opacity: 0, y: 16 }}
+//           transition={{ duration: 0.2, ease: 'easeOut' }}
+//           className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[70vh]"
+//         >
+//           {/* Progress bar + controls */}
+//           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">
+//             <div className="flex gap-1">
+//               {TOUR_STEPS.map((_, i) => (
+//                 <button
+//                   key={i}
+//                   onClick={() => setStep(i)}
+//                   className={`h-1.5 rounded-full transition-all duration-200 ${
+//                     i === step
+//                       ? 'w-6 bg-primary'
+//                       : i < step
+//                       ? 'w-3 bg-primary/40'
+//                       : 'w-3 bg-muted-foreground/20'
+//                   }`}
+//                   aria-label={`Go to step ${i + 1}`}
+//                 />
+//               ))}
+//             </div>
+//             <div className="flex items-center gap-3">
+//               <span className="text-xs text-muted-foreground tabular-nums">
+//                 {step + 1} / {TOUR_STEPS.length}
+//               </span>
+//               <button
+//                 onClick={onClose}
+//                 className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+//                 aria-label="Close tour"
+//               >
+//                 <X className="w-4 h-4" />
+//               </button>
+//             </div>
+//           </div>
+
+//           {/* Content */}
+//           <div className="flex-1 overflow-y-auto px-5 py-4 pb-24 sm:pb-4 space-y-4">
+//             {/* Icon + Title */}
+//             <div className="flex items-center gap-3">
+//               <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
+//                 {typeof current.icon === 'string' ? current.icon : current.icon}
+//               </div>
+//               <div>
+//                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+//                   {current.page}
+//                 </p>
+//                 <h3 className="text-base font-bold leading-tight">{current.title}</h3>
+//               </div>
+//             </div>
+
+//             <p className="text-sm text-muted-foreground leading-relaxed">
+//               {current.description}
+//             </p>
+
+//             {/* Tips */}
+//             <div className="space-y-2">
+//               {current.tips.map((tip, i) => (
+//                 <div
+//                   key={i}
+//                   className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40"
+//                 >
+//                   <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+//                     <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+//                   </div>
+//                   <p className="text-sm text-foreground leading-relaxed">{tip}</p>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+
+//           {/* Footer */}
+//           <div className="px-5 pb-5 pt-3 border-t border-border flex-shrink-0 space-y-2.5">
+//             {/* Navigate + step buttons */}
+//             <div className="flex gap-2.5">
+//               {!isFirst && (
+//                 <Button
+//                   variant="outline"
+//                   size="sm"
+//                   onClick={goPrev}
+//                   className="flex-shrink-0"
+//                 >
+//                   <ChevronLeft className="w-4 h-4" />
+//                 </Button>
+//               )}
+
+//               {current.path && (
+//                 <Button
+//                   variant="outline"
+//                   size="sm"
+//                   onClick={navigateToPage}
+//                   className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+//                 >
+//                   Open {current.page}
+//                 </Button>
+//               )}
+
+//               <Button
+//                 size="sm"
+//                 onClick={goNext}
+//                 className="flex-1"
+//               >
+//                 {isLast ? (
+//                   <><Check className="w-4 h-4 mr-1" /> Finish</>
+//                 ) : (
+//                   <>Next <ArrowRight className="w-4 h-4 ml-1" /></>
+//                 )}
+//               </Button>
+//             </div>
+
+//             <button
+//               onClick={onClose}
+//               className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5"
+//             >
+//               Skip tour
+//             </button>
+//           </div>
+//         </motion.div>
+//       </div>
+//     </>
+//   );
+// };
 
 
 // import React, { useState } from 'react';
