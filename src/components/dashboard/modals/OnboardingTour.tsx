@@ -120,7 +120,7 @@ const TOUR_STEPS: TourStep[] = [
       '💾 All receipts show customer name and payment method'
     ],
     action: 'Now let\'s look at your analytics',
-    path: '/dashboard',
+    // path: '/dashboard',
   },
 
   // ===== ANALYTICS PAGE =====
@@ -137,6 +137,7 @@ const TOUR_STEPS: TourStep[] = [
       '👥 Customers: new vs repeat (Growth/Pro only)'
     ],
     action: 'Select a time period to filter the data',
+    path: '/dashboard',
   },
 
   {
