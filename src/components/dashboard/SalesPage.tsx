@@ -457,6 +457,7 @@ export const SalesPage = () => {
                       <span className="flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">+254</span>
                       <Input
                         placeholder="7XXXXXXXX"
+                        data-tour="sales-phone"
                         className="h-9 rounded-l-none"
                         {...register('customerPhone')}
                         onChange={(e) => {
