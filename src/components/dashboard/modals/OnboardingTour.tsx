@@ -31,7 +31,6 @@ const TOUR_STEPS: TourStep[] = [
     action: 'Ready? Click Next to get started',
   },
   
-
   // ===== SALES PAGE =====
   {
     pageTitle: 'Sales',
