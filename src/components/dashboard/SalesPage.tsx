@@ -426,7 +426,7 @@ export const SalesPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         {/* Entry Form */}
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-          <Card className="h-full flex flex-col border border-border/50 shadow-sm">
+          <Card className="h-full flex flex-col border border-border/50 shadow-sm" data-tour="sales-form">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-primary" />
@@ -473,7 +473,7 @@ export const SalesPage = () => {
                 </div>
               
                 {/* Items Section */}
-                <div className="space-y-4 border border-border/40 rounded-xl p-3 md:p-4 bg-muted/20">
+                <div className="space-y-4 border border-border/40 rounded-xl p-3 md:p-4 bg-muted/20" data-tour="sales-items">
                   {/* Header - Hidden on mobile */}
                   <div className="hidden md:grid grid-cols-12 gap-3 text-[11px] uppercase tracking-wide font-bold text-muted-foreground px-2">
                     <div className="col-span-1 text-center">#</div>
@@ -750,7 +750,7 @@ export const SalesPage = () => {
                 </div>
               
                 {/* Payment Section */}
-                <div className="space-y-4 pt-2 border-t border-border/40">
+                <div className="space-y-4 pt-2 border-t border-border/40" data-tour="sales-payment">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               
                     <div className="space-y-2">
@@ -811,7 +811,7 @@ export const SalesPage = () => {
 
         {/* Recent Sales - Equal Height */}
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-          <Card className="h-full flex flex-col overflow-hidden">
+          <Card className="h-full flex flex-col overflow-hidden" data-tour="recent-sales">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
