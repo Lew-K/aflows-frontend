@@ -235,11 +235,12 @@ export function OperationsPage() {
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  data-tour="operations-search"
                 />
               </div>
 
               {/* TAG FILTERS */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" data-tour="operations-filters">
                 {AVAILABLE_TAGS.map(tag => (
                   <button
                     key={tag}
@@ -261,7 +262,7 @@ export function OperationsPage() {
               </div>
 
               {/* FOCUS MODE */}
-              <div className="flex gap-2">
+              <div className="flex gap-2" data-tour="operations-focus">
                 <Button
                   variant={focusMode === "all" ? "default" : "outline"}
                   size="sm"
@@ -300,7 +301,7 @@ export function OperationsPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="active">
+              <TabsContent value="active" data-tour="operations-tasks">
                 <Card>
                   {activeTasks.length === 0 ? (
                     <div className="p-16 text-center opacity-50">
@@ -354,7 +355,7 @@ export function OperationsPage() {
             {/* QUICK ADD */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Quick Add</CardTitle>
+                <CardTitle className="text-base">Quick Add</CardTitle data-tour="operations-quick-add">
               </CardHeader>
               <CardContent>
                 <Input
