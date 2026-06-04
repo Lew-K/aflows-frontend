@@ -140,7 +140,7 @@ export const CustomersPage = () => {
   if (loading) return (
     <div className="p-6 space-y-4">
       <Skeleton className="h-10 w-48" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-tour="customer-kpis">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
       </div>
       {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
@@ -198,7 +198,7 @@ export const CustomersPage = () => {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-tour="customer-kpis">
             <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4 text-blue-500" />} />
             <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4 text-green-500" />} />
             <KPICard title="Avg Spend" value={`KES ${Math.round(avgSpend).toLocaleString()}`} icon={<TrendingUp className="w-4 h-4 text-orange-500" />} />
