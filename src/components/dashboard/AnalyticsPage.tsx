@@ -885,7 +885,7 @@ const TopSellingItems = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.5 }}
   >
-    <Card className="h-full" data-tour="revenue-trend">
+    <Card className="h-full" data-tour="top-selling-items">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
