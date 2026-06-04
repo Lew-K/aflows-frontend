@@ -517,7 +517,7 @@ export const OnboardingTour = ({ onClose }: { onClose: () => void }) => {
         if (el) {
           const elementTop = rect.top + window.scrollY;
           window.scrollTo({
-            top: Math.max(0, elementTop - 150),
+            top: Math.max(0, elementTop - 250),
             behavior: 'smooth',
           });
         }
