@@ -448,6 +448,7 @@ export const SalesPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
                       placeholder="Customer name"
+                      data-tour="sales-customer-name"
                       className="h-9"
                       {...register('customerName')}
                     />
