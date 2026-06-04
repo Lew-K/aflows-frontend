@@ -198,7 +198,7 @@ const TOUR_STEPS: TourStep[] = [
       '⚖️ Balance = less risk from any single method'
     ],
     action: 'Now let\'s manage your inventory',
-    path: '/dashboard/inventory',
+    // path: '/dashboard/inventory',
   },
 
   // ===== INVENTORY PAGE =====
@@ -215,6 +215,7 @@ const TOUR_STEPS: TourStep[] = [
       '✏️ Click to adjust thresholds per product'
     ],
     action: 'Let\'s add and manage products',
+    path: '/dashboard/inventory',
   },
 
   {
