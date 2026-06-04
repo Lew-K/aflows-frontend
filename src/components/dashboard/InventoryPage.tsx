@@ -136,7 +136,7 @@ export const InventoryPage = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-sm border border-border bg-card">
+        <Card className="shadow-sm border border-border bg-card" data-tour="low-stock-alert">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock Alert</CardTitle>
             <AlertTriangle className={`w-4 h-4 ${stats.lowStockCount > 0 ? "text-amber-500" : "text-muted-foreground"}`} />
@@ -215,7 +215,7 @@ export const InventoryPage = () => {
           </div>
 
           {/* TABLE */}
-          <Card className="border-none shadow-sm overflow-hidden">
+          <Card className="border-none shadow-sm overflow-hidden" data-tour="inventory-table">
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
