@@ -10,6 +10,8 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { initAuthGuard } from "@/lib/authGuard";
 import { DataProvider } from "@/contexts/DataContext";
+import { initAuthGuard } from "@/lib/authGuard";
+import { initializePaystack } from "@/lib/paystack";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -36,16 +38,16 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    initAuthGuard();
-    // Preload Paystack inline script for faster payment popup
-    if (!document.querySelector('script[src*="paystack"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://js.paystack.co/v1/inline.js';
-      script.async = true;
-      document.head.appendChild(script);
-    }
-  }, []);
+  initAuthGuard();
 
+  initializePaystack().catch((err) => {
+    console.warn(
+      'Paystack preload failed (will retry on payment):',
+      err
+    );
+  });
+}, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
