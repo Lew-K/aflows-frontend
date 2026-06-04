@@ -173,7 +173,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     pageTitle: 'Analytics',
     stepNumber: 11,
-    targetSelector: '[data-tour="top-items"]',
+    targetSelector: '[data-tour="top-selling-items"]',
     title: '🏆 Top Selling Items',
     description: 'Which products move the most units (Items Sold) or generate the most revenue (Revenue). Switch between Bar and Pie charts.',
     details: [
