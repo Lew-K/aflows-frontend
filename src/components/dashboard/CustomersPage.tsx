@@ -140,7 +140,7 @@ export const CustomersPage = () => {
   if (loading) return (
     <div className="p-6 space-y-4">
       <Skeleton className="h-10 w-48" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-tour="customer-kpis">
         {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
       </div>
       {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
@@ -207,7 +207,7 @@ export const CustomersPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
-          <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm">
+          <div className="flex flex-col md:flex-row gap-3 items-center justify-between bg-card p-2 rounded-lg border shadow-sm" data-tour="customer-filters">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 border-none bg-transparent focus-visible:ring-0" />
@@ -223,7 +223,7 @@ export const CustomersPage = () => {
             </Select>
           </div>
 
-          <Card className="border-none shadow-md overflow-hidden">
+          <Card className="border-none shadow-md overflow-hidden" data-tour="customer-list">
             <CardContent className="p-0 divide-y">
               {paginated.map(c => (
                 <div key={c.id} onClick={() => handleSelectCustomer(c)}
