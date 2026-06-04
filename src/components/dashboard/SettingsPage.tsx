@@ -663,7 +663,7 @@ export const SettingsPage = () => {
           <CardContent className="p-8">
             <div className="flex flex-col lg:flex-row gap-8">
               {/* LOGO */}
-              <div className="flex flex-col items-center lg:items-start">
+              <div className="flex flex-col items-center lg:items-start" data-tour="settings-logo">
                 <div
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -751,7 +751,7 @@ export const SettingsPage = () => {
               </div>
 
               {/* FIELDS */}
-              <div className="flex-1 space-y-6">
+              <div className="flex-1 space-y-6" data-tour="settings-profile">
                 <div>
                   <h2 className="text-xl font-semibold">
                     Business Profile
@@ -826,7 +826,7 @@ export const SettingsPage = () => {
             <CardContent className="p-0">
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 {/* LEFT */}
-                <div className="lg:col-span-7 p-8 space-y-8">
+                <div className="lg:col-span-7 p-8 space-y-8" data-tour="settings-receipt">
                   <div>
                     <h2 className="text-xl font-semibold">
                       Receipt Customization
@@ -1050,7 +1050,7 @@ export const SettingsPage = () => {
                 </div>
 
                 {/* RIGHT */}
-                <div className="lg:col-span-5 border-l border-border/40 bg-muted/20">
+                <div className="lg:col-span-5 border-l border-border/40 bg-muted/20" data-tour="settings-receipt-preview">
                   <div className="lg:sticky lg:top-6 p-6">
                     <div className="flex items-center gap-2 mb-6">
                       <Receipt className="w-4 h-4 text-primary" />
@@ -1075,7 +1075,7 @@ export const SettingsPage = () => {
         )}
 
         {/* SUBSCRIPTION */}
-        <Card className="border border-border/60 shadow-sm">
+        <Card className="border border-border/60 shadow-sm" data-tour="settings-subscription">
           <CardContent className="p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
@@ -1128,7 +1128,7 @@ export const SettingsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
 
               {/* ── Security & Password ── */}
-              <div className="space-y-8 pb-8 lg:pb-0 lg:pr-8">
+              <div className="space-y-8 pb-8 lg:pb-0 lg:pr-8" data-tour="settings-password">
                 <div>
                   <h2 className="text-xl font-semibold">Security & Password</h2>
                   <p className="text-sm text-muted-foreground mt-1">Protect your business account.</p>
@@ -1184,7 +1184,7 @@ export const SettingsPage = () => {
               </div>
 
               {/* ── Access & Team ── */}
-              <div className="space-y-8 pt-8 lg:pt-0 lg:pl-8">
+              <div className="space-y-8 pt-8 lg:pt-0 lg:pl-8" data-tour="settings-team">
                 <div>
                   <h2 className="text-xl font-semibold">Access & Team</h2>
                   <p className="text-sm text-muted-foreground mt-1">
