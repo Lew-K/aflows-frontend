@@ -198,7 +198,7 @@ export const ReportsPage = () => {
           <h1 className="text-3xl font-bold tracking-tight">Reports & Exports</h1>
           <p className="text-muted-foreground">Download and analyze your business data.</p>
         </div>
-        <div className="flex items-center gap-2 bg-card p-2 rounded-lg border shadow-sm">
+        <div className="flex items-center gap-2 bg-card p-2 rounded-lg border shadow-sm" data-tour="reports-date-range">
           <Calendar className="w-4 h-4 text-muted-foreground ml-2" />
           <Select value={dateRange} onValueChange={setDateRange}>
             <SelectTrigger className="w-[180px] border-none focus:ring-0 shadow-none">
@@ -258,7 +258,7 @@ export const ReportsPage = () => {
       </div>
 
       {/* Reports Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6" data-tour="reports-cards">
 
         {/* Financial Health */}
         <Card className="hover:shadow-md transition-shadow flex flex-col">
