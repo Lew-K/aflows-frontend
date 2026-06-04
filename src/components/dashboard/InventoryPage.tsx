@@ -93,13 +93,17 @@ export const InventoryPage = () => {
           </div>
         </div>
 
-        <div className="
-        flex
-        flex-col
-        sm:flex-row
-        gap-3
-        w-full
-        md:w-auto data-tour="inventory-actions">
+        <div
+          className="
+            flex
+            flex-col
+            sm:flex-row
+            gap-3
+            w-full
+            md:w-auto
+          "
+          data-tour="inventory-actions"
+        >
           {/* <Button variant="outline" className="shadow-sm" onClick={() => setSelectedItemForStock(null)}>
             <ArrowRightLeft className="w-4 h-4 mr-2" /> Quick Restock
           </Button> */}
