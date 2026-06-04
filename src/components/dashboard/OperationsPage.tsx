@@ -355,7 +355,7 @@ export function OperationsPage() {
             {/* QUICK ADD */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Quick Add</CardTitle data-tour="operations-quick-add">
+                <CardTitle className="text-base">Quick Add</CardTitle>
               </CardHeader>
               <CardContent>
                 <Input
