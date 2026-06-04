@@ -66,7 +66,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     pageTitle: 'Sales',
     stepNumber: 4,
-    targetSelector: '[data-tour="sales-customer-name"]',
+    targetSelector: '[data-tour="sales-phone"]',
     title: '📞 Phone Number (Optional)',
     description: 'Below the customer name, you can optionally add their phone number. This is helpful for follow-ups and marketing.',
     details: [
