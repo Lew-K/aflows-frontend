@@ -246,7 +246,7 @@ const TOUR_STEPS: TourStep[] = [
       '🔄 Restock button: quick restocking'
     ],
     action: 'Now let\'s track your customers',
-    path: '/dashboard/customers',
+    // path: '/dashboard/customers',
   },
 
   // ===== CUSTOMERS PAGE =====
@@ -263,6 +263,7 @@ const TOUR_STEPS: TourStep[] = [
       '🎯 Use to segment marketing campaigns'
     ],
     action: 'Filter and search customers',
+    path: '/dashboard/customers',
   },
 
   {
@@ -293,7 +294,7 @@ const TOUR_STEPS: TourStep[] = [
       '📊 Order Count: frequency of purchases'
     ],
     action: 'Let\'s manage your daily tasks',
-    path: '/dashboard/operations',
+    // path: '/dashboard/operations',
   },
 
   // ===== OPERATIONS PAGE =====
@@ -310,6 +311,7 @@ const TOUR_STEPS: TourStep[] = [
       '✅ See completed tasks separately'
     ],
     action: 'Filter tasks by category',
+    path: '/dashboard/operations',
   },
 
   {
@@ -355,7 +357,7 @@ const TOUR_STEPS: TourStep[] = [
       '🎯 High priority: red left border'
     ],
     action: 'Finally, let\'s customize your settings',
-    path: '/dashboard/settings',
+    // path: '/dashboard/settings',
   },
 
   // ===== SETTINGS PAGE =====
@@ -372,6 +374,7 @@ const TOUR_STEPS: TourStep[] = [
       '♻️ Update anytime (Old receipts unaffected)'
     ],
     action: 'Set up your business info',
+    path: '/dashboard/settings',
   },
 
   {
