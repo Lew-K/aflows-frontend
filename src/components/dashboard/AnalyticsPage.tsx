@@ -157,7 +157,7 @@ const PeriodFilter = ({
   onCustomEndChange: (value: string) => void;
   onApplyCustom: () => void;
 }) => (
-  <div className="flex flex-wrap items-center gap-3">
+  <div className="flex flex-wrap items-center gap-3" data-tour="analytics-period-selector">
     <select
       value={period}
       onChange={(e) => onPeriodChange(e.target.value)}
@@ -213,7 +213,7 @@ const PaymentBreakdown = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4 }}
   >
-    <Card className="hover:shadow-soft transition-shadow h-full">
+    <Card className="hover:shadow-soft transition-shadow h-full" data-tour="payment-breakdown">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -336,7 +336,7 @@ const TopCustomerCard = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.1 }}
   >
-    <Card className="hover:shadow-soft transition-shadow h-full">
+    <Card className="hover:shadow-soft transition-shadow h-full" data-tour="payment-breakdown">
       
       
       <CardContent className="p-6">
@@ -756,7 +756,7 @@ const RevenueTrend = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.4 }}
   >
-    <Card className="h-full">
+    <Card className="h-full" data-tour="revenue-trend">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
@@ -885,7 +885,7 @@ const TopSellingItems = ({
     animate={ANIMATION_VARIANTS.card.animate}
     transition={{ duration: 0.4, delay: 0.5 }}
   >
-    <Card className="h-full">
+    <Card className="h-full" data-tour="revenue-trend">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
@@ -1433,7 +1433,7 @@ export const AnalyticsPage = () => {
       
 
       
-      <div className={`grid grid-cols-2 ${can('analytics_advanced') ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}>
+      <div className={`grid grid-cols-2 ${can('analytics_advanced') ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`} data-tour="analytics-kpis">
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
