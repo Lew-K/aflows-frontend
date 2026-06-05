@@ -235,7 +235,7 @@ export const CustomersPage = () => {
                     <div>
                       <p className="font-semibold text-sm">{c.customer_name}</p>
                      <p className="text-xs text-muted-foreground truncate">
-                       {c.customer_phone && <span>{c.customer_phone} · </span>}
+                       {c.phone && <span>{c.phone} · </span>}
                        {c.total_orders} orders · Last {new Date(c.last_seen_at).toLocaleDateString()}
                      </p>
                     </div>
