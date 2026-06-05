@@ -27,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
-
 import { OnboardingTour } from '@/components/dashboard/modals/OnboardingTour';
 
 const allNavItems = [
