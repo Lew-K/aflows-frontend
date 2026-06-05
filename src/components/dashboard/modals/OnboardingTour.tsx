@@ -19,7 +19,7 @@ interface TourStep {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    tourId: 'welcome'
+    tourId: 'welcome',
     pageTitle: 'Welcome',
     stepNumber: 1,
     targetSelector: 'body',
@@ -481,7 +481,7 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'finish'
+    tourId: 'finish',
     pageTitle: 'Finish',
     stepNumber: 29,
     targetSelector: 'body',
