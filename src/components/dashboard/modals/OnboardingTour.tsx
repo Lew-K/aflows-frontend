@@ -521,6 +521,7 @@ export const OnboardingTour = ({
     return saved ? Number(saved) : 0;
   });
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
   // const navigate = useNavigate();
   const current = steps[step];
   const isLast = step === steps.length - 1;
@@ -601,6 +602,10 @@ export const OnboardingTour = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [step, isLast, isFirst]);
 
+  useEffect(() => {
+    setMobileExpanded(false);
+  }, [step]);
+
   return (
     <>
       {/* Dark overlay */}
@@ -660,17 +665,71 @@ export const OnboardingTour = ({
       {/* Tour panel */}
       <div
         ref={panelRef}
-        className="fixed z-50 bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:w-[420px]"
+        className="
+          fixed z-50
+          bottom-4 left-4 right-4
+          sm:bottom-6 sm:right-6 sm:left-auto sm:w-[420px]
+        "
       >
         <motion.div
           key={step}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+          className={`
+            bg-card border border-border shadow-2xl
+            rounded-2xl
+            overflow-hidden
+            transition-all duration-300
+            ${
+              mobileExpanded
+                ? 'max-h-[80vh]'
+                : 'max-h-[180px] sm:max-h-[85vh]'
+            }
+          `}
         >
           {/* Header */}
+
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b sticky top-0 bg-card">
+            <div className="flex gap-1">
+              {steps.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setStep(i)}
+                  className={`h-1 rounded-full transition-all ${
+                    i === step
+                      ? 'w-8 bg-primary'
+                      : i < step
+                      ? 'w-2 bg-primary/40'
+                      : 'w-2 bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+          
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {step + 1}/{steps.length}
+              </span>
+          
+              {/* Mobile expand/collapse */}
+              <button
+                className="sm:hidden text-xs px-2 py-1 border rounded"
+                onClick={() => setMobileExpanded(v => !v)}
+              >
+                {mobileExpanded ? 'Hide' : 'More'}
+              </button>
+          
+              <button
+                onClick={onClose}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          {/* <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b sticky top-0 bg-card">
             <div className="flex gap-1">
               {steps.map((_, i) => (
                 <button
@@ -689,10 +748,21 @@ export const OnboardingTour = ({
             <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
               <X className="w-4 h-4" />
             </button>
-          </div>
+          </div> */}
 
           {/* Content */}
-          <div className="p-5 space-y-4">
+          <div
+            className={`
+              p-5
+              space-y-4
+              overflow-y-auto
+              ${
+                mobileExpanded
+                  ? 'block'
+                  : 'sm:block max-h-[90px]'
+              }
+            `}
+          >
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1">
                 {current.pageTitle}
@@ -700,9 +770,13 @@ export const OnboardingTour = ({
               <h3 className="text-lg font-bold leading-tight">{current.title}</h3>
             </div>
 
-            <p className="text-sm text-muted-foreground leading-relaxed">{current.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {mobileExpanded
+                ? current.description
+                : `${current.description.slice(0, 80)}...`}
+            </p>
 
-            {current.details && (
+            {current.details && (mobileExpanded || window.innerWidth >= 640) && (
               <div className="space-y-2 pl-3 border-l-2 border-primary/30">
                 {current.details.map((detail, i) => (
                   <p key={i} className="text-xs text-muted-foreground leading-relaxed">
