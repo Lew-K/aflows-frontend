@@ -235,14 +235,18 @@ export const CustomersPage = () => {
                     <div>
                       <p className="font-semibold text-sm">{c.customer_name}</p>
                      <p className="text-xs text-muted-foreground truncate">
-                       {c.phone && <span>{c.phone} · </span>}
                        {c.total_orders} orders · Last {new Date(c.last_seen_at).toLocaleDateString()}
                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-sm">KES {Number(c.total_spent).toLocaleString()}</p>
-                    <Badge variant="outline" className="text-[9px] uppercase">{c.segment}</Badge>
+                  <div className="flex items-center gap-6">
+                    <p className="text-xs text-muted-foreground hidden md:block">
+                      {c.phone || '—'}
+                    </p>
+                    <div className="text-right">
+                      <p className="font-bold text-sm">KES {Number(c.total_spent).toLocaleString()}</p>
+                      <Badge variant="outline" className="text-[9px] uppercase">{c.segment}</Badge>
+                    </div>
                   </div>
                 </div>
               ))}
