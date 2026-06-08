@@ -42,20 +42,18 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
           </div>
           <div>
             <h2 className="font-bold text-xl">{customer.customer_name}</h2>
+            {customer.phone && (
+              
+                href={`tel:${customer.phone}`}
+                className="text-sm text-muted-foreground flex items-center gap-1 mt-1"
+              >
+                <Phone className="w-3 h-3" />
+                {customer.phone}
+              </a>
+            )}
             <Badge className="bg-primary/10 text-primary border-none hover:bg-primary/20 mt-1">
               {customer.segment.replace("_", " ")}
             </Badge>
-
-            {customer.customer_phone && (
-              <a
-                href={`tel:${customer.customer_phone}`}
-                className="text-sm text-primary flex items-center gap-1 mt-1"
-              >
-                <Phone className="w-3 h-3" />
-                {customer.customer_phone}
-              </a>
-            )}
-            
           </div>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
