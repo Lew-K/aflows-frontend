@@ -347,10 +347,12 @@ export const DataProvider = ({ children }: any) => {
   const injectSale = (businessId: string, sale: any) => {
     const periodKey = getKey(businessId, 'this_month');
     const weekKey = getKey(businessId, 'this_week');
+    const allKey = getKey(businessId, 'all');
     setSalesCache(prev => ({
       ...prev,
       [periodKey]: [sale, ...(prev[periodKey] || [])],
       [weekKey]: [sale, ...(prev[weekKey] || [])],
+      [allKey]: [sale, ...(prev[allKey] || [])], 
     }));
   };
 
