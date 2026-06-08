@@ -95,9 +95,11 @@ export const DataProvider = ({ children }: any) => {
         `https://api.aflows.uk/api/v1/inventory?businessId=${businessId}`
       );
       const data = await res.json();
-      const items = data?.items || [];
-
-      // ✅ Set inventory AFTER data arrives — never clear before
+      const items = (data?.items || []).slice().sort((a: any, b: any) => {
+        const aTime = a.last_movement ? new Date(a.last_movement).getTime() : new Date(a.created_at).getTime();
+        const bTime = b.last_movement ? new Date(b.last_movement).getTime() : new Date(b.created_at).getTime();
+        return bTime - aTime;
+      });
       setInventory(items);
 
       const activeItems = items.filter((item: any) => item.last_movement !== null);
@@ -137,35 +139,15 @@ export const DataProvider = ({ children }: any) => {
     }
   };
 
-  // ─── REFRESH INVENTORY (KEY FIX) ─────────────────────────────────────────
-  // Old version: setInventory([]) then fetch → table goes blank until response
-  // New version: bust cache key only → existing data stays until new data lands
-  // const refreshInventory = async (businessId: string) => {
-  //   const key = `${businessId}-inventory`;
-  
-  //   setLastFetched((prev) => {
-  //     const next = { ...prev };
-  //     delete next[key];
-  //     return next;
-  //   });
-  
-  //   setFetchingKeys((prev) => {
-  //     const next = { ...prev };
-  //     delete next[key];
-  //     return next;
-  //   });
-  
-  //   // Yield one tick — lets React flush both state updates above
-  //   // before fetchInventory reads fetchingKeys and lastFetched
-  //   await new Promise(resolve => setTimeout(resolve, 0));
-  
-  //   await fetchInventory(businessId);
-  // };
+ 
 
   const refreshInventory = async (businessId: string) => {
     const key = `${businessId}-inventory`;
-  
     setRefreshingKeys((prev) => ({ ...prev, [key]: true }));
+  
+    // Bust stale-time so fetchInventory doesn't skip
+    setLastFetched((prev) => { const next = { ...prev }; delete next[key]; return next; });
+    setFetchingKeys((prev) => { const next = { ...prev }; delete next[key]; return next; });
   
     try {
       await fetchInventory(businessId);
