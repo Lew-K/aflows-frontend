@@ -531,51 +531,75 @@ export const OnboardingTour = ({
   useEffect(() => {
     localStorage.setItem(`tour-${tourId}-step`, step.toString());
   }, [step, tourId]);
-      
+
   useEffect(() => {
+    let attempts = 0;
+  
+    const tryFind = () => {
+      const el = document.querySelector(current.targetSelector);
+  
+      if (!el) {
+        if (attempts < 15) {
+          attempts++;
+          setTimeout(tryFind, 200);
+        }
+        return;
+      }
+  
+      updateSpotlight();
+    };
+  
+    tryFind();
+  }, [step, current.targetSelector]);
+      
+  // useEffect(() => {
+  //   if (!current.targetSelector || current.targetSelector === 'body') {
+  //     setSpotlightRect(null);
+  //     return;
+  //   }
+
+  //   const findElement = () => {
+  //     const el = document.querySelector(current.targetSelector);
+  //     if (!el) return null;
+
+  //     const rect = el.getBoundingClientRect();
+  //     return rect;
+  //   };
+
+  //   let attempts = 0;
+  //   const tryFind = () => {
+  //     const rect = findElement();
+  //     if (rect && rect.width > 0 && rect.height > 0) {
+  //       setSpotlightRect({
+  //         top: rect.top - 8,
+  //         left: rect.left - 8,
+  //         width: rect.width + 16,
+  //         height: rect.height + 16,
+  //       });
+
+  //       // Scroll into view smoothly
+  //       const el = document.querySelector(current.targetSelector);
+  //       if (el) {
+  //         const elementTop = rect.top + window.scrollY;
+  //         window.scrollTo({
+  //           top: Math.max(0, elementTop - 250),
+  //           behavior: 'smooth',
+  //         });
+  //       }
+  //     } else if (attempts < 10) {
+  //       attempts++;
+  //       setTimeout(tryFind, 200);
+  //     }
+  //   };
+
+  //   tryFind();
+  // }, [step, current.targetSelector]);
+
+  const updateSpotlight = () => {
     if (!current.targetSelector || current.targetSelector === 'body') {
       setSpotlightRect(null);
       return;
     }
-
-    const findElement = () => {
-      const el = document.querySelector(current.targetSelector);
-      if (!el) return null;
-
-      const rect = el.getBoundingClientRect();
-      return rect;
-    };
-
-    let attempts = 0;
-    const tryFind = () => {
-      const rect = findElement();
-      if (rect && rect.width > 0 && rect.height > 0) {
-        setSpotlightRect({
-          top: rect.top - 8,
-          left: rect.left - 8,
-          width: rect.width + 16,
-          height: rect.height + 16,
-        });
-
-        // Scroll into view smoothly
-        const el = document.querySelector(current.targetSelector);
-        if (el) {
-          const elementTop = rect.top + window.scrollY;
-          window.scrollTo({
-            top: Math.max(0, elementTop - 250),
-            behavior: 'smooth',
-          });
-        }
-      } else if (attempts < 10) {
-        attempts++;
-        setTimeout(tryFind, 200);
-      }
-    };
-
-    tryFind();
-  }, [step, current.targetSelector]);
-
-  const updateSpotlight = () => {
     const el = document.querySelector(current.targetSelector);
   
     if (!el) return;
@@ -604,6 +628,20 @@ export const OnboardingTour = ({
       window.removeEventListener('resize', updateSpotlight);
     };
   }, [step, current.targetSelector]);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      updateSpotlight();
+    };
+  
+    window.addEventListener('scroll', handleUpdate, true);
+    window.addEventListener('resize', handleUpdate);
+  
+    return () => {
+      window.removeEventListener('scroll', handleUpdate, true);
+      window.removeEventListener('resize', handleUpdate);
+    };
+  }, [current.targetSelector]);
 
   const goNext = () => {
     if (isLast) {
