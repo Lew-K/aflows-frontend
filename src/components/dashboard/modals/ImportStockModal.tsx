@@ -92,6 +92,7 @@ export const ImportStockModal = ({
 
       toast.success(`${validRows.length} products imported successfully`);
       onSuccess();
+      onClose();
     } catch (err: any) {
       toast.error(err.message || 'Import failed');
     } finally {
