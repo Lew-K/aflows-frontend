@@ -37,7 +37,7 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const { user, accessToken } = useAuth();
-  const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt } = useData();
+  const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt, customers } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(7);
@@ -68,6 +68,7 @@ export const SalesPage = () => {
   }, []);
   
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
+  const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
 
   
   const businessId = user?.businessId;
@@ -446,12 +447,44 @@ export const SalesPage = () => {
                     Customer
                   </Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Input
-                      placeholder="Customer name"
-                      data-tour="sales-customer-name"
-                      className="h-9"
-                      {...register('customerName')}
-                    />
+                    <div className="relative">
+                      <Input
+                        placeholder="Customer name"
+                        data-tour="sales-customer-name"
+                        className="h-9"
+                        {...register('customerName')}
+                        autoComplete="off"
+                        onChange={(e) => {
+                          setValue('customerName', e.target.value);
+                          setCustomerDropdownOpen(true);
+                        }}
+                        onFocus={() => setCustomerDropdownOpen(true)}
+                      />
+                      {customerDropdownOpen && watch('customerName') && (
+                        <div className="absolute z-50 w-full mt-1 border rounded-md bg-background shadow-md max-h-40 overflow-y-auto text-sm">
+                          {customers
+                            .filter(c =>
+                              c.name?.toLowerCase().includes(watch('customerName')?.toLowerCase() || '')
+                            )
+                            .slice(0, 5)
+                            .map(c => (
+                              <div
+                                key={c.id}
+                                className="px-3 py-2 hover:bg-muted cursor-pointer flex justify-between"
+                                onMouseDown={(e) => {
+                                  e.preventDefault(); // prevent input blur before click fires
+                                  setValue('customerName', c.name);
+                                  setValue('customerPhone', c.phone || '');
+                                  setCustomerDropdownOpen(false);
+                                }}
+                              >
+                                <span>{c.name}</span>
+                                <span className="text-xs text-muted-foreground">{c.phone}</span>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex">
                       <span className="flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">+254</span>
