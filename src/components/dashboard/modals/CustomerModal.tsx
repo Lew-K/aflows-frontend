@@ -43,7 +43,7 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
           <div>
             <h2 className="font-bold text-xl">{customer.customer_name}</h2>
             {customer.phone && (
-  
+              <a
                 href={`tel:${customer.phone}`}
                 className="text-sm text-muted-foreground flex items-center gap-1 mt-1"
               >
