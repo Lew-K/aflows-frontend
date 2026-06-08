@@ -759,7 +759,7 @@ export const OnboardingTour = ({
               ${
                 mobileExpanded
                   ? 'block'
-                  : 'sm:block max-h-[90px]'
+                  : 'max-h-[90px] sm:max-h-none'
               }
             `}
           >
