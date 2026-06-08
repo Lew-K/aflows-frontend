@@ -460,12 +460,13 @@ export const SalesPage = () => {
                           setCustomerDropdownOpen(true);
                         }}
                         onFocus={() => setCustomerDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setCustomerDropdownOpen(false), 150)}
                       />
                       {customerDropdownOpen && watch('customerName') && (
                         <div className="absolute z-50 w-full mt-1 border rounded-md bg-background shadow-md max-h-40 overflow-y-auto text-sm">
                           {customers
                             .filter(c =>
-                              c.name?.toLowerCase().includes(watch('customerName')?.toLowerCase() || '')
+                              c.customer_name?.toLowerCase().includes(watch('customerName')?.toLowerCase() || '')
                             )
                             .slice(0, 5)
                             .map(c => (
@@ -473,13 +474,13 @@ export const SalesPage = () => {
                                 key={c.id}
                                 className="px-3 py-2 hover:bg-muted cursor-pointer flex justify-between"
                                 onMouseDown={(e) => {
-                                  e.preventDefault(); // prevent input blur before click fires
-                                  setValue('customerName', c.name);
+                                  e.preventDefault();
+                                  setValue('customerName', c.customer_name);
                                   setValue('customerPhone', c.phone || '');
                                   setCustomerDropdownOpen(false);
                                 }}
                               >
-                                <span>{c.name}</span>
+                                <span>{c.customer_name}</span>
                                 <span className="text-xs text-muted-foreground">{c.phone}</span>
                               </div>
                             ))}
