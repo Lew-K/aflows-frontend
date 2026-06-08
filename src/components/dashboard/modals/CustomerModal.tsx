@@ -98,23 +98,26 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                     <span className="text-xs font-medium text-muted-foreground">
                       {new Date(sale.created_at).toLocaleDateString()}
                     </span>
-          
                     <span className="text-sm font-bold tracking-tight">
                       KES {Number(sale.total_amount || sale.amount || 0).toLocaleString()}
                     </span>
                   </div>
-          
+                
+                  {(sale.item_sold || sale.items) && (
+                    <p className="text-xs text-foreground mt-2 truncate">
+                      {sale.item_sold || getItems(sale).map((i: any) => i.item).join(', ') || '—'}
+                    </p>
+                  )}
+                
                   <div className="mt-3 pt-3 border-t space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono text-muted-foreground">
                         {sale.receipt_number || "—"}
                       </span>
-          
                       <Badge variant="outline" className="text-[9px] uppercase">
                         {sale.payment_method || "Unknown"}
                       </Badge>
                     </div>
-          
                     {sale.payment_reference && (
                       <p className="text-[10px] text-muted-foreground">
                         Ref: {sale.payment_reference}
