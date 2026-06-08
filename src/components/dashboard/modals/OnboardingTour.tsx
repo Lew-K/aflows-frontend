@@ -551,7 +551,7 @@ export const OnboardingTour = ({
       const rect = findElement();
       if (rect && rect.width > 0 && rect.height > 0) {
         setSpotlightRect({
-          top: window.scrollY + rect.top - 8,
+          top: rect.top - 8,
           left: rect.left - 8,
           width: rect.width + 16,
           height: rect.height + 16,
