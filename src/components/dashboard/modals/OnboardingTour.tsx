@@ -575,6 +575,36 @@ export const OnboardingTour = ({
     tryFind();
   }, [step, current.targetSelector]);
 
+  const updateSpotlight = () => {
+    const el = document.querySelector(current.targetSelector);
+  
+    if (!el) return;
+  
+    const rect = el.getBoundingClientRect();
+  
+    setSpotlightRect({
+      top: rect.top - 8,
+      left: rect.left - 8,
+      width: rect.width + 16,
+      height: rect.height + 16,
+    });
+  };
+
+  useEffect(() => {
+    if (!current.targetSelector || current.targetSelector === 'body')
+      return;
+  
+    updateSpotlight();
+  
+    window.addEventListener('scroll', updateSpotlight);
+    window.addEventListener('resize', updateSpotlight);
+  
+    return () => {
+      window.removeEventListener('scroll', updateSpotlight);
+      window.removeEventListener('resize', updateSpotlight);
+    };
+  }, [step, current.targetSelector]);
+
   const goNext = () => {
     if (isLast) {
       localStorage.setItem(
