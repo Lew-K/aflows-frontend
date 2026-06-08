@@ -139,25 +139,48 @@ export const DataProvider = ({ children }: any) => {
     }
   };
 
- 
-
   const refreshInventory = async (businessId: string) => {
     const key = `${businessId}-inventory`;
-    setRefreshingKeys((prev) => ({ ...prev, [key]: true }));
   
-    // Bust stale-time so fetchInventory doesn't skip
-    setLastFetched((prev) => { const next = { ...prev }; delete next[key]; return next; });
-    setFetchingKeys((prev) => { const next = { ...prev }; delete next[key]; return next; });
-  
+    // Force-fetch by bypassing fetchInventory's stale guard entirely
+    setFetchingKeys((prev) => ({ ...prev, [key]: true }));
     try {
-      await fetchInventory(businessId);
-    } finally {
-      setRefreshingKeys((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
+      const res = await apiFetch(
+        `https://api.aflows.uk/api/v1/inventory?businessId=${businessId}`
+      );
+      const data = await res.json();
+      const items = (data?.items || []).slice().sort((a: any, b: any) => {
+        const aTime = a.last_movement ? new Date(a.last_movement).getTime() : new Date(a.created_at).getTime();
+        const bTime = b.last_movement ? new Date(b.last_movement).getTime() : new Date(b.created_at).getTime();
+        return bTime - aTime;
       });
+      setInventory(items);
+      setLastFetched((prev) => ({ ...prev, [key]: Date.now() }));
+    } catch (err) {
+      console.error("Inventory refresh error:", err);
+    } finally {
+      setFetchingKeys((prev) => ({ ...prev, [key]: false }));
     }
+  };
+ 
+
+  // const refreshInventory = async (businessId: string) => {
+  //   const key = `${businessId}-inventory`;
+  //   setRefreshingKeys((prev) => ({ ...prev, [key]: true }));
+  
+  //   // Bust stale-time so fetchInventory doesn't skip
+  //   setLastFetched((prev) => { const next = { ...prev }; delete next[key]; return next; });
+  //   setFetchingKeys((prev) => { const next = { ...prev }; delete next[key]; return next; });
+  
+  //   try {
+  //     await fetchInventory(businessId);
+  //   } finally {
+  //     setRefreshingKeys((prev) => {
+  //       const next = { ...prev };
+  //       delete next[key];
+  //       return next;
+  //     });
+  //   }
   };
 
   // ─── CUSTOMERS ────────────────────────────────────────────────────────────
