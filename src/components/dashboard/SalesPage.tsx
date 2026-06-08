@@ -37,7 +37,7 @@ const paymentMethods = [
 export const SalesPage = () => {
 
   const { user, accessToken } = useAuth();
-  const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt, customers } = useData();
+  const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt, customers, fetchCustomers } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(7);
@@ -167,6 +167,7 @@ export const SalesPage = () => {
   fetchSales(businessId, "all");
   fetchSales(businessId, "this_week");
   fetchInventory(businessId);
+  fetchCustomers(businessId);
 }, [businessId]);
 
   const {
