@@ -52,6 +52,7 @@ interface DataContextType {
   fetchInventory: (businessId: string) => Promise<void>;
   refreshBusiness: (businessId: string) => Promise<void>;
   refreshCustomers: (businessId: string) => Promise<void>;
+  fetchCustomers: (businessId: string) => Promise<void>;
   refreshSales: (businessId: string, period: string, start?: string, end?: string) => Promise<void>;
   business: Business | null;
   fetchBusiness: (businessId: string) => Promise<void>;
@@ -375,7 +376,7 @@ export const DataProvider = ({ children }: any) => {
       getRevenueAnalytics, fetchRevenueAnalytics,
       isFetching, revenue, loading, prefetchAll,
       refreshInventory, fetchInventory,refreshingKeys,
-      refreshBusiness, refreshCustomers, refreshSales,
+      refreshBusiness, refreshCustomers, fetchCustomers, refreshSales,
       business, fetchBusiness, injectSale, updateSaleReceipt,
     }}>
       {children}
