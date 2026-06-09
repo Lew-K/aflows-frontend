@@ -58,13 +58,11 @@ export const adminApi = {
   impersonate: (business_id: string, admin_password: string) =>
     request(`/businesses/${business_id}/impersonate`, {
       method: "POST",
-      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   deactivateBusiness: (business_id: string, admin_password: string) =>
     request(`/businesses/${business_id}/deactivate`, {
       method: "POST",
-      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   activateBusiness: (business_id: string, admin_password: string) =>
@@ -76,7 +74,6 @@ export const adminApi = {
   deleteBusiness: (business_id: string, admin_password: string) =>
     request(`/businesses/${business_id}`, {
       method: "DELETE",
-      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   resetPassword: (business_id: string, new_password: string, admin_password: string) =>
