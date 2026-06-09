@@ -10,6 +10,7 @@ const getAuthHeaders = () => {
   };
 };
 
+
 const handleResponse = async (res: Response) => {
   if (!res.ok) {
     let message = "Request failed";
