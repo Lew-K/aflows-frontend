@@ -82,6 +82,10 @@ const AdminDashboard = () => {
     });
   };
 
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
   // useEffect(() => {
   //   adminApi.getStats()
   //     .then(d => setStatsData(d))
