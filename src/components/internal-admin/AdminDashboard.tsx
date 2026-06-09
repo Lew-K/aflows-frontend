@@ -18,6 +18,35 @@ import {
 
 import { adminApi } from "../../lib/adminApi";
 
+// ADD after imports
+type ActivityItem = {
+  id: string;
+  event_type: string;
+  business_name: string;
+  description: string;
+  created_at: string;
+};
+
+const EVENT_TYPE_COLOR: Record<string, "success" | "danger" | "neutral"> = {
+  business_created: "success",   business_activated: "success",
+  payment_success: "success",    payment_received: "success",
+  sale_recorded: "neutral",      business_deactivated: "danger",
+  payment_failed: "danger",      payment_retry_failed: "danger",
+  admin_impersonation: "neutral",password_reset: "neutral",
+  business_deleted: "danger",
+};
+function getEventColor(e: string): "success" | "danger" | "neutral" {
+  return EVENT_TYPE_COLOR[e] ?? "neutral";
+}
+function timeAgo(d: string): string {
+  const mins = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.floor(mins / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
@@ -38,12 +67,26 @@ const AdminDashboard = () => {
   }, [darkMode]);
 
   const [statsData, setStatsData] = useState<any>(null);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const fetchAll = () => {
+    setLoading(true);
+    Promise.all([
+      adminApi.getStats().catch(() => null),
+      adminApi.getActivity(5).catch(() => ({ activity: [] })),
+    ]).then(([stats, activityRes]) => {
+      if (stats) setStatsData(stats);
+      setRecentActivity(activityRes?.activity || []);
+      setLoading(false);
+    });
+  };
 
-  useEffect(() => {
-    adminApi.getStats()
-      .then(d => setStatsData(d))
-      .catch(() => {});
-  }, []);
+  // useEffect(() => {
+  //   adminApi.getStats()
+  //     .then(d => setStatsData(d))
+  //     .catch(() => {});
+  // }, []);
 
   const stats = useMemo(() => [
     { 
@@ -71,6 +114,18 @@ const AdminDashboard = () => {
       icon: AlertTriangle 
     },
   ], [statsData]);
+
+  const attentionItems = useMemo(() => {
+    if (!statsData) return [];
+    const items: string[] = [];
+    const pending = Number(statsData.businesses?.trialing ?? 0);
+    const overdue = Number(statsData.businesses?.overdue ?? 0);
+    const pendingPayments = Number(statsData.payments?.pending ?? 0);
+    if (pending > 0) items.push(`${pending} business${pending !== 1 ? "es" : ""} pending approval`);
+    if (overdue > 0) items.push(`${overdue} overdue subscription${overdue !== 1 ? "s" : ""}`);
+    if (pendingPayments > 0) items.push(`${pendingPayments} payment${pendingPayments !== 1 ? "s" : ""} pending`);
+    return items;
+  }, [statsData]);
   
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
@@ -98,8 +153,8 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              <button className="h-11 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 text-sm font-medium">
-                <RefreshCw className="w-4 h-4" />
+              <button onClick={fetchAll} disabled={loading} className="h-11 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 text-sm font-medium disabled:opacity-50">
+                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                 Refresh
               </button>
 
@@ -224,47 +279,26 @@ const AdminDashboard = () => {
               </div>
 
               <div className="space-y-4">
-                {[
-                  {
-                    title: "New business created",
-                    time: "2m ago",
-                    type: "success",
-                  },
-                  {
-                    title: "Payment retry failed",
-                    time: "18m ago",
-                    type: "danger",
-                  },
-                  {
-                    title: "Admin settings updated",
-                    time: "1h ago",
-                    type: "neutral",
-                  },
-                ].map((event, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`h-3 w-3 rounded-full ${
-                          event.type === "success"
-                            ? "bg-green-500"
-                            : event.type === "danger"
-                            ? "bg-red-500"
-                            : "bg-zinc-400"
-                        }`}
-                      />
-
-                      <div>
-                        <p className="font-medium">{event.title}</p>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          {event.time}
-                        </p>
+                  {recentActivity.length === 0 && !loading && (
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4 text-center">
+                    No recent activity found.
+                  </p>
+                )}
+                {recentActivity.map((event) => {
+                  const color = getEventColor(event.event_type);
+                  return (
+                    <div key={event.id} className="flex items-center justify-between rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`h-3 w-3 rounded-full shrink-0 ${color === "success" ? "bg-green-500" : color === "danger" ? "bg-red-500" : "bg-zinc-400"}`} />
+                        <div>
+                          <p className="font-medium">{event.description}</p>
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">{event.business_name}</p>
+                        </div>
                       </div>
+                      <p className="text-xs text-zinc-400 shrink-0 ml-4">{timeAgo(event.created_at)}</p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           </div>
@@ -353,18 +387,17 @@ const AdminDashboard = () => {
               </div>
 
               <div className="space-y-3">
-                {[
-                  "2 businesses pending approval",
-                  "1 failed payment retry",
-                  "4 flagged users",
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="rounded-2xl border border-red-200 dark:border-red-900 bg-white/60 dark:bg-black/20 p-4 text-sm font-medium"
-                  >
-                    {item}
+                {attentionItems.length === 0 ? (
+                  <div className="rounded-2xl border border-green-200 dark:border-green-900 bg-white/60 dark:bg-black/20 p-4 text-sm font-medium text-green-700 dark:text-green-400">
+                    All clear — no issues detected
                   </div>
-                ))}
+                ) : (
+                  attentionItems.map((item, i) => (
+                    <div key={i} className="rounded-2xl border border-red-200 dark:border-red-900 bg-white/60 dark:bg-black/20 p-4 text-sm font-medium">
+                      {item}
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           </div>
