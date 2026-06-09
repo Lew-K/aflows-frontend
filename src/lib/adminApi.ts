@@ -56,40 +56,44 @@ export const adminApi = {
     request(`/activity?limit=${limit}`),
 
   impersonate: (business_id: string, admin_password: string) =>
-    request("/impersonate", {
+    request(`/businesses/${business_id}/impersonate`, {
       method: "POST",
-      body: JSON.stringify({ business_id, admin_password })
+      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   deactivateBusiness: (business_id: string, admin_password: string) =>
-    request("/deactivate-business", {
+    request(`/businesses/${business_id}/deactivate`, {
       method: "POST",
-      body: JSON.stringify({ business_id, admin_password })
+      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   activateBusiness: (business_id: string, admin_password: string) =>
-    request("/activate-business", {
+    request(`/businesses/${business_id}/activate`, {
       method: "POST",
-      body: JSON.stringify({ business_id, admin_password })
+      body: JSON.stringify({ adminPassword: admin_password })  // ← camelCase to match controller
     }),
 
   deleteBusiness: (business_id: string, admin_password: string) =>
-    request("/delete-business", {
-      method: "POST",
-      body: JSON.stringify({ business_id, admin_password })
+    request(`/businesses/${business_id}`, {
+      method: "DELETE",
+      body: JSON.stringify({ adminPassword: admin_password })
     }),
 
   resetPassword: (business_id: string, new_password: string, admin_password: string) =>
-    request("/reset-password", {
+    request(`/businesses/${business_id}/reset-password`, {
       method: "POST",
-      body: JSON.stringify({ business_id, new_password, admin_password })
+      body: JSON.stringify({ newPassword: new_password, adminPassword: admin_password })
     }),
 
-  getReceipts: (businessId: string) =>
-    request(`/business/${businessId}/receipts`),
 
+  getBusinessTables: (businessId: string) =>
+    request(`/businesses/${businessId}/tables`),
+  
   inspectTable: (businessId: string, table: string) =>
-    request(`/db/${businessId}/${table}`)
+    request(`/businesses/${businessId}/tables/${table}`),
+  
+  getReceipts: (businessId: string) =>
+    request(`/businesses/${businessId}/receipts`),
 };
 
 
