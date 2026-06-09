@@ -51,6 +51,19 @@ const Businesses = () => {
 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const handleRefresh = async () => {
+    try {
+      const data = await adminApi.getBusinesses();
+      const list = data.businesses || [];
+      setBusinesses(list);
+      sessionStorage.setItem("admin_businesses", JSON.stringify(list));
+      alert("Businesses refreshed");
+    } catch (err) {
+      console.error("Refresh failed", err);
+      alert("Refresh failed");
+    }
+  };
+
   // ---------- LOAD ----------
   useEffect(() => {
     let isMounted = true;
@@ -395,6 +408,7 @@ const Businesses = () => {
 
               {/* REFRESH */}
               <button
+                onClick={handleRefresh}
                 className="h-11 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 text-sm font-medium"
               >
                 <RefreshCw className="w-4 h-4" />
