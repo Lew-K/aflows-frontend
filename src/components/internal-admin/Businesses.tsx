@@ -254,18 +254,6 @@ const Businesses = () => {
     }
   };
 
-  const deactivateBusiness = async (id: string) => {
-    if (!confirm("Deactivate this business?")) return;
-  
-    try {
-      await adminApi.deactivateBusiness(id);
-      updateBusinessState(id, { status: "inactive" });
-      setOpenMenu(null);
-    } catch (err) {
-      console.error("Deactivate failed", err);
-      alert("Deactivation failed");
-    }
-  };
 
   const activateBusiness = async (id: string) => {
     try {
