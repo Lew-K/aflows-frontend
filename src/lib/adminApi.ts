@@ -55,31 +55,32 @@ export const adminApi = {
   getActivity: (limit = 100) =>
     request(`/activity?limit=${limit}`),
 
-  impersonate: (business_id: string, admin_password: string) =>
+  impersonate: (business_id: string) =>
     request(`/businesses/${business_id}/impersonate`, {
       method: "POST",
     }),
 
-  deactivateBusiness: (business_id: string, admin_password: string) =>
+
+  deactivateBusiness: (business_id: string) =>
     request(`/businesses/${business_id}/deactivate`, {
       method: "POST",
     }),
 
-  activateBusiness: (business_id: string, admin_password: string) =>
+
+  activateBusiness: (business_id: string) =>
     request(`/businesses/${business_id}/activate`, {
       method: "POST",
-      body: JSON.stringify({ adminPassword: admin_password })  // ← camelCase to match controller
     }),
 
-  deleteBusiness: (business_id: string, admin_password: string) =>
+  deleteBusiness: (business_id: string) =>
     request(`/businesses/${business_id}`, {
       method: "DELETE",
     }),
 
-  resetPassword: (business_id: string, new_password: string, admin_password: string) =>
+  resetPassword: (business_id: string, new_password: string) =>
     request(`/businesses/${business_id}/reset-password`, {
       method: "POST",
-      body: JSON.stringify({ newPassword: new_password, adminPassword: admin_password })
+      body: JSON.stringify({ newPassword: new_password })
     }),
 
 
