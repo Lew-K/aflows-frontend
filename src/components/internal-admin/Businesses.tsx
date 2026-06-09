@@ -190,158 +190,92 @@ const Businesses = () => {
     );
 
   const impersonateUser = async (id: string) => {
-    const adminPassword = prompt(
-      "Enter admin password to impersonate"
-    );
-
-    if (!adminPassword) return;
-
     try {
-      const res = await adminApi.impersonate(
-        id,
-        adminPassword
-      );
-
-      const {
-        access_token,
-        refresh_token,
-        user,
-      } = res;
-
+      const res = await adminApi.impersonate(id);
+  
+      const { access_token, refresh_token, user } = res;
+  
       if (!user?.businessId) {
         throw new Error("Invalid response");
       }
-
+  
       login(access_token, refresh_token, {
         businessId: user.businessId,
         businessName: user.businessName || "",
         ownerName: user.ownerName || "",
         email: user.email || "",
       });
-
-      localStorage.setItem(
-        "is_impersonating",
-        "true"
-      );
-
+  
+      localStorage.setItem("is_impersonating", "true");
       window.location.href = `/dashboard?business_id=${user.businessId}`;
     } catch (err) {
-      console.error(
-        "Impersonation error:",
-        err
-      );
-
+      console.error("Impersonation error:", err);
       alert("Impersonation failed");
     }
   };
 
   const resetPassword = async (id: string) => {
-    const adminPassword = prompt(
-      "Enter admin password"
-    );
-
-    if (!adminPassword) return;
-
-    const newPassword = prompt(
-      "Enter new password"
-    );
-
+    const newPassword = prompt("Enter new password");
     if (!newPassword) return;
-
+  
     try {
-      await adminApi.resetPassword(
-        id,
-        newPassword,
-        adminPassword
-      );
-
+      await adminApi.resetPassword(id, newPassword);
       alert("Password updated");
-
       setOpenMenu(null);
     } catch (err) {
+      console.error("Reset failed", err);
       alert("Reset failed");
     }
   };
 
-  const deactivateBusiness = async (
-    id: string
-  ) => {
-    const adminPassword = prompt(
-      "Enter admin password to deactivate"
-    );
-
-    if (!adminPassword) return;
-
-    if (!confirm("Deactivate this business?"))
-      return;
-
+  const deactivateBusiness = async (id: string) => {
+    if (!confirm("Deactivate this business?")) return;
+  
     try {
-      await adminApi.deactivateBusiness(
-        id,
-        adminPassword
-      );
-
-      updateBusinessState(id, {
-        status: "inactive",
-      });
-
+      await adminApi.deactivateBusiness(id);
+      updateBusinessState(id, { status: "inactive" });
       setOpenMenu(null);
     } catch (err) {
-      console.error(
-        "Deactivate failed",
-        err
-      );
+      console.error("Deactivate failed", err);
+      alert("Deactivation failed");
     }
   };
 
-  const activateBusiness = async (
-    id: string
-  ) => {
-    const adminPassword = prompt(
-      "Enter admin password to activate"
-    );
-
-    if (!adminPassword) return;
-
+  const deactivateBusiness = async (id: string) => {
+    if (!confirm("Deactivate this business?")) return;
+  
     try {
-      await adminApi.activateBusiness(
-        id,
-        adminPassword
-      );
-
-      updateBusinessState(id, {
-        status: "active",
-      });
-
+      await adminApi.deactivateBusiness(id);
+      updateBusinessState(id, { status: "inactive" });
       setOpenMenu(null);
     } catch (err) {
-      console.error(
-        "Activate failed",
-        err
-      );
+      console.error("Deactivate failed", err);
+      alert("Deactivation failed");
     }
   };
 
-  const confirmDelete = async (
-    id: string
-  ) => {
-    const password = prompt(
-      "Enter admin password to delete this business"
-    );
-
-    if (!password) return;
-
+  const activateBusiness = async (id: string) => {
     try {
-      await adminApi.deleteBusiness(
-        id,
-        password
-      );
+      await adminApi.activateBusiness(id);
+      updateBusinessState(id, { status: "active" });
+      setOpenMenu(null);
+    } catch (err) {
+      console.error("Activate failed", err);
+      alert("Activation failed");
+    }
+  };
 
+  const confirmDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this business? This cannot be undone.")) return;
+  
+    try {
+      await adminApi.deleteBusiness(id);
       updateBusinessState(id, null);
-
       setOpenMenu(null);
+      alert("Business deleted");
     } catch (err) {
       console.error("Delete failed", err);
+      alert("Delete failed");
     }
   };
 
