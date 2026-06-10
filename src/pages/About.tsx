@@ -30,21 +30,19 @@ const AboutPage = () => {
       <Navbar />
 
       <div className="pt-20">
-        <div className="max-w-5xl mx-auto px-6 py-16 space-y-16">
+        <div className="max-w-5xl mx-auto px-6 py-16 space-y-12 md:space-y-16">
           {/* Hero */}
           <div className="text-center space-y-4">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">
               About Aflows
             </p>
 
-            <h1 className="text-4xl font-black">
-              Helping growing businesses spend less time managing records
-              and more time running their business.
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black">
+              Helping growing businesses spend less time managing records and more time growing.
             </h1>
 
             <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-              Aflows brings together the tools businesses need to stay
-              organized, understand performance, and grow with confidence.
+              Aflows brings sales, inventory, customers, and insights together in one place.
             </p>
           </div>
 
@@ -56,24 +54,22 @@ const AboutPage = () => {
               </p>
 
               <p className="text-muted-foreground leading-8">
-                Many growing businesses still rely on notebooks,
-                spreadsheets, WhatsApp conversations, and disconnected
-                tools to manage their daily operations. While this may work
-                in the beginning, it becomes increasingly difficult to keep
-                track of sales, inventory, customers, and business
-                performance as operations grow.
+                Many businesses rely on notebooks, spreadsheets,WhatsApp, 
+                and disconnected tools to run daily operations.As they 
+                grow, keeping track of sales, inventory, customers,
+                and performance becomes increasingly difficult.
               </p>
 
               <p className="text-muted-foreground leading-8">
-                Important information gets scattered across different
-                places, making it harder to understand what is happening in
-                the business and where improvements are needed.
+                Information becomes scattered, making it harder to
+                understand what's happening in the business and
+                where improvements are needed.
               </p>
 
               <p className="text-muted-foreground leading-8">
                 We built Aflows to bring everything together in one place,
-                helping business owners spend less time chasing records and
-                more time making informed decisions.
+                helping business owners make informed 
+                decisions with confidence.
               </p>
             </div>
           </div>
@@ -85,15 +81,13 @@ const AboutPage = () => {
                 Our Mission
               </p>
 
-              <h2 className="text-2xl font-bold">
-                Making business insights accessible to everyone.
+              <h2 className="text-xl md:text-2xl font-bold">
+                Making business insights accessible to every business.
               </h2>
 
               <p className="text-muted-foreground leading-8">
-                We believe business owners should have access to clear,
-                actionable insights without needing expensive enterprise
-                software. Every business deserves tools that make managing
-                operations simpler and growth more achievable.
+                WWe believe every business owner deserves clear insights and powerful
+                tools without the complexity or cost of enterprise software.
               </p>
             </div>
           </div>
