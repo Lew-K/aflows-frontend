@@ -55,7 +55,7 @@ export const RegisterSection = () => {
           subscriptionStatus: res.subscription_status || 'trialing',
           trialEndsAt: res.trial_ends_at ?? null,
         });
-        toast.success('Welcome to Aflows! Your 30-day free trial has started.');
+        toast.success('Welcome to Aflows! Your 30-day free trial has started. Please verify your email to complete your setup and get started.');
         navigate('/dashboard');
       } else {
         toast.error(res.message || 'Registration failed. Please try again.');
