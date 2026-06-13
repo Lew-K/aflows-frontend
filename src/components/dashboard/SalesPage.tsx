@@ -695,19 +695,7 @@ export const SalesPage = () => {
                                       return updated;
                                     });
                                   }}
-                                  
-                                  {/* onChange={(e) => {
-                                    const value = Math.max(
-                                      1,
-                                      Number(e.target.value) || 1
-                                    );
-                
-                                    setItems(prev => {
-                                      const updated = [...prev];
-                                      updated[index] = { ...updated[index], quantity: value };
-                                      return updated;
-                                    });
-                                  }} */}
+                            
                                 />
                               </div>
                 
@@ -730,18 +718,7 @@ export const SalesPage = () => {
                                       return updated;
                                     });
                                   }}
-                                  {/* onChange={(e) => {
-                                    const value = Math.max(
-                                      0,
-                                      Number(e.target.value) || 0
-                                    );
-                
-                                    setItems(prev => {
-                                      const updated = [...prev];
-                                      updated[index] = { ...updated[index], unitCost: value };
-                                      return updated;
-                                    });
-                                  }} */}
+                                  
                                 />
                               </div>
                             </div>
