@@ -68,6 +68,7 @@ export const LoginSection = () => {
         } else {
           toast.success('Login successful! Redirecting to dashboard...');
           navigate('/dashboard');
+        }
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
