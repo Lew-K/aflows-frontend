@@ -251,8 +251,8 @@ export const changePasswordStaff = async (
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
-      currentPassword: hashPassword(currentPassword),
-      newPassword: hashPassword(newPassword),
+      currentPassword: currentPassword,
+      newPassword: newPassword,
     }),
   });
 
