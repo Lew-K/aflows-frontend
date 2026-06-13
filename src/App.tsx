@@ -23,6 +23,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ChangePassword from "./pages/ChangePassword";
 import ResetPassword from "./pages/ChangePassword";
 import RequestPasswordReset from "./pages/RequestPasswordReset";
+
 import { PricingPage } from "./pages/PricingPage";
 import { PaymentVerifyPage } from "./pages/PaymentVerifyPage";
 
@@ -32,6 +33,7 @@ import AdminLogin from "@/components/internal-admin/AdminLogin";
 import AdminDashboard from "@/components/internal-admin/AdminDashboard";
 import Businesses from "@/components/internal-admin/Businesses";
 import Activity from "@/components/internal-admin/Activity";
+import ContactsPage from "../components/internal-admin/ContactsPage";
 
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -93,6 +95,7 @@ const App = () => {
                   <Route path="/internal-admin" element={<AdminDashboard />} />
                   <Route path="/internal-admin/businesses" element={<Businesses />} />
                   <Route path="/internal-admin/activity" element={<Activity />} />
+                  <Route path="/internal-admin/contacts" element={<ContactsPage />} />
 
                   <Route path="*" element={<NotFound />} />
 
