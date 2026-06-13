@@ -494,7 +494,6 @@ export const SalesPage = () => {
                         placeholder="7XXXXXXXX"
                         data-tour="sales-phone"
                         className="h-9 rounded-l-none"
-                        {...register('customerPhone')}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, '').replace(/^0/, '');
                           setValue('customerPhone', val ? `+254${val}` : '');
