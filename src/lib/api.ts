@@ -183,3 +183,20 @@ export const refreshToken = async (refresh_token: string): Promise<AuthResponse>
   if (!response.ok) throw new Error(parsed.message || 'Token refresh failed');
   return parsed;
 };
+
+export const verifyEmailToken = async (token: string): Promise<{ success: boolean; message: string; email?: string }> => {
+  const response = await fetch(`${API_URL}/auth/verify-email?token=${token}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const parsed = await response.json();
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Email verification failed');
+  }
+
+  return parsed;
+};
