@@ -1,7 +1,7 @@
 import React from 'react';
 import { OnboardingTour } from '@/components/dashboard/modals/OnboardingTour';
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { AnalyticsPage } from '@/components/dashboard/AnalyticsPage';
 import { SalesPage } from '@/components/dashboard/SalesPage';
@@ -27,6 +27,13 @@ const Dashboard = () => {
 
   const { user } = useAuth();
   const { prefetchAll } = useData();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (user?.mustChangePassword) {
+      navigate('/change-password');
+    }
+  }, [user?.mustChangePassword]);
 
   const [showTour, setShowTour] = useState(() => {
     return !localStorage.getItem('aflows_tour_completed');
