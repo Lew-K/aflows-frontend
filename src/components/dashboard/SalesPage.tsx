@@ -69,6 +69,7 @@ export const SalesPage = () => {
   
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
+  const [phoneDisplay, setPhoneDisplay] = useState('');
 
   
   const businessId = user?.businessId;
@@ -346,6 +347,7 @@ export const SalesPage = () => {
       if (response.ok) {
         toast.success('Sale recorded successfully!');
         reset();
+        setPhoneDisplay('');
         setItems([{ item: "", quantity: 1, unitCost: 0, inventory_id: null, affects_stock: false }]);
       
         // Inject new sale at top immediately using real sale_id from response
@@ -477,6 +479,8 @@ export const SalesPage = () => {
                                   e.preventDefault();
                                   setValue('customerName', c.customer_name);
                                   setValue('customerPhone', c.phone || '');
+                                  const digits = (c.phone || '').replace('+254', '').replace(/\D/g, '');
+                                  setPhoneDisplay(digits);
                                   setCustomerDropdownOpen(false);
                                 }}
                               >
@@ -494,8 +498,10 @@ export const SalesPage = () => {
                         placeholder="7XXXXXXXX"
                         data-tour="sales-phone"
                         className="h-9 rounded-l-none"
+                        value={phoneDisplay}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, '').replace(/^0/, '');
+                          setPhoneDisplay(val);
                           setValue('customerPhone', val ? `+254${val}` : '');
                         }}
                       />
