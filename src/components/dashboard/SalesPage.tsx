@@ -564,7 +564,7 @@ export const SalesPage = () => {
                             </div>
                 
                             {/* Item Name */}
-                            <div className="md:col-span-4">
+                            <div className="md:col-span-5">
                               <Label className="md:hidden text-[10px] uppercase mb-1 block">
                                 Product Name
                               </Label>
