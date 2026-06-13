@@ -200,3 +200,73 @@ export const verifyEmailToken = async (token: string): Promise<{ success: boolea
 
   return parsed;
 };
+
+export const requestPasswordReset = async (email: string): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${API_URL}/auth/request-password-reset`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const parsed = await response.json();
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Failed to request password reset');
+  }
+
+  return parsed;
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${API_URL}/auth/reset-password?token=${token}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      newPassword: hashPassword(newPassword),
+    }),
+  });
+
+  const parsed = await response.json();
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Failed to reset password');
+  }
+
+  return parsed;
+};
+
+export const changePasswordStaff = async (
+  currentPassword: string,
+  newPassword: string,
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${API_URL}/staff/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      currentPassword: hashPassword(currentPassword),
+      newPassword: hashPassword(newPassword),
+    }),
+  });
+
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("Empty response from server");
+  }
+
+  const parsed = JSON.parse(text);
+
+  if (!response.ok) {
+    throw new Error(parsed.message || 'Failed to change password');
+  }
+
+  return parsed;
+};
