@@ -478,14 +478,14 @@ export const SalesPage = () => {
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   setValue('customerName', c.customer_name);
-                                  setValue('customerPhone', c.phone || '');
-                                  const digits = (c.phone || '').replace('+254', '').replace(/\D/g, '');
+                                  setValue('customerPhone', c.customer_phone || '');
+                                  const digits = (c.customer_phone || '').replace('+254', '').replace(/\D/g, '');
                                   setPhoneDisplay(digits);
                                   setCustomerDropdownOpen(false);
                                 }}
                               >
                                 <span>{c.customer_name}</span>
-                                <span className="text-xs text-muted-foreground">{c.phone}</span>
+                                <span className="text-xs text-muted-foreground">{c.customer_phone}</span>
                               </div>
                             ))}
                         </div>
