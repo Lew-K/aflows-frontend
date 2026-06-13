@@ -62,9 +62,12 @@ export const LoginSection = () => {
           }
         );
       
-        toast.success('Login successful! Redirecting to dashboard...');
-      
-        navigate('/dashboard');
+        if (response.user?.mustChangePassword) {
+          toast.success('Please set a new password to continue.');
+          navigate('/change-password');
+        } else {
+          toast.success('Login successful! Redirecting to dashboard...');
+          navigate('/dashboard');
       } else {
         toast.error(response.message || 'Login failed. Please check your credentials.');
       }
@@ -153,7 +156,7 @@ export const LoginSection = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="login-password" className="text-sm font-semibold text-white/70">Password</Label>
-                  <button type="button" className="text-xs text-primary hover:underline transition-all">
+                  <button type="button" onClick={() => navigate('/request-password-reset')} className="text-xs text-primary hover:underline transition-all">
                     Forgot Password?
                   </button>
                 </div>
