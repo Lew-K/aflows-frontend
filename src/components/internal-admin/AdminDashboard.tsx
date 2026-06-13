@@ -14,6 +14,7 @@ import {
   Wallet,
   ShieldAlert,
   ArrowUpRight,
+  Mail,
 } from "lucide-react";
 
 import { adminApi } from "../../lib/adminApi";
@@ -69,15 +70,18 @@ const AdminDashboard = () => {
   const [statsData, setStatsData] = useState<any>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [contactPreview, setContactPreview] = useState<any[]>([]);
   
   const fetchAll = () => {
     setLoading(true);
     Promise.all([
       adminApi.getStats().catch(() => null),
       adminApi.getActivity(5).catch(() => ({ activity: [] })),
-    ]).then(([stats, activityRes]) => {
+      adminApi.getContactMessages({ limit: 5 }).catch(() => ({ messages: [] })),
+    ]).then(([stats, activityRes, contactRes]) => {
       if (stats) setStatsData(stats);
       setRecentActivity(activityRes?.activity || []);
+      setContactPreview(contactRes?.messages || []);
       setLoading(false);
     });
   };
@@ -310,77 +314,48 @@ const AdminDashboard = () => {
           {/* RIGHT */}
           <div className="space-y-6">
 
-            {/* SYSTEM HEALTH */}
+            {/* CONTACTS PREVIEW */}
             <section className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <Server className="w-5 h-5" />
-                <h2 className="text-xl font-black">Infrastructure Health</h2>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5" />
+                  <h2 className="text-xl font-black">Contact Messages</h2>
+                </div>
+                <button
+                  onClick={() => navigate('/internal-admin/contacts')}
+                  className="h-9 px-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-sm font-semibold hover:opacity-90 transition-all"
+                >
+                  View All
+                </button>
               </div>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    name: "API",
-                    icon: Activity,
-                    status: "Healthy",
-                    color: "green",
-                  },
-                  {
-                    name: "Postgres",
-                    icon: Database,
-                    status: "Healthy",
-                    color: "green",
-                  },
-                  {
-                    name: "Storage",
-                    icon: HardDrive,
-                    status: "Warning",
-                    color: "yellow",
-                  },
-                  {
-                    name: "Security",
-                    icon: ShieldAlert,
-                    status: "3 alerts",
-                    color: "red",
-                  },
-                ].map((item, i) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                          <Icon className="w-4 h-4" />
-                        </div>
-
-                        <div>
-                          <p className="font-semibold">{item.name}</p>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Operational service
-                          </p>
-                        </div>
+            
+              <div className="space-y-3">
+                {contactPreview.length === 0 && !loading && (
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4 text-center">No messages yet.</p>
+                )}
+                {contactPreview.map((msg: any) => (
+                  <div
+                    key={msg.id}
+                    className="flex items-start justify-between rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 gap-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm font-bold truncate">{msg.name}</p>
+                        <span className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                          msg.status === 'responded'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
+                        }`}>
+                          {msg.status}
+                        </span>
                       </div>
-
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          item.color === "green"
-                            ? "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400"
-                            : item.color === "yellow"
-                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400"
-                        }`}
-                      >
-                        {item.status}
-                      </div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{msg.subject}</p>
                     </div>
-                  );
-                })}
+                    <p className="text-xs text-zinc-400 shrink-0">{timeAgo(msg.created_at)}</p>
+                  </div>
+                ))}
               </div>
             </section>
-
             {/* ALERTS */}
             <section className="rounded-3xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
