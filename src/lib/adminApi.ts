@@ -93,6 +93,29 @@ export const adminApi = {
   
   getReceipts: (businessId: string) =>
     request(`/businesses/${businessId}/receipts`),
+
+  getContactMessages: async (filters?: { status?: string; page?: number; limit?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.page) params.append('page', String(filters.page));
+    if (filters?.limit) params.append('limit', String(filters.limit));
+    const res = await fetch(`${API_URL}/contact/messages?${params}`, {
+      headers: { Authorization: `Bearer ${getAdminToken()}` },
+    });
+    return res.json();
+  },
+  
+  respondToContact: async (messageId: string, response: string) => {
+    const res = await fetch(`${API_URL}/contact/messages/${messageId}/respond`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getAdminToken()}`,
+      },
+      body: JSON.stringify({ response }),
+    });
+    return res.json();
+  },
 };
 
 
