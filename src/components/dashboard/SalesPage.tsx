@@ -145,8 +145,8 @@ export const SalesPage = () => {
   const [items, setItems] = useState([
     { 
       item: "", 
-      quantity: 1, 
-      unitCost: 0,
+      quantity: "" as any, 
+      unitCost: "" as any,
       inventory_id: null,
       affects_stock: false
     }
@@ -289,8 +289,8 @@ export const SalesPage = () => {
     }
   
     for (const item of items) {
-      if (!item.item || item.quantity <= 0 || item.unitCost < 0) {
-        toast.error("Please complete all item fields correctly.");
+      if (!item.item || item.quantity < 1 || item.unitCost <= 0) {
+        toast.error("Item name is required, quantity must be at least 1, and price must be greater than 0.");
         return;
       }
     
@@ -348,7 +348,7 @@ export const SalesPage = () => {
         toast.success('Sale recorded successfully!');
         reset();
         setPhoneDisplay('');
-        setItems([{ item: "", quantity: 1, unitCost: 0, inventory_id: null, affects_stock: false }]);
+        setItems([{ item: "", quantity: "" as any, unitCost: "" as any, inventory_id: null, affects_stock: false }]);
       
         // Inject new sale at top immediately using real sale_id from response
         const newSale = {
@@ -686,7 +686,17 @@ export const SalesPage = () => {
                                   inputMode="numeric"
                                   value={entry.quantity}
                                   className="h-9 text-center"
+
                                   onChange={(e) => {
+                                    const raw = e.target.value;
+                                    setItems(prev => {
+                                      const updated = [...prev];
+                                      updated[index] = { ...updated[index], quantity: raw === '' ? '' : Math.max(1, Number(raw) || 1) };
+                                      return updated;
+                                    });
+                                  }}
+                                  
+                                  {/* onChange={(e) => {
                                     const value = Math.max(
                                       1,
                                       Number(e.target.value) || 1
@@ -697,7 +707,7 @@ export const SalesPage = () => {
                                       updated[index] = { ...updated[index], quantity: value };
                                       return updated;
                                     });
-                                  }}
+                                  }} */}
                                 />
                               </div>
                 
@@ -708,11 +718,19 @@ export const SalesPage = () => {
                                 </Label>
                                 <Input
                                   type="number"
-                                  min="0"
+                                  min="1"
                                   inputMode="numeric"
                                   value={entry.unitCost}
                                   className="h-9 text-center"
                                   onChange={(e) => {
+                                    const raw = e.target.value;
+                                    setItems(prev => {
+                                      const updated = [...prev];
+                                      updated[index] = { ...updated[index], unitCost: raw === '' ? '' : Math.max(0, Number(raw) || 0) };
+                                      return updated;
+                                    });
+                                  }}
+                                  {/* onChange={(e) => {
                                     const value = Math.max(
                                       0,
                                       Number(e.target.value) || 0
@@ -723,7 +741,7 @@ export const SalesPage = () => {
                                       updated[index] = { ...updated[index], unitCost: value };
                                       return updated;
                                     });
-                                  }}
+                                  }} */}
                                 />
                               </div>
                             </div>
