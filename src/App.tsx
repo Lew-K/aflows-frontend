@@ -19,6 +19,7 @@ import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import HowItWorks from "./pages/HowItWorks";
+import VerifyEmail from "./pages/VerifyEmail";
 import { PricingPage } from "./pages/PricingPage";
 import { PaymentVerifyPage } from "./pages/PaymentVerifyPage";
 
@@ -64,12 +65,14 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/payment/verify" element={<PaymentVerifyPage />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
+                  
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard/*" element={<Dashboard />} />
