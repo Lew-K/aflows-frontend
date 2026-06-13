@@ -676,7 +676,7 @@ export const SalesPage = () => {
                             {/* Qty + Price */}
                             <div className="grid grid-cols-2 md:contents gap-3">
                               {/* Quantity */}
-                              <div className="md:col-span-2">
+                              <div className="md:col-span-3">
                                 <Label className="md:hidden text-[10px] uppercase mb-1 block">
                                   Qty
                                 </Label>
@@ -702,7 +702,7 @@ export const SalesPage = () => {
                               </div>
                 
                               {/* Unit Price */}
-                              <div className="md:col-span-2">
+                              <div className="md:col-span-3">
                                 <Label className="md:hidden text-[10px] uppercase mb-1 block">
                                   Unit Price
                                 </Label>
