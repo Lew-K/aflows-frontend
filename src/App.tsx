@@ -8,7 +8,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { initAuthGuard } from "@/lib/authGuard";
 import { DataProvider } from "@/contexts/DataContext";
 import { initAuthGuard } from "@/lib/authGuard";
 import { initializePaystack } from "@/lib/paystack";
@@ -21,7 +20,7 @@ import Contact from "./pages/Contact";
 import HowItWorks from "./pages/HowItWorks";
 import VerifyEmail from "./pages/VerifyEmail";
 import ChangePassword from "./pages/ChangePassword";
-import ResetPassword from "./pages/ChangePassword";
+// import ResetPassword from "./pages/ChangePassword";
 import RequestPasswordReset from "./pages/RequestPasswordReset";
 
 import { PricingPage } from "./pages/PricingPage";
@@ -33,7 +32,7 @@ import AdminLogin from "@/components/internal-admin/AdminLogin";
 import AdminDashboard from "@/components/internal-admin/AdminDashboard";
 import Businesses from "@/components/internal-admin/Businesses";
 import Activity from "@/components/internal-admin/Activity";
-import ContactsPage from "../components/internal-admin/ContactsPage";
+import ContactsPage from "@/components/internal-admin/ContactsPage";
 
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
