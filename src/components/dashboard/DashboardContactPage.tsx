@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { toast } from 'sonner';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const DashboardContactPage = () => {
   const { user } = useAuth();
