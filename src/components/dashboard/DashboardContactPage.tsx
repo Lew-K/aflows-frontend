@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 
 export const DashboardContactPage = () => {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     subject: '',
@@ -19,12 +20,29 @@ export const DashboardContactPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Message sent successfully! Our team will respond within 24 hours.');
-    setFormData({ subject: '', message: '' });
-    setIsLoading(false);
+    try {
+      const response = await fetch('https://api.aflows.uk/api/v1/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: user?.ownerName || user?.businessName || 'Customer',
+          email: user?.email || '',
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast.success('Message sent! Our team will respond within 24 hours.');
+        setFormData({ subject: '', message: '' });
+      } else {
+        toast.error(result.message || 'Failed to send message.');
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
