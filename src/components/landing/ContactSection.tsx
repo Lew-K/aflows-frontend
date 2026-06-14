@@ -13,19 +13,31 @@ export const ContactSection = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    subject: '',
     message: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Logic Preserved: Simulate sending message
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Message sent successfully! We\'ll get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
-    setIsLoading(false);
+    try {
+      const response = await fetch('https://api.aflows.uk/api/v1/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast.success('Message sent! We\'ll get back to you soon.');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        toast.error(result.message || 'Failed to send message.');
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -115,6 +127,18 @@ export const ContactSection = () => {
                     className="h-12 bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact-subject" className="text-white/70 ml-1">Subject</Label>
+                <Input
+                  id="contact-subject"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  placeholder="What's this about?"
+                  required
+                  className="h-12 bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl"
+                />
               </div>
               
               <div className="space-y-2">
