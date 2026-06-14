@@ -8,7 +8,7 @@ export default function AdminLogin() {
 
   const handleLogin = async () => {
     try {
-      const res = await fetch("https://n8n.aflows.uk/webhook/admin-login", {
+      const res = await fetch("https://api.aflows.uk/api/v1/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
