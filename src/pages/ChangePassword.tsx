@@ -143,7 +143,7 @@ const ChangePassword = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md bg-card/50 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden shadow-2xl p-8 md:p-12 relative z-10"
+          className="w-full max-w-md bg-card/80 backdrop-blur-xl rounded-2xl border border-border overflow-hidden shadow-2xl p-8 md:p-12 relative z-10"
         >
           <div className="text-center space-y-6">
             <div className="flex justify-center">
@@ -152,13 +152,13 @@ const ChangePassword = () => {
               </div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Link Expired</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Link Expired</h2>
               <p className="text-muted-foreground text-sm">Your password reset link has expired. Please request a new one.</p>
             </div>
             <div className="space-y-2 pt-4">
               <Button
                 variant="hero"
-                className="w-full h-11 rounded-xl text-black font-bold"
+                className="w-full h-11 rounded-xl font-bold"
                 onClick={() => navigate('/request-password-reset')}
               >
                 Request New Reset Link
@@ -185,13 +185,13 @@ const ChangePassword = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md bg-card/50 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden shadow-2xl p-8 md:p-12 relative z-10"
+        className="w-full max-w-md bg-card/80 backdrop-blur-xl rounded-2xl border border-border overflow-hidden shadow-2xl p-8 md:p-12 relative z-10"
       >
         <div className="mb-8">
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-black" />
+            <Lock className="w-6 h-6 text-primary-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             {flowType === 'staff' ? 'Create Your Password' : flowType === 'reset' ? 'Reset Your Password' : 'Change Your Password'}
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -202,11 +202,11 @@ const ChangePassword = () => {
         {(flowType === 'staff' || flowType === 'owner') && (
           <form onSubmit={handleChangeSubmit(onChangeSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="current-password" className="text-white/70">Current Password</Label>
+              <Label htmlFor="current-password" className="text-foreground">Current Password</Label>
               <PasswordInput
                 id="current-password"
                 placeholder="••••••••"
-                className="h-11 bg-white/5 border-white/10 focus:border-primary rounded-xl"
+                className="h-11 bg-background border-border focus:border-primary rounded-xl"
                 {...registerChange('currentPassword')}
               />
               {errorsChange.currentPassword && (
@@ -215,11 +215,11 @@ const ChangePassword = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="new-password" className="text-white/70">New Password</Label>
+              <Label htmlFor="new-password" className="text-foreground">New Password</Label>
               <PasswordInput
                 id="new-password"
                 placeholder="••••••••"
-                className="h-11 bg-white/5 border-white/10 focus:border-primary rounded-xl"
+                className="h-11 bg-background border-border focus:border-primary rounded-xl"
                 {...registerChange('newPassword')}
               />
               {errorsChange.newPassword && (
@@ -228,12 +228,12 @@ const ChangePassword = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-white/70">Confirm Password</Label>
+              <Label htmlFor="confirm-password" className="text-foreground">Confirm Password</Label>
               <div className="relative">
                 <PasswordInput
                   id="confirm-password"
                   placeholder="••••••••"
-                  className="h-11 bg-white/5 border-white/10 focus:border-primary rounded-xl"
+                  className="h-11 bg-background border-border focus:border-primary rounded-xl"
                   {...registerChange('confirmPassword')}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -248,7 +248,7 @@ const ChangePassword = () => {
             <Button
               type="submit"
               variant="hero"
-              className="w-full h-11 rounded-xl text-black font-bold"
+              className="w-full h-11 rounded-xl font-bold"
               disabled={isLoading || passwordsDontMatch}
             >
               {isLoading ? <LoadingSpinner size="sm" /> : 'Change Password'}
@@ -259,11 +259,11 @@ const ChangePassword = () => {
         {flowType === 'reset' && (
           <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="reset-password" className="text-white/70">New Password</Label>
+              <Label htmlFor="reset-password" className="text-foreground">New Password</Label>
               <PasswordInput
                 id="reset-password"
                 placeholder="••••••••"
-                className="h-11 bg-white/5 border-white/10 focus:border-primary rounded-xl"
+                className="h-11 bg-background border-border focus:border-primary rounded-xl"
                 {...registerReset('newPassword')}
               />
               {errorsReset.newPassword && (
@@ -272,12 +272,12 @@ const ChangePassword = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reset-confirm-password" className="text-white/70">Confirm Password</Label>
+              <Label htmlFor="reset-confirm-password" className="text-foreground">Confirm Password</Label>
               <div className="relative">
                 <PasswordInput
                   id="reset-confirm-password"
                   placeholder="••••••••"
-                  className="h-11 bg-white/5 border-white/10 focus:border-primary rounded-xl"
+                  className="h-11 bg-background border-border focus:border-primary rounded-xl"
                   {...registerReset('confirmPassword')}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -292,7 +292,7 @@ const ChangePassword = () => {
             <Button
               type="submit"
               variant="hero"
-              className="w-full h-11 rounded-xl text-black font-bold"
+              className="w-full h-11 rounded-xl font-bold"
               disabled={isLoading || resetPasswordsDontMatch}
             >
               {isLoading ? <LoadingSpinner size="sm" /> : 'Reset Password'}
