@@ -87,7 +87,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         metadata: data.metadata,
         callback_url: `${window.location.origin}/payment/verify`, // ← fallback for M-Pesa redirect
   
-        callback: (transaction: any) => {
+        callback: (transaction: any) => { void (async () => {
           console.log('🎉 callback fired', transaction);
   
           try {
@@ -124,7 +124,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             toast.error('Payment received but activation failed. Contact support.');
             setLoading(null);
           }
-        },
+        })(); },
   
         onClose: () => {
           console.log('❌ User closed popup');
