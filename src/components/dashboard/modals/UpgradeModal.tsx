@@ -87,7 +87,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
         metadata: data.metadata,
         callback_url: `${window.location.origin}/payment/verify`, // ← fallback for M-Pesa redirect
   
-        callback: async (transaction: any) => {
+        callback: (transaction: any) => {
           console.log('🎉 callback fired', transaction);
   
           try {
