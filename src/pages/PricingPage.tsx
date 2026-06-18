@@ -9,7 +9,7 @@ import { Footer } from '@/components/landing/Footer';
 
 const PLANS = [
   {
-    key: 'starter', name: 'Starter', price: 'KES 1,000', period: '/month',
+    key: 'starter', name: 'Starter', price: 'KES 999', period: '/month',
     icon: Zap, color: 'text-gray-500', highlight: false,
     description: 'For businesses just getting started.',
     features: ['Record sales', 'Receipts + PDF downloads', 'Basic analytics (today/week)', '1 staff member', 'Business settings'],
