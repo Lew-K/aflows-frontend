@@ -1,73 +1,160 @@
-# Welcome to your Lovable project
+# Aflows
 
-## Project info
+Aflows is a business automation and analytics platform designed for growing businesses that need a simple way to manage operations, track performance, and make data-driven decisions.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Many small and medium-sized businesses rely on notebooks, spreadsheets, WhatsApp conversations, and disconnected tools to manage daily operations. Aflows brings these activities together into a single platform, helping businesses spend less time managing records and more time growing.
 
-## How can I edit this code?
+## Key Features
 
-There are several ways of editing your application.
+### Sales Management
 
-**Use Lovable**
+* Record and track sales
+* Monitor revenue trends
+* View historical transactions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Receipt Generation
 
-Changes made via Lovable will be committed automatically to this repo.
+* Generate professional receipts
+* Download and share receipts
+* Maintain receipt history
 
-**Use your preferred IDE**
+### Customer Management
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* Store customer information
+* Track customer activity
+* Maintain customer records
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Expense Tracking
 
-Follow these steps:
+* Record business expenses
+* Categorize spending
+* Monitor profitability
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Staff Management
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+* Manage employee records
+* Assign roles and permissions
+* Monitor staff activity
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Analytics & Reporting
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+* Business performance dashboards
+* Revenue analytics
+* Expense insights
+* Growth tracking
+
+### Document Management
+
+* Upload and store business documents
+* Organize records securely
+* Access documents from anywhere
+
+## Why Aflows?
+
+Growing businesses often outgrow spreadsheets but are not ready for expensive enterprise software.
+
+Aflows provides:
+
+* Simplicity without sacrificing capability
+* Centralized business records
+* Actionable analytics
+* Mobile-friendly access
+* Affordable subscription plans
+
+## Technology Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* shadcn/ui
+
+### Backend
+
+* NestJS
+* PostgreSQL
+* JWT Authentication
+* Resend Email Service
+
+### Infrastructure
+
+* Docker
+* Cloudflare DNS
+* VPS Hosting
+
+## Getting Started
+
+### Prerequisites
+
+* Node.js 20+
+* PostgreSQL
+* npm
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd aflows
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Configure environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Run the development server:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```text
+src/
+├── auth/
+├── dashboard/
+├── customers/
+├── sales/
+├── receipts/
+├── analytics/
+├── staff/
+├── subscriptions/
+└── shared/
+```
 
-**Use GitHub Codespaces**
+## Roadmap
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Current
 
-## What technologies are used for this project?
+* Sales tracking
+* Receipt generation
+* Customer management
+* Business analytics
 
-This project is built with:
+### Planned
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+* Inventory management
+* Multi-branch support
+* Mobile application
+* AI-powered business insights
+* Enhanced reporting
 
-## How can I deploy this project?
+## Website
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+https://aflows.uk
 
-## Can I connect a custom domain to my Lovable project?
+## License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Proprietary software. All rights reserved.
