@@ -50,7 +50,7 @@ interface Props {
 
 export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = false, onSuccess }: Props) => {
   const { tier } = useAccess();
-  const { user, login, accessToken, refreshToken } = useAuth();
+  const { user, login } = useAuth();
   const { addNotification } = useNotifications();
   const [loading, setLoading] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
@@ -96,7 +96,7 @@ export const UpgradeModal = ({ requiredPlan, featureName, onClose, locked = fals
             }
 
             if (user) {
-              login(accessToken!, refreshToken!, {
+              login({
                 ...user,
                 subscriptionTier: verified.plan,
                 subscriptionStatus: 'active',
