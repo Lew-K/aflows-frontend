@@ -76,8 +76,8 @@ export const UploadsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { accessToken, user } = useAuth();
-
+  const { user } = useAuth();
+  
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -96,7 +96,7 @@ export const UploadsPage = () => {
       return;
     }
 
-    if (!accessToken) {
+    if (!user) {
       toast.error('You are not authenticated. Please log in.');
       return;
     }
