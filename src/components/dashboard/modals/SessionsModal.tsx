@@ -17,11 +17,9 @@ interface Session {
 export const SessionsModal = ({
   onClose,
   businessId,
-  accessToken,
 }: {
   onClose: () => void;
   businessId: string;
-  accessToken: string;
 }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
