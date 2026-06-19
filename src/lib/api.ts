@@ -1,11 +1,5 @@
-import CryptoJS from 'crypto-js';
-
 const BASE_URL = 'https://n8n.aflows.uk/webhook';
 const API_URL = 'https://api.aflows.uk/api/v1';
-
-export const hashPassword = (password: string): string => {
-  return CryptoJS.SHA256(password).toString();
-};
 
 interface RegisterData {
   businessName: string;
@@ -45,10 +39,8 @@ export const registerBusiness = async (data: RegisterData): Promise<AuthResponse
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      ...data,
-      password: hashPassword(data.password),
-    }),
+    credentials: 'include',
+    body: JSON.stringify(data),
   });
 
   const text = await response.text();
@@ -74,10 +66,8 @@ export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      ...data,
-      password: hashPassword(data.password),
-    }),
+    credentials: 'include',
+    body: JSON.stringify(data),
   });
 
   const parsed = await response.json();
@@ -92,19 +82,16 @@ export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
 interface FileUploadData {
   file: File;
   fileType: string;
-  token: string;
 }
 
-export const uploadBusinessFile = async ({ file, fileType, token }: FileUploadData): Promise<{ success: boolean; message: string }> => {
+export const uploadBusinessFile = async ({ file, fileType }: FileUploadData): Promise<{ success: boolean; message: string }> => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('fileType', fileType);
 
   const response = await fetch(`${API_URL}/business/upload-file`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    credentials: 'include',
     body: formData,
   });
 
@@ -123,13 +110,13 @@ interface SaleData {
   paymentReference: string;
 }
 
-export const recordSale = async (data: SaleData, token: string): Promise<{ success: boolean; message: string; receiptUrl?: string }> => {
+export const recordSale = async (data: SaleData): Promise<{ success: boolean; message: string; receiptUrl?: string }> => {
   const response = await fetch(`${BASE_URL}/record-sale`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
 
@@ -143,17 +130,16 @@ export const recordSale = async (data: SaleData, token: string): Promise<{ succe
 export const changePassword = async (
   currentPassword: string,
   newPassword: string,
-  token: string
 ): Promise<{ success: boolean; message: string }> => {
   const response = await fetch(`${API_URL}/auth/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
+    credentials: 'include',
     body: JSON.stringify({
-      currentPassword: hashPassword(currentPassword),
-      newPassword: hashPassword(newPassword),
+      currentPassword,
+      newPassword,
     }),
   });
 
@@ -172,11 +158,11 @@ export const changePassword = async (
   return parsed;
 };
 
-export const refreshToken = async (refresh_token: string): Promise<AuthResponse> => {
+export const refreshToken = async (): Promise<AuthResponse> => {
   const response = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh_token }),
+    credentials: 'include',
   });
 
   const parsed = await response.json();
@@ -225,9 +211,7 @@ export const resetPassword = async (token: string, newPassword: string): Promise
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      newPassword: hashPassword(newPassword),
-    }),
+    body: JSON.stringify({ newPassword }),
   });
 
   const parsed = await response.json();
@@ -242,17 +226,16 @@ export const resetPassword = async (token: string, newPassword: string): Promise
 export const changePasswordStaff = async (
   currentPassword: string,
   newPassword: string,
-  token: string
 ): Promise<{ success: boolean; message: string }> => {
   const response = await fetch(`${API_URL}/staff/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
+    credentials: 'include',
     body: JSON.stringify({
-      currentPassword: currentPassword,
-      newPassword: newPassword,
+      currentPassword,
+      newPassword,
     }),
   });
 
