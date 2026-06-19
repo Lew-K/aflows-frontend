@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CustomerModal } from "./modals/CustomerModal";
 
 export const CustomersPage = () => {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
   const { customers: contextCustomers, isFetching, getSales, fetchSales } = useData();
   const businessId = user?.businessId || "";
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
