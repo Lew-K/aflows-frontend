@@ -37,7 +37,7 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 const ChangePassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, accessToken, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [flowType, setFlowType] = useState<'staff' | 'owner' | 'reset'>('owner');
   const [invalidToken, setInvalidToken] = useState(false);
@@ -97,12 +97,12 @@ const ChangePassword = () => {
   const onChangeSubmit = async (data: PasswordFormData) => {
     setIsLoading(true);
     try {
-      if (flowType === 'staff' && accessToken) {
-        await changePasswordStaff(data.currentPassword, data.newPassword, accessToken);
-      } else if (flowType === 'owner' && accessToken) {
-        await changePassword(data.currentPassword, data.newPassword, accessToken);
+      if (flowType === 'staff') {
+        await changePasswordStaff(data.currentPassword, data.newPassword);
+      } else if (flowType === 'owner') {
+        await changePassword(data.currentPassword, data.newPassword);
       }
-
+  
       toast.success('Password changed successfully!');
       navigate('/dashboard');
     } catch (error) {
