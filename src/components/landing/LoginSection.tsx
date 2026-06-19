@@ -40,27 +40,21 @@ export const LoginSection = () => {
         email: data.email,
         password: data.password,
       });  
-
-      // console.log('Full login response:', JSON.stringify(response));
-
-      if (response.success && response.access_token && response.refresh_token) {
-        login(
-          response.access_token,
-          response.refresh_token,
-          {
-            businessId: response.user!.businessId,
-            businessName: response.user!.businessName,
-            ownerName: response.user!.ownerName,
-            email: response.user?.email || data.email,
-            role: response.user?.role || 'owner',
-            staffId: response.user?.staffId,
-            mustChangePassword: response.user?.mustChangePassword,
-            subscriptionTier: response.subscription_tier,
-            subscriptionStatus: response.subscription_status,
-            trialEndsAt: response.trial_ends_at ?? null,
-            currentPeriodEnd: response.current_period_end ?? null,
-          }
-        );
+      
+      if (response.success) {
+        login({
+          businessId: response.user!.businessId,
+          businessName: response.user!.businessName,
+          ownerName: response.user!.ownerName,
+          email: response.user?.email || data.email,
+          role: response.user?.role || 'owner',
+          staffId: response.user?.staffId,
+          mustChangePassword: response.user?.mustChangePassword,
+          subscriptionTier: response.subscription_tier,
+          subscriptionStatus: response.subscription_status,
+          trialEndsAt: response.trial_ends_at ?? null,
+          currentPeriodEnd: response.current_period_end ?? null,
+        });
       
         if (response.user?.mustChangePassword) {
           toast.success('Please set a new password to continue.');
