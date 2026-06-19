@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/apiFetch';
 import { changePassword } from '@/lib/api';
 import { toast } from 'sonner';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -11,6 +12,7 @@ import { Crown, Zap, TrendingUp, Shield, Calendar, AlertTriangle } from "lucide-
 import { UpgradeModal } from '@/components/dashboard/modals/UpgradeModal';
 import { apiFetch } from '@/lib/apiFetch';
 import { SessionsModal } from '@/components/dashboard/modals/SessionsModal';
+
 
 
 import {
@@ -256,7 +258,7 @@ export const SettingsPage = () => {
 
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
 
   const { addNotification } = useNotifications();
 
@@ -385,16 +387,10 @@ export const SettingsPage = () => {
     setIsSaving(true);
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         "https://api.aflows.uk/api/v1/business/settings",
         {
           method: "PATCH",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-
           body: JSON.stringify({
             business_name: settings.business_name,
             phone: settings.phone,
@@ -486,8 +482,8 @@ export const SettingsPage = () => {
         "POST",
         "https://api.aflows.uk/api/v1/business/logo"
       );
-
-      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+      
+      xhr.withCredentials = true;
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round(
@@ -597,14 +593,11 @@ export const SettingsPage = () => {
 
   const handlePasswordUpdate = async () => {
     if (passwordError) return;
-
-    if (!accessToken) return;
-
+  
     try {
       const res = await changePassword(
         passwordData.current,
-        passwordData.new,
-        accessToken
+        passwordData.new
       );
 
       setPasswordData({
@@ -1348,7 +1341,6 @@ export const SettingsPage = () => {
         <SessionsModal
           onClose={() => setSessionsOpen(false)}
           businessId={user?.businessId || ''}
-          accessToken={accessToken || ''}
         />
       )}
     </div>
