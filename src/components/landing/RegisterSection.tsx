@@ -43,9 +43,9 @@ export const RegisterSection = () => {
         phone: data.phone,
         password: data.password,
       });
-
-      if (res.success && res.access_token && res.refresh_token) {
-        login(res.access_token, res.refresh_token, {
+      
+      if (res.success) {
+        login({
           businessId: res.user!.businessId,
           businessName: res.user!.businessName,
           ownerName: res.user!.ownerName,
