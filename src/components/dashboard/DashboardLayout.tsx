@@ -297,7 +297,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
                   >
                     <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                    Tour Guide
+                    Take Tour
                   </button>
 
                   <div className="border-t border-border mt-1 pt-1">
