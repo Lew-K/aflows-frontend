@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { UserPlus, Trash2, Mail, Shield, RefreshCw, X, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { apiFetch } from '@/lib/apiFetch';
 
 
 interface StaffMember {
@@ -33,7 +34,7 @@ export const TeamManagementModal = ({
   businessName: string;
   onUpgrade?: () => void;
 }) => {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
 
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [staffLoading, setStaffLoading] = useState(false);
@@ -57,9 +58,8 @@ export const TeamManagementModal = ({
     if (!user?.businessId) return;
     setStaffLoading(true);
     try {
-      const res = await fetch(
-        `https://api.aflows.uk/api/v1/staff?business_id=${user.businessId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+      const res = await apiFetch(
+        `https://api.aflows.uk/api/v1/staff?business_id=${user.businessId}`
       );
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.staff || []);
@@ -87,12 +87,8 @@ export const TeamManagementModal = ({
 
     setInviting(true);
     try {
-      const res = await fetch('https://api.aflows.uk/api/v1/staff', {
+      const res = await apiFetch('https://api.aflows.uk/api/v1/staff', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
         body: JSON.stringify({
           business_id: user?.businessId,
           business_name: businessName,
@@ -122,12 +118,8 @@ export const TeamManagementModal = ({
   const handleRemove = async (staffId: string, staffName: string) => {
     if (!confirm(`Remove ${staffName} from your team?`)) return;
     try {
-      const res = await fetch(`https://api.aflows.uk/api/v1/staff/${staffId}`, {
+      const res = await apiFetch(`https://api.aflows.uk/api/v1/staff/${staffId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
