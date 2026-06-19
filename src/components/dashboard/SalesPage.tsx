@@ -36,7 +36,7 @@ const paymentMethods = [
 
 export const SalesPage = () => {
 
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
   const { getSales, fetchSales, refreshSales, refreshInventory, fetchInventory, isFetching, injectSale, updateSaleReceipt, customers, fetchCustomers } = useData();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -199,11 +199,6 @@ export const SalesPage = () => {
 
   const handleDownload = async (sale: any) => {
     try {
-      if (!accessToken) {
-        toast.error("Session expired.");
-        return;
-      }
-
       const receiptId =
         sale.receipt_id ||
         sale.receipt_number ||
@@ -213,12 +208,9 @@ export const SalesPage = () => {
         toast.error("Receipt not available");
         return;
       }
-
+  
       const res = await apiFetch(
-        `https://api.aflows.uk/api/v1/receipts/${receiptId}/download`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }
+        `https://api.aflows.uk/api/v1/receipts/${receiptId}/download`
       );
       
       if (!res.ok) throw new Error();
@@ -371,8 +363,7 @@ export const SalesPage = () => {
         setTimeout(async () => {
           try {
             const receiptRes = await apiFetch(
-              `https://api.aflows.uk/api/v1/receipts/by-sale/${result.sale_id}`,
-              { headers: { Authorization: `Bearer ${accessToken}` } }
+              `https://api.aflows.uk/api/v1/receipts/by-sale/${result.sale_id}`
             );
             if (receiptRes.ok) {
               const receiptData = await receiptRes.json();
