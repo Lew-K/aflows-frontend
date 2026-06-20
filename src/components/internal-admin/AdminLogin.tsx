@@ -11,20 +11,17 @@ export default function AdminLogin() {
       const res = await fetch("https://api.aflows.uk/api/v1/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-
       const response = await res.json();
       const data = Array.isArray(response) ? response[0] : response;
-
       if (data.success) {
-        // Store token and superadmin flag
-        localStorage.setItem("admin_token", data.token);
+        // Cookie is set by the backend; only keep a UI flag locally
         localStorage.setItem(
           "superadmin",
           data.isSuperAdmin ? "true" : "false"
         );
-
         // Navigate to dashboard
         navigate("/internal-admin");
       } else {
