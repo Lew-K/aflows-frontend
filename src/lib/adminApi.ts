@@ -1,16 +1,5 @@
 const BASE = "https://api.aflows.uk/api/v1/admin"; 
 
-const getToken = () => localStorage.getItem("admin_token");
-
-const getAuthHeaders = () => {
-  const token = getToken();
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
-  };
-};
-
-
 const handleResponse = async (res: Response) => {
   if (!res.ok) {
     let message = "Request failed";
@@ -30,14 +19,56 @@ const request = async (
   // Prepends the full BASE URL path to every request
   const res = await fetch(`${BASE}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
-      ...getAuthHeaders(),
+      "Content-Type": "application/json",
       ...(options.headers || {})
     }
   });
 
   return handleResponse(res);
 };
+
+// const BASE = "https://api.aflows.uk/api/v1/admin"; 
+
+// const getToken = () => localStorage.getItem("admin_token");
+
+// const getAuthHeaders = () => {
+//   const token = getToken();
+//   return {
+//     "Content-Type": "application/json",
+//     ...(token ? { Authorization: `Bearer ${token}` } : {})
+//   };
+// };
+
+
+// const handleResponse = async (res: Response) => {
+//   if (!res.ok) {
+//     let message = "Request failed";
+//     try {
+//       const text = await res.text();
+//       if (text) message = text;
+//     } catch {}
+//     throw new Error(message);
+//   }
+//   return res.json();
+// };
+
+// const request = async (
+//   path: string,
+//   options: RequestInit = {}
+// ) => {
+//   // Prepends the full BASE URL path to every request
+//   const res = await fetch(`${BASE}${path}`, {
+//     ...options,
+//     headers: {
+//       ...getAuthHeaders(),
+//       ...(options.headers || {})
+//     }
+//   });
+
+//   return handleResponse(res);
+// };
 
 export const adminApi = {
 
@@ -100,14 +131,15 @@ export const adminApi = {
     if (filters?.page) params.append('page', String(filters.page));
     if (filters?.limit) params.append('limit', String(filters.limit));
     return fetch(`https://api.aflows.uk/api/v1/contact/messages?${params}`, {
-      headers: getAuthHeaders(),
+      credentials: "include",
     }).then(handleResponse);
   },
   
   respondToContact: (messageId: string, response: string) =>
     fetch(`https://api.aflows.uk/api/v1/contact/messages/${messageId}/respond`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ response }),
     }).then(handleResponse),
 };
