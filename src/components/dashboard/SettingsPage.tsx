@@ -497,7 +497,7 @@ export const SettingsPage = () => {
       xhr.onload = () => {
         setIsUploading(false);
 
-        if (xhr.status === 200) {
+        if (xhr.status >= 200 && xhr.status < 300) {
           const res = JSON.parse(xhr.responseText);
 
           setSettings((prev) => ({
