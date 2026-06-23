@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) => {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
 
   const [selectedItemId, setSelectedItemId] = useState(item?.id || "");
   const [quantity, setQuantity] = useState(0);
@@ -44,9 +44,9 @@ export const AddStockModal = ({ item, items = [], onClose, onSuccess }: Props) =
     try {
       const res = await fetch("https://api.aflows.uk/api/v1/inventory/add-stock", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           businessId: user?.businessId,
