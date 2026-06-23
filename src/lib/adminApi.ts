@@ -29,46 +29,6 @@ const request = async (
   return handleResponse(res);
 };
 
-// const BASE = "https://api.aflows.uk/api/v1/admin"; 
-
-// const getToken = () => localStorage.getItem("admin_token");
-
-// const getAuthHeaders = () => {
-//   const token = getToken();
-//   return {
-//     "Content-Type": "application/json",
-//     ...(token ? { Authorization: `Bearer ${token}` } : {})
-//   };
-// };
-
-
-// const handleResponse = async (res: Response) => {
-//   if (!res.ok) {
-//     let message = "Request failed";
-//     try {
-//       const text = await res.text();
-//       if (text) message = text;
-//     } catch {}
-//     throw new Error(message);
-//   }
-//   return res.json();
-// };
-
-// const request = async (
-//   path: string,
-//   options: RequestInit = {}
-// ) => {
-//   // Prepends the full BASE URL path to every request
-//   const res = await fetch(`${BASE}${path}`, {
-//     ...options,
-//     headers: {
-//       ...getAuthHeaders(),
-//       ...(options.headers || {})
-//     }
-//   });
-
-//   return handleResponse(res);
-// };
 
 export const adminApi = {
 
