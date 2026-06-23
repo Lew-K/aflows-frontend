@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash } from "lucide-react";
 
 export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
   
 
   const [rows, setRows] = useState([
@@ -51,9 +51,9 @@ export const AddProductModal = ({ isOpen, onClose, onSuccess }) => {
       for (const row of rows) {
         const res = await fetch("https://api.aflows.uk/api/v1/inventory/add-product", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             businessId: user?.businessId,
