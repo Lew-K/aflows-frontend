@@ -206,13 +206,13 @@ const Businesses = () => {
     try {
       const res = await adminApi.impersonate(id);
   
-      const { access_token, refresh_token, user } = res;
+      const { user } = res;
   
       if (!user?.businessId) {
         throw new Error("Invalid response");
       }
   
-      login(access_token, refresh_token, {
+      login({
         businessId: user.businessId,
         businessName: user.businessName || "",
         ownerName: user.ownerName || "",
