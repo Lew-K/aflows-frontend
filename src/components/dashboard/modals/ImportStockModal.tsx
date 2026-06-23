@@ -22,7 +22,7 @@ export const ImportStockModal = ({
   onClose: () => void;
   onSuccess: () => void;
 }) => {
-  const { user, accessToken } = useAuth();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState('');
@@ -71,9 +71,9 @@ export const ImportStockModal = ({
     try {
       const res = await fetch('https://api.aflows.uk/api/v1/inventory/import', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           business_id: user?.businessId,
