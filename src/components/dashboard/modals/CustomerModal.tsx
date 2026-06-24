@@ -63,6 +63,30 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
 
       {/* BODY */}
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
+
+        {/* CUSTOMER HEALTH */}
+        <div className="p-4 rounded-2xl border bg-muted/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                Customer Health
+              </p>
+      
+              <p className="font-semibold mt-1">
+                {customer.segment === "vip"
+                  ? "🟢 High Value Customer"
+                  : customer.segment === "at_risk"
+                  ? "🟡 Needs Attention"
+                  : "🟢 Active Customer"}
+              </p>
+            </div>
+      
+            <Badge variant="outline">
+              {customer.segment.replace("_", " ")}
+            </Badge>
+          </div>
+        </div>
+        
         {/* STATS TILES */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 transition-hover hover:bg-muted/60">
