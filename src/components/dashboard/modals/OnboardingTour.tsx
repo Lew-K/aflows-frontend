@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, ArrowRight, Check, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { apiFetch } from '@/lib/apiFetch';
 // import { useNavigate } from 'react-router-dom';
 
 interface TourStep {
@@ -516,10 +517,17 @@ export const OnboardingTour = ({
     () => TOUR_STEPS.filter(step => step.tourId === tourId),
     [tourId]
   );
-  const [step, setStep] = useState(() => {
-    const saved = localStorage.getItem(`tour-${tourId}-step`);
-    return saved ? Number(saved) : 0;
-  });
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    apiFetch(`https://api.aflows.uk/api/v1/tours/${tourId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.current_step) setStep(data.current_step);
+      })
+      .catch(() => {}); // fail silently — just start from step 0
+  }, [tourId]);
+  
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   // const navigate = useNavigate();
@@ -529,7 +537,10 @@ export const OnboardingTour = ({
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    localStorage.setItem(`tour-${tourId}-step`, step.toString());
+    apiFetch(`https://api.aflows.uk/api/v1/tours/${tourId}/step`, {
+      method: 'POST',
+      body: JSON.stringify({ step }),
+    }).catch(() => {});
   }, [step, tourId]);
 
   useEffect(() => {
@@ -645,10 +656,9 @@ export const OnboardingTour = ({
 
   const goNext = () => {
     if (isLast) {
-      localStorage.setItem(
-        `tour-${tourId}-completed`,
-        'true'
-      );
+      apiFetch(`https://api.aflows.uk/api/v1/tours/${tourId}/complete`, {
+        method: 'POST',
+      }).catch(() => {});
       onClose();
       return;
     }
