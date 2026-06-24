@@ -36,22 +36,6 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
     ? lastOrderDate.toLocaleDateString("en-US")
     : "No orders";
 
-  const lastOrderDate =
-    sales.length > 0
-      ? new Date(
-          Math.max(
-            ...sales.map((sale) => new Date(sale.created_at).getTime())
-          )
-        )
-      : null;
-  
-  const daysSinceLastOrder = lastOrderDate
-    ? Math.floor(
-        (Date.now() - lastOrderDate.getTime()) /
-        (1000 * 60 * 60 * 24)
-      )
-    : null;
-
   const getItems = (sale) => {
     if (!sale.items) return [];
     if (typeof sale.items === "string") {
