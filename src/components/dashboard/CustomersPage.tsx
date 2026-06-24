@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CustomerModal } from "./modals/CustomerModal";
 import { useNavigate } from "react-router-dom";
+import { Upload } from "lucide-react";
 
 export const CustomersPage = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ export const CustomersPage = () => {
   const [salesCache, setSalesCache] = useState<Record<string, any[]>>({});
   const [loadingSales, setLoadingSales] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const PAGE_SIZE = 15;
 
   useEffect(() => {
@@ -192,14 +194,36 @@ export const CustomersPage = () => {
     <div className="flex h-screen bg-background/50 gap-0 overflow-hidden">
       <div className={`transition-all duration-500 ease-in-out flex flex-col h-screen ${selectedCustomer ? "w-full lg:w-[60%]" : "w-full"}`}>
         <div className="w-full space-y-6 px-6 pt-4 pb-2 flex-shrink-0">
-          <div className="flex justify-between items-end">
+          
+          <div className="flex justify-between items-start gap-4">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight">Customers</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight">
+                Customers
+              </h1>
+          
               <p className="text-muted-foreground mt-1">
-                {repeatCustomers.length} repeat customers driving {Math.round((repeatCustomers.reduce((s, c) => s + c.total_spent, 0) / (totalRevenue || 1)) * 100)}% of revenue.
+                {repeatCustomers.length} repeat customers driving{" "}
+                {Math.round(
+                  (repeatCustomers.reduce(
+                    (s, c) => s + c.total_spent,
+                    0
+                  ) / (totalRevenue || 1)) * 100
+                )}
+                % of revenue.
               </p>
             </div>
+          
+            <Button
+              onClick={() => setImportModalOpen(true)}
+              className="shrink-0"
+            >
+              <Upload className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">
+                Import Customers
+              </span>
+            </Button>
           </div>
+          
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-tour="customer-kpis">
             <KPICard title="Total Customers" value={customers.length} icon={<Users className="w-4 h-4 text-blue-500" />} />
             <KPICard title="Active This Month" value={activeThisMonth} icon={<Calendar className="w-4 h-4 text-green-500" />} />
@@ -279,6 +303,11 @@ export const CustomersPage = () => {
           />
         </div>
       )}
+
+      <ImportCustomersModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+      />
     </div>
   </>
   );
