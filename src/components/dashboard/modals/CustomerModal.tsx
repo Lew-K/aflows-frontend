@@ -51,11 +51,11 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                 {customer.phone}
               </a>
             )}
-            <Badge className="bg-primary/10 text-primary border-none hover:bg-primary/20 mt-1">
+            {/* <Badge className="bg-primary/10 text-primary border-none hover:bg-primary/20 mt-1">
               {customer.segment
                 .replace("_", " ")
                 .replace(/\b\w/g, (c) => c.toUpperCase())}
-            </Badge>
+            </Badge> */}
           </div>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
@@ -84,7 +84,9 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
             </div>
       
             <Badge variant="outline">
-              {customer.segment.replace("_", " ")}
+              {customer.segment
+                .replace("_", " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())}
             </Badge>
           </div>
         </div>
