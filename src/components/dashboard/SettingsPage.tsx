@@ -950,7 +950,7 @@ export const SettingsPage = () => {
 
                   {/* DISCOUNT */}
                   <div className="space-y-5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex w-full sm:w-auto gap-2">
                       <Tag className="w-4 h-4 text-primary" />
 
                       <div>
@@ -1301,9 +1301,9 @@ export const SettingsPage = () => {
               scale: 0.95,
             }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            className="fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50"
           >
-            <div className="bg-background/80 backdrop-blur-md border border-border/60 shadow-2xl rounded-full px-6 py-3 flex items-center gap-6">
+            <div className=" bg-background/80 backdrop-blur-md border border-border/60 shadow-2xl rounded-2xl md:rounded-full px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 ">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
 
@@ -1312,7 +1312,7 @@ export const SettingsPage = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex w-full sm:w-auto gap-2">
                 <Button
                   variant="outline"
                   size="sm"
