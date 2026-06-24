@@ -94,7 +94,7 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                   : "🟢 Active Customer"}
               </p>
 
-              {daysSinceLastOrder !== null && (
+              {formattedLastOrder !== "No orders" && (
                 <p className="text-xs text-muted-foreground">
                   Last Order: {formattedLastOrder}
                 </p>
