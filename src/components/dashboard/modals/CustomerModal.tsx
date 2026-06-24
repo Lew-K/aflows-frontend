@@ -24,6 +24,22 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
   const totalSpent = customer.total_spent || 0;
   const avgOrderValue = customer.transactions > 0 ? Math.round(totalSpent / customer.transactions) : 0;
 
+  const lastOrderDate =
+    sales.length > 0
+      ? new Date(
+          Math.max(
+            ...sales.map((sale) => new Date(sale.created_at).getTime())
+          )
+        )
+      : null;
+  
+  const daysSinceLastOrder = lastOrderDate
+    ? Math.floor(
+        (Date.now() - lastOrderDate.getTime()) /
+        (1000 * 60 * 60 * 24)
+      )
+    : null;
+
   const getItems = (sale) => {
     if (!sale.items) return [];
     if (typeof sale.items === "string") {
@@ -81,6 +97,12 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
                   ? "🟡 Needs Attention"
                   : "🟢 Active Customer"}
               </p>
+
+              {daysSinceLastOrder !== null && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Last order {daysSinceLastOrder} day{daysSinceLastOrder !== 1 ? "s" : ""} ago
+                </p>
+              )}
             </div>
       
             <Badge variant="outline">
