@@ -305,10 +305,14 @@ export const CustomersPage = () => {
         </div>
       )}
 
-      <ImportCustomersModal
-        open={importModalOpen}
-        onOpenChange={setImportModalOpen}
-      />
+      {importModalOpen && (
+        <ImportCustomersModal
+          onClose={() => setImportModalOpen(false)}
+          onSuccess={() => {
+            setImportModalOpen(false);
+          }}
+        />
+      )}
     </div>
   </>
   );
