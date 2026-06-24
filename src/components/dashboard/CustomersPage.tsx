@@ -158,7 +158,7 @@ export const CustomersPage = () => {
       <p className="text-muted-foreground max-w-sm">
         Customers are added automatically when you record a sale with a customer name. Try recording a sale first.
       </p>
-      <Button   variant="outline"   onClick={() => navigate("/sales")} >
+      <Button   variant="outline"   onClick={() => navigate("/dashboard/sales")} >
         Go to Sales
       </Button>
     </div>
