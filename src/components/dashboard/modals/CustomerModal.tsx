@@ -24,6 +24,18 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
   const totalSpent = customer.total_spent || 0;
   const avgOrderValue = customer.transactions > 0 ? Math.round(totalSpent / customer.transactions) : 0;
 
+  const lastOrderDate = sales.length
+    ? new Date(
+        Math.max(
+          ...sales.map((sale) => new Date(sale.created_at).getTime())
+        )
+      )
+    : null;
+  
+  const formattedLastOrder = lastOrderDate
+    ? lastOrderDate.toLocaleDateString("en-US")
+    : "No orders";
+
   const lastOrderDate =
     sales.length > 0
       ? new Date(
@@ -99,8 +111,8 @@ export const CustomerModal = ({ customer, sales = [], onClose }) => {
               </p>
 
               {daysSinceLastOrder !== null && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Last order {daysSinceLastOrder} day{daysSinceLastOrder !== 1 ? "s" : ""} ago
+                <p className="text-xs text-muted-foreground">
+                  Last Order: {formattedLastOrder}
                 </p>
               )}
             </div>
