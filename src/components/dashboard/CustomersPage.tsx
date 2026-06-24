@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CustomerModal } from "./modals/CustomerModal";
+import { useNavigate } from "react-router-dom";
 
 export const CustomersPage = () => {
   const { user } = useAuth();
   const { customers: contextCustomers, isFetching, getSales, fetchSales } = useData();
   const businessId = user?.businessId || "";
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const navigate = useNavigate();
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +158,7 @@ export const CustomersPage = () => {
       <p className="text-muted-foreground max-w-sm">
         Customers are added automatically when you record a sale with a customer name. Try recording a sale first.
       </p>
-      <Button variant="outline" onClick={() => window.history.back()}>
+      <Button   variant="outline"   onClick={() => navigate("/sales")} >
         Go to Sales
       </Button>
     </div>
