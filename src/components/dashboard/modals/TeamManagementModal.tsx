@@ -13,6 +13,7 @@ interface StaffMember {
   id: string;
   name: string;
   email: string;
+  role: 'manager' | 'cashier' | 'staff';
   is_active: boolean;
   must_change_password: boolean;
   created_at: string;
@@ -41,8 +42,7 @@ export const TeamManagementModal = ({
 
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePassword, setInvitePassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [inviteRole, setInviteRole] = useState<'manager' | 'cashier'>('cashier');
   const [inviting, setInviting] = useState(false);
 
   const { tier } = useAccess();
@@ -76,15 +76,10 @@ export const TeamManagementModal = ({
   }, []);
 
   const handleInvite = async () => {
-    if (!inviteName.trim() || !inviteEmail.trim() || !invitePassword.trim()) {
-      toast.error('Name, email and password are all required');
+    if (!inviteName.trim() || !inviteEmail.trim()) {
+      toast.error('Name and email are required');
       return;
     }
-    if (invitePassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
     setInviting(true);
     try {
       const res = await apiFetch('https://api.aflows.uk/api/v1/staff', {
@@ -95,7 +90,7 @@ export const TeamManagementModal = ({
           owner_name: user?.ownerName,
           staff_name: inviteName.trim(),
           staff_email: inviteEmail.trim(),
-          staff_password: invitePassword,
+          role: inviteRole,
         }),
       });
 
@@ -106,7 +101,7 @@ export const TeamManagementModal = ({
       addNotification('info', 'Staff member added', `${inviteName} can now log in to the dashboard with their email and password.`);
       setInviteName('');
       setInviteEmail('');
-      setInvitePassword('');
+      setInviteRole('cashier');
       fetchStaff();
     } catch (err: any) {
       toast.error(err.message || 'Failed to add staff member');
@@ -155,7 +150,7 @@ export const TeamManagementModal = ({
             <div>
               <p className="text-sm font-semibold">Add Staff Member</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Set a password for them — they will use this to log in.
+                An invitation email with temporary login credentials will be sent automatically.
               </p>
             </div>
 
@@ -173,22 +168,19 @@ export const TeamManagementModal = ({
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                 />
+
+                <select
+                  value={inviteRole}
+                  onChange={(e) =>
+                    setInviteRole(e.target.value as 'manager' | 'cashier')
+                  }
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="cashier">Cashier</option>
+                  <option value="manager">Manager</option>
+                </select>
             
-                <div className="relative">
-                  <Input
-                    placeholder="Set a password for them"
-                    type={showPassword ? 'text' : 'password'}
-                    value={invitePassword}
-                    onChange={(e) => setInvitePassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(p => !p)}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+            
               </>
             )}
 
@@ -251,8 +243,24 @@ export const TeamManagementModal = ({
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{staff.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-muted-foreground truncate">
+                        {staff.email}
+                      </p>
+                      
+                      <p className="text-xs font-medium capitalize text-primary">
+                        {staff.role}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            staff.role === 'manager'
+                              ? 'bg-blue-500/10 text-blue-600'
+                              : 'bg-slate-500/10 text-slate-600'
+                          }`}
+                        >
+                          {staff.role}
+                        </span>
                         <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                           staff.is_active
                             ? 'bg-green-500/10 text-green-600'
