@@ -243,7 +243,7 @@ export const CustomersPage = () => {
                   </div>
                   <div className="flex items-center gap-6">
                     <p className="text-xs text-muted-foreground hidden md:block">
-                      {c.phone || '—'}
+                      {c.customer_phone || c.phone || '—'}
                     </p>
                     <div className="text-right">
                       <p className="font-bold text-sm">KES {Number(c.total_spent).toLocaleString()}</p>
