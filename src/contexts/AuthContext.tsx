@@ -20,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (user: any) => void;
   logout: () => void;
+  updateUser: (partial: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,6 +75,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     localStorage.removeItem(USER_KEY);
     setUser(null);
+  };
+
+  const updateUser = (partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...partial };
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // ✅ Inactivity timer
@@ -132,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}
