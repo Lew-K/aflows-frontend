@@ -93,6 +93,7 @@ const ChangePassword = () => {
   const resetConfirmPassword = watchReset('confirmPassword');
   const resetPasswordsMatch = resetNewPassword && resetConfirmPassword && resetNewPassword === resetConfirmPassword;
   const resetPasswordsDontMatch = resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword;
+  const { user, isAuthenticated, updateUser } = useAuth(); 
 
   const onChangeSubmit = async (data: PasswordFormData) => {
     setIsLoading(true);
@@ -102,6 +103,7 @@ const ChangePassword = () => {
       } else if (flowType === 'owner') {
         await changePassword(data.currentPassword, data.newPassword);
       }
+      updateUser({ mustChangePassword: false });
   
       toast.success('Password changed successfully!');
       navigate('/dashboard');
