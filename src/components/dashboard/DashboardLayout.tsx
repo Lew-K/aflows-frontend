@@ -44,7 +44,7 @@ const allNavItems = [
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { business } = useData();
-  const { can, tier, role, isExpired } = useAccess();
+  const { can, tier, role, isExpired, isStaff } = useAccess();
   const navigate = useNavigate();
   const navItems = allNavItems.filter(item =>
     item.feature === null || can(item.feature)
@@ -172,7 +172,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           </nav>
 
           {/* Upgrade hint for non-pro owners */}
-          {role === 'owner' && tier !== 'pro' && showUpgradeHint && (
+          {!isStaff && tier !== 'pro' && showUpgradeHint && (
             <div className="mx-3 mb-2 p-3 rounded-xl bg-primary/5 border border-primary/20 flex-shrink-0 relative">
               <button
                 className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
@@ -210,13 +210,15 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             <NotificationCenter />
 
             {/* Gear / Settings shortcut */}
-            <button
-              onClick={() => navigate('/dashboard/settings')}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            {!isStaff && (
+              <button
+                onClick={() => navigate('/dashboard/settings')}
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
 
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground">
@@ -268,7 +270,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                     </span>
                   </div>
 
-                  {role === 'owner' && tier !== 'pro' && (
+                  {!isStaff && tier !== 'pro' && (
                     <button
                       onClick={() => { setUpgradeModalOpen(true); setAvatarMenuOpen(false); }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
@@ -324,14 +326,14 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         </main>
       </div>
 
-      {upgradeModalOpen && (
+      {!isStaff && upgradeModalOpen && (
         <UpgradeModal
           requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
           featureName="Next Plan Features"
           onClose={() => setUpgradeModalOpen(false)}
         />
       )}
-      {isExpired && (
+      {!isStaff && isExpired && (
         <UpgradeModal
           requiredPlan={tier === 'starter' ? 'growth' : 'pro'}
           featureName="Trial Expired"
