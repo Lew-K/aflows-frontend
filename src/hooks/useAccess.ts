@@ -11,6 +11,7 @@ type Feature =
 export const useAccess = () => {
   const { user } = useAuth();
   const role = user?.role || 'owner';
+  const isStaff = !!user?.staffId; // true for manager, cashier, staff — any non-owner role
 
   const isOnTrial =
     user?.subscriptionStatus === 'trialing' &&
@@ -30,10 +31,28 @@ export const useAccess = () => {
         return feature === 'settings_basic' || feature === 'contact';
       }
     
-      // 2. Handle staff role restrictions
-      if (role === 'staff') {
-        return ['sales', 'operations', 'contact', 'settings_basic'].includes(feature);
+      // 2. Handle staff restrictions — capped by role, never exceeding what tier allows
+      if (isStaff) {
+        const staffFeatures: Record<string, Feature[]> = {
+          manager: ['sales', 'operations', 'inventory', 'customers', 'reports', 'analytics_advanced', 'contact'],
+          cashier: ['sales', 'operations', 'contact'],
+          staff:   ['sales', 'operations', 'contact'], // legacy accounts, until reassigned
+        };
+        const allowed = staffFeatures[role] || [];
+        // Still capped by what the business's tier permits overall
+        return allowed.includes(feature) && tierAllowsFeature(feature);
       }
+
+    // const can = (feature: Feature): boolean => {
+    //   // 1. Handle expired accounts cleanly
+    //   if (isExpired) {
+    //     return feature === 'settings_basic' || feature === 'contact';
+    //   }
+    
+    //   // 2. Handle staff role restrictions
+    //   if (role === 'staff') {
+    //     return ['sales', 'operations', 'contact', 'settings_basic'].includes(feature);
+    //   }
     
       // 3. Map your page feature triggers directly to your subscription matrix definitions
       switch (feature) {
@@ -88,7 +107,7 @@ export const useAccess = () => {
           return false;
       }
     };
-  return { can, role, tier, isOnTrial, isExpired };
+  return { can, role, isStaff, tier, isOnTrial, isExpired };
 };
 
 //   const can = (feature: Feature): boolean => {
