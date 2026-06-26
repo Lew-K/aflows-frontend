@@ -25,6 +25,19 @@ export const useAccess = () => {
     user?.subscriptionStatus !== 'active' &&
     user?.subscriptionStatus !== undefined;
 
+    const tierAllowsFeature = (feature: Feature): boolean => {
+      switch (feature) {
+        case 'inventory': return hasPageAccess(tier, 'inventory');
+        case 'customers': return tier === 'growth' || tier === 'pro';
+        case 'reports':
+        case 'analytics_advanced': return tier === 'growth' || tier === 'pro';
+        case 'sales':
+        case 'operations':
+        case 'contact': return true;
+        default: return true;
+      }
+    };
+
     const can = (feature: Feature): boolean => {
       // 1. Handle expired accounts cleanly
       if (isExpired) {
