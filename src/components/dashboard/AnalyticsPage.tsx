@@ -1187,7 +1187,7 @@ export const AnalyticsPage = () => {
   }
 
   const businessId = user?.businessId;
-  const { role, can, tier } = useAccess();
+  const { role, can, tier, isStaff } = useAccess();
 
   const [period, setPeriod] = useState<'today' | 'yesterday' | 'this_week' | 'last_week' | 'this_month' | 'last_month' | 'this_quarter' | 'last_quarter' | 'custom'>('this_month');
   const [customStart, setCustomStart] = useState('');
@@ -1397,7 +1397,7 @@ export const AnalyticsPage = () => {
   // Sales pace = compare today's revenue vs avg day
   const salesPace = averageDailyRevenue ? (todayRevenue - averageDailyRevenue) / averageDailyRevenue : null;
 
-  if (role === 'staff') {
+  if (isStaff) {
     return <StaffAnalyticsView businessId={businessId} tier={tier} />;
   }
   
