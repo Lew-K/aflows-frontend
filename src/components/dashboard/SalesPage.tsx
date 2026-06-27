@@ -353,6 +353,7 @@ export const SalesPage = () => {
           created_at: result.created_at || new Date().toISOString(),
           receipt_id: null,
           receipt_number: null,
+          served_by_name: result.served_by_name || null,
           _receiptPending: true, // flag to show spinner
         };
       
@@ -957,7 +958,10 @@ export const SalesPage = () => {
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate">{sale.customer_name || 'Walk-in'}</p>
                           <p className="text-xs text-muted-foreground truncate">{sale.item_sold || sale.item}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 uppercase">{sale.payment_method} • {new Date(sale.created_at).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 uppercase">
+                            {sale.payment_method} • {new Date(sale.created_at).toLocaleDateString()}
+                            {sale.served_by_name && ` • Served by ${sale.served_by_name}`}
+                          </p>
                         </div>
                         <div className="flex items-center gap-3 ml-4">
                           <p className="text-sm font-bold whitespace-nowrap">KES {Number(sale.total_amount || 0).toLocaleString()}</p>
