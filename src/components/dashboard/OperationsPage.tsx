@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils"
 
 const AVAILABLE_TAGS = ["Sales", "Admin", "Inventory", "Operations", "Marketing"]
 
-export function OperationsPage() {
+export function TasksPage() {
   const { toast } = useToast()
   const businessId = "default"
 
@@ -186,9 +186,11 @@ export function OperationsPage() {
       <div className="p-6 space-y-6 mx-auto">
         {/* HEADER */}
         <div>
-          <h1 className="text-4xl font-extrabold">Task List</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold">
+            Tasks
+          </h1>
           <p className="text-muted-foreground mt-1">
-            Track your daily business tasks and set up recurring reminders so nothing slips through.
+            Track your business tasks, due dates, and recurring reminders so nothing slips through.
           </p>
         </div>
 
@@ -231,7 +233,7 @@ export function OperationsPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="task-search"
-                  placeholder="Search tasks... (⌘K)"
+                  placeholder="Search tasks..."
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -262,7 +264,7 @@ export function OperationsPage() {
               </div>
 
               {/* FOCUS MODE */}
-              <div className="flex gap-2" data-tour="operations-focus">
+              <div className="flex flex-wrap gap-2" data-tour="operations-focus">
                 <Button
                   variant={focusMode === "all" ? "default" : "outline"}
                   size="sm"
@@ -794,12 +796,18 @@ function AdvancedAdd({ onAdd }: { onAdd: any }) {
         <option value="high">High Priority</option>
       </select>
 
-      <input
-        type="date"
-        className="bg-background text-foreground border border-border rounded-md p-2 text-sm"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
+      <div className="space-y-1">
+        <label className="text-xs text-muted-foreground">
+          Due date (optional)
+        </label>
+      
+        <input
+          type="date"
+          className="bg-background text-foreground border border-border rounded-md p-2 text-sm w-full"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
 
       <Input
         placeholder="External link (optional)"
