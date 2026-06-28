@@ -318,10 +318,10 @@ const TOUR_STEPS: TourStep[] = [
 
   // ===== OPERATIONS PAGE =====
   {
-    tourId: 'operations',
-    pageTitle: 'Operations',
+    tourId: 'Tasks',
+    pageTitle: 'Tasks',
     stepNumber: 19,
-    targetSelector: '[data-tour="operations-search"]',
+    targetSelector: '[data-tour="tasks-search"]',
     title: '🔍 Task Search',
     description: 'Quickly find any task by typing keywords. Supports tag filtering too.',
     details: [
@@ -335,8 +335,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'operations',
-    pageTitle: 'Operations',
+    tourId: 'Tasks',
+    pageTitle: 'Tasks',
     stepNumber: 20,
     targetSelector: '[data-tour="operations-filters"]',
     title: '🏷️ Task Categories',
@@ -351,8 +351,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'operations',
-    pageTitle: 'Operations',
+    tourId: 'Tasks',
+    pageTitle: 'Tasks',
     stepNumber: 21,
     targetSelector: '[data-tour="operations-focus"]',
     title: '🎯 Focus Mode',
@@ -367,8 +367,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'operations',
-    pageTitle: 'Operations',
+    tourId: 'Tasks',
+    pageTitle: 'Tasks',
     stepNumber: 22,
     targetSelector: '[data-tour="operations-tasks"]',
     title: '✅ Complete Your Tasks',
