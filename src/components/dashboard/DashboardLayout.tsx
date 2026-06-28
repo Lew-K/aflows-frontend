@@ -35,7 +35,7 @@ const allNavItems = [
   { icon: Package, label: 'Inventory', path: '/dashboard/inventory', feature: 'inventory' as const },
   { icon: Users, label: 'Customers', path: '/dashboard/customers', feature: 'customers' as const },
   { icon: FileBarChart, label: 'Reports', path: '/dashboard/reports', feature: 'reports' as const },
-  { icon: ClipboardCheck, label: 'Tasks', path: '/dashboard/tasks', feature: 'operations' as const },
+  { icon: ClipboardCheck, label: 'Tasks', path: '/dashboard/tasks', feature: 'tasks' as const },
   { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads', feature: 'uploads' as const },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact', feature: 'contact' as const },
   // { icon: Settings, label: 'Settings', path: '/dashboard/settings', feature: 'settings_basic' as const },
@@ -62,7 +62,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     } else if (path === '/dashboard/customers') {
       setCurrentTour('customers');
     } else if (path === '/dashboard/tasks') {
-      setCurrentTour('operations');
+      setCurrentTour('tasks');
     } else if (path === '/dashboard/settings') {
       setCurrentTour('settings');
     }
