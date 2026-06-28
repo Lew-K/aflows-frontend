@@ -237,12 +237,12 @@ export function TasksPage() {
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  data-tour="operations-search"
+                  data-tour="tasks-search"
                 />
               </div>
 
               {/* TAG FILTERS */}
-              <div className="flex flex-wrap gap-2" data-tour="operations-filters">
+              <div className="flex flex-wrap gap-2" data-tour="tasks-filters">
                 {AVAILABLE_TAGS.map(tag => (
                   <button
                     key={tag}
@@ -264,7 +264,7 @@ export function TasksPage() {
               </div>
 
               {/* FOCUS MODE */}
-              <div className="flex flex-wrap gap-2" data-tour="operations-focus">
+              <div className="flex flex-wrap gap-2" data-tour="tasks-focus">
                 <Button
                   variant={focusMode === "all" ? "default" : "outline"}
                   size="sm"
@@ -303,7 +303,7 @@ export function TasksPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="active" data-tour="operations-tasks">
+              <TabsContent value="active" data-tour="tasks-tasks">
                 <Card>
                   {activeTasks.length === 0 ? (
                     <div className="p-16 text-center opacity-50">
