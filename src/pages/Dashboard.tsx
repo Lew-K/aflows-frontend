@@ -42,7 +42,7 @@ const Dashboard = () => {
   const handleTourClose = () => {
     localStorage.setItem('aflows_tour_completed', '1');
   setShowTour(false);
-};
+}; 
   
   useEffect(() => {
     if (user?.businessId) {
