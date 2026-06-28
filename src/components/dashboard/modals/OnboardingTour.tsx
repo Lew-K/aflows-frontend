@@ -513,10 +513,10 @@ export const OnboardingTour = ({
   tourId: string;
 }) => {
 
-  const steps = useMemo(
-    () => TOUR_STEPS.filter(step => step.tourId === tourId),
-    [tourId]
-  );
+  const steps = useMemo(() => {
+    return TOUR_STEPS.filter(step => step.tourId === tourId);
+  }, [tourId]);
+  
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -531,7 +531,7 @@ export const OnboardingTour = ({
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   // const navigate = useNavigate();
-  const current = steps[step];
+  const current = steps[step] ?? steps[0];
   const isLast = step === steps.length - 1;
   const isFirst = step === 0;
   const panelRef = useRef<HTMLDivElement>(null);
