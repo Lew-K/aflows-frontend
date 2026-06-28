@@ -5,7 +5,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { AnalyticsPage } from '@/components/dashboard/AnalyticsPage';
 import { SalesPage } from '@/components/dashboard/SalesPage';
-import { OperationsPage } from '@/components/dashboard/OperationsPage'; 
+import { TasksPage } from '@/components/dashboard/TasksPage'; 
 import { UploadsPage } from '@/components/dashboard/UploadsPage';
 import { CustomersPage } from '@/components/dashboard/CustomersPage';
 import { InventoryPage } from '@/components/dashboard/InventoryPage';
@@ -55,7 +55,7 @@ const Dashboard = () => {
       <Routes>
         <Route index element={<AnalyticsPage />} />
         <Route path="sales" element={<SalesPage />} />
-        <Route path="operations" element={<OperationsPage />} />
+        <Route path="tasks" element={<TasksPage />} />
         <Route path="uploads" element={<UploadsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="inventory" element={<InventoryPage />} />
