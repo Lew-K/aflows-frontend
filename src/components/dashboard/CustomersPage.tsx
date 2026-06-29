@@ -215,6 +215,7 @@ export const CustomersPage = () => {
             </div>
           
             <Button
+              data-tour="customers-import"
               onClick={() => setImportModalOpen(true)}
               className="shrink-0"
             >
