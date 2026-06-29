@@ -76,8 +76,6 @@ export const InventoryPage = () => {
     md:p-6
     space-y-6
     md:space-y-8
-    max-w-[1600px]
-    mx-auto
     ">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
