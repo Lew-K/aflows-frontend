@@ -85,6 +85,7 @@ const formatPercentage = (value: number | null | undefined, prefix = true): stri
 const StatCard = ({
   icon: Icon,
   title,
+  scopeLabel,
   value,
   trend,
   percentageChange,
@@ -93,6 +94,7 @@ const StatCard = ({
 }: {
   icon: any;
   title: string;
+  scopeLabel?: string;
   value: string;
   trend?: 'up' | 'down' | 'neutral';
   percentageChange?: string;
@@ -105,20 +107,28 @@ const StatCard = ({
     transition={{ duration: 0.4 }}
   >
     <Card className="hover:shadow-soft transition-shadow h-full">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Icon className="w-5 h-5 text-primary" />
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          </div>
+          <div className="text-right min-w-0">
+            <p className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+              {title}
+            </p>
+            {scopeLabel && (
+              <p className="text-[10px] text-muted-foreground/70 truncate">{scopeLabel}</p>
+            )}
           </div>
         </div>
         
-        <p className="text-3xl font-black text-foreground">
+        <p className="text-2xl sm:text-3xl font-black text-foreground">
           {isLoading ? '...' : value}
         </p>
         
         {percentageChange && (
           <div
-            className={`flex items-center gap-1 text-sm font-medium mt-2 ${
+            className={`flex items-center gap-1 text-xs sm:text-sm font-medium mt-2 ${
               trend === 'up'
                 ? 'text-success'
                 : trend === 'down'
@@ -133,7 +143,6 @@ const StatCard = ({
         )}
         
         {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-2">{title}</p>
       </CardContent>
     </Card>
   </motion.div>
@@ -215,13 +224,16 @@ const PaymentBreakdown = ({
   >
     <Card className="hover:shadow-soft transition-shadow h-full" data-tour="payment-breakdown">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-primary" />
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Payment Breakdown (This Month)
-          </p>
+          <div className="text-right min-w-0">
+            <p className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+              Payment Breakdown
+            </p>
+            <p className="text-[10px] text-muted-foreground/70 truncate">This Month</p>
+          </div>
         </div>
 
         <div
@@ -339,20 +351,19 @@ const TopCustomerCard = ({
     <Card className="hover:shadow-soft transition-shadow h-full" data-tour="payment-breakdown">
       
       
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Users className="w-5 h-5 text-primary" />
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            This Month
-          </p>
+          <div className="text-right min-w-0">
+            <p className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider truncate">
+              Top Customers
+            </p>
+            <p className="text-[10px] text-muted-foreground/70 truncate">This Month</p>
+          </div>
         </div>
       
-        {/* Main — New vs Returning */}
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-          Customers This Month
-        </p>
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="text-center">
             <p className="text-3xl font-black text-green-600">
@@ -1433,20 +1444,21 @@ export const AnalyticsPage = () => {
       
 
       
-      <div className={`grid grid-cols-2 ${can('analytics_advanced') ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`} data-tour="analytics-kpis">
+      <div className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 ${can('analytics_advanced') ? 'xl:grid-cols-4' : 'lg:grid-cols-3'} gap-3 sm:gap-4`} data-tour="analytics-kpis">
         <StatCard
           icon={DollarSign}
           title="Total Revenue"
+          scopeLabel={getPeriodLabel(period)}
           value={revenueLoading ? '...' : formatCurrency(revenueSummary?.totalRevenue)}
           trend={revenueSummary?.trend as any}
           percentageChange={formatPercentage(revenueSummary?.percentageChange)}
           isLoading={revenueLoading}
           subtitle={revenueSummary?.previousRevenue ? `vs ${formatCurrency(revenueSummary.previousRevenue)} last period` : undefined}
         />
-
         <StatCard
           icon={ShoppingCart}
           title="Total Sales"
+          scopeLabel={getPeriodLabel(period)}
           value={loading ? '...' : totalSales.toString()}
           trend={revenueSummary?.trend === 'flat' ? 'neutral' : revenueSummary?.trend}
           percentageChange={formatPercentage(revenueSummary?.percentageChange)}
@@ -1455,7 +1467,6 @@ export const AnalyticsPage = () => {
             ? `avg ${formatCurrency(Math.round(revenueSummary.totalRevenue / totalSales))} per sale`
             : undefined}
         />
-
         <PaymentBreakdown
           paymentChartData={paymentChartData}
           totalSales={totalSales}
