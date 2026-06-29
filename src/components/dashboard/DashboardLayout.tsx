@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { useAccess } from '@/hooks/useAccess';
+import { useTourProgress } from '@/hooks/useTourProgress';
 import { Button } from '@/components/ui/button';
 import {
   BarChart3,
@@ -45,27 +46,49 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const { user, logout } = useAuth();
   const { business } = useData();
   const { can, tier, role, isExpired, isStaff } = useAccess();
+  const { loaded: toursLoaded, isCompleted, markCompleted } = useTourProgress();
   const navigate = useNavigate();
   const navItems = allNavItems.filter(item =>
     item.feature === null || can(item.feature)
   );
   const location = useLocation();
+
   React.useEffect(() => {
     const path = location.pathname;
+    let tourForPath = 'welcome';
   
-    if (path === '/dashboard') {
-      setCurrentTour('analytics');
-    } else if (path === '/dashboard/sales') {
-      setCurrentTour('sales');
-    } else if (path === '/dashboard/inventory') {
-      setCurrentTour('inventory');
-    } else if (path === '/dashboard/customers') {
-      setCurrentTour('customers');
-    } else if (path === '/dashboard/tasks') {
-      setCurrentTour('tasks');
-    } else if (path === '/dashboard/settings') {
-      setCurrentTour('settings');
+    if (path === '/dashboard') tourForPath = 'analytics';
+    else if (path === '/dashboard/sales') tourForPath = 'sales';
+    else if (path === '/dashboard/inventory') tourForPath = 'inventory';
+    else if (path === '/dashboard/customers') tourForPath = 'customers';
+    else if (path === '/dashboard/tasks') tourForPath = 'tasks';
+    else if (path === '/dashboard/settings') tourForPath = 'settings';
+  
+    setCurrentTour(tourForPath);
+  
+    if (!toursLoaded) return;
+    if (isStaff) {
+      setShowTour(false);
+      return;
     }
+    setShowTour(!isCompleted(tourForPath));
+  }, [location.pathname, toursLoaded, isStaff]);
+  // React.useEffect(() => {
+  //   const path = location.pathname;
+  
+  //   if (path === '/dashboard') {
+  //     setCurrentTour('analytics');
+  //   } else if (path === '/dashboard/sales') {
+  //     setCurrentTour('sales');
+  //   } else if (path === '/dashboard/inventory') {
+  //     setCurrentTour('inventory');
+  //   } else if (path === '/dashboard/customers') {
+  //     setCurrentTour('customers');
+  //   } else if (path === '/dashboard/tasks') {
+  //     setCurrentTour('tasks');
+  //   } else if (path === '/dashboard/settings') {
+  //     setCurrentTour('settings');
+  //   }
   }, [location.pathname]);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
@@ -73,7 +96,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const [currentTour, setCurrentTour] = React.useState('welcome');
   
   const handleTourClose = () => {
-    localStorage.setItem('aflows_tour_completed', '1');
+    markCompleted(currentTour);
     setShowTour(false);
   };
   
