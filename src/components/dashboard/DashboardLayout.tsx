@@ -89,7 +89,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   //   } else if (path === '/dashboard/settings') {
   //     setCurrentTour('settings');
   //   }
-  }, [location.pathname]);
+  // }, [location.pathname]);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
   const [showTour, setShowTour] = React.useState(false);
