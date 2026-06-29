@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { hasPageAccess, SubscriptionTier } from '@/lib/subscriptionAccess';
 
 type Feature =
-  | 'sales' | 'inventory' | 'customers' | 'operations' | 'reports'
+  | 'sales' | 'inventory' | 'customers' | 'tasks' | 'reports'
   | 'uploads' | 'settings_basic' | 'settings_business' | 'settings_full'
   | 'contact' | 'team_members' | 'team_management' | 'branding_edit'
   | 'analytics_advanced' | 'analytics_custom_range' | 'analytics_segmentation';
@@ -32,7 +32,7 @@ export const useAccess = () => {
         case 'reports':
         case 'analytics_advanced': return tier === 'growth' || tier === 'pro';
         case 'sales':
-        case 'operations':
+        case 'tasks':
         case 'contact': return true;
         default: return true;
       }
@@ -47,9 +47,9 @@ export const useAccess = () => {
       // 2. Handle staff restrictions — capped by role, never exceeding what tier allows
       if (isStaff) {
         const staffFeatures: Record<string, Feature[]> = {
-          manager: ['sales', 'operations', 'inventory', 'customers', 'reports', 'analytics_advanced', 'contact'],
-          cashier: ['sales', 'operations', 'contact'],
-          staff:   ['sales', 'operations', 'contact'], // legacy accounts, until reassigned
+          manager: ['sales', 'tasks', 'inventory', 'customers', 'reports', 'analytics_advanced', 'contact'],
+          cashier: ['sales', 'tasks', 'contact'],
+          staff:   ['sales', 'tasks', 'contact'], // legacy accounts, until reassigned
         };
         const allowed = staffFeatures[role] || [];
         // Still capped by what the business's tier permits overall
@@ -70,7 +70,7 @@ export const useAccess = () => {
       // 3. Map your page feature triggers directly to your subscription matrix definitions
       switch (feature) {
         case 'sales':
-        case 'operations':
+        case 'tasks':
         case 'contact':
           return true; // always available
           
@@ -80,9 +80,7 @@ export const useAccess = () => {
         case 'customers':
           return tier === 'growth' || tier === 'pro'; // Growth gets customers
           
-        case 'operations':
         case 'reports':
-
         case 'analytics_advanced':
           return tier === 'growth' || tier === 'pro';
         case 'analytics_custom_range':
