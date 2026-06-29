@@ -239,8 +239,7 @@ const PaymentBreakdown = ({
         <div
           className="mt-4"
           style={{
-            height: `${paymentChartData.length * 28}px`,
-            minHeight: "56px",
+            height: `${Math.max(paymentChartData.length * 40, 120)}px`,
           }}
         >
           {isLoading ? (
@@ -265,8 +264,8 @@ const PaymentBreakdown = ({
                   type="category"
                   axisLine={false}
                   tickLine={false}
-                  width={80}
-                  fontSize={12}
+                  width={60}
+                  fontSize={11}
                 />
                 <Tooltip
                   content={({ active, payload }) => {
@@ -308,19 +307,19 @@ const PaymentBreakdown = ({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-          <div className="flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-primary" />
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Top Payment Method
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-border pt-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <Receipt className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+              Top Method
             </p>
           </div>
-          <div className="flex items-center gap-1">
-            <p className="text-sm font-black text-foreground">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-sm font-black text-foreground truncate">
               {paymentChartData.length > 0 ? paymentChartData[0].name : '—'}
             </p>
             {paymentChartData.length > 0 && (
-              <span className="text-xs font-medium text-success">{paymentChartData[0].percentage}%</span>
+              <span className="text-xs font-medium text-success shrink-0">{paymentChartData[0].percentage}%</span>
             )}
           </div>
         </div>
@@ -384,18 +383,18 @@ const TopCustomerCard = ({
         </div>
       
         {/* Secondary — Top customer */}
-        <div className="border-t border-border/50 pt-3 flex items-center justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Top Customer
-            </p>
-            <p className="text-sm font-black text-foreground truncate mt-0.5">
+        <div className="border-t border-border/50 pt-3">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+            Top Customer
+          </p>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <p className="text-sm font-black text-foreground truncate min-w-0">
               {isLoading ? '...' : topCustomer?.name || 'N/A'}
             </p>
+            <p className="text-sm font-bold text-foreground shrink-0">
+              {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
+            </p>
           </div>
-          <p className="text-sm font-bold text-foreground shrink-0 ml-2">
-            {isLoading ? '...' : formatCurrency(topCustomer?.totalSpend)}
-          </p>
         </div>
       </CardContent>
 
