@@ -440,9 +440,10 @@ const TOUR_STEPS: TourStep[] = [
     stepNumber: 26,
     targetSelector: '[data-tour="settings-receipt"]',
     title: '🧾 Receipt Customization',
-    description: 'Configure receipt prefix, numbering, tax rate, discounts, and footer message.',
+    description: 'Configure receipt prefix, numbering, tax rate, discounts, and footer message. Already issuing receipts? Set the prefix and next number to match your current system so numbering continues seamlessly — no gaps, no restarting from zero.',
     details: [
-      '🔢 Prefix: RCT, INV, etc. (you choose)',
+      '🔢 Prefix: RCT, INV, etc. (match what you already use)',
+      '🔁 Next Receipt Number: continue exactly where your current receipts left off',
       '💰 Tax rate: 16% VAT or custom',
       '🏷️ Default discount: percent or fixed amount',
       '✍️ Footer: "Thank you" message'
@@ -486,22 +487,35 @@ const TOUR_STEPS: TourStep[] = [
     tourId: 'settings',
     pageTitle: 'Settings',
     stepNumber: 29,
+    targetSelector: '[data-tour="settings-password"]',
+    title: '🔒 Security & Password',
+    description: 'Update your password here anytime. We recommend changing it regularly to keep your account secure.',
+    details: [
+      '🔑 Enter your current password to confirm it\'s you',
+      '💪 Strength meter shows how secure your new password is',
+      '✅ At least 8 characters required',
+      '👁️ Use the eye icon to check what you\'ve typed'
+    ],
+    action: 'Now let\'s look at your team and sessions',
+  },
+  {
+    tourId: 'settings',
+    pageTitle: 'Settings',
+    stepNumber: 30,
     targetSelector: '[data-tour="settings-team"]',
-    title: '🔐 Team & Security',
-    description: 'Invite staff (Growth/Pro), change your password, and see active devices/sessions.',
+    title: '🔐 Team & Sessions',
+    description: 'Invite staff (Growth/Pro), and see which devices are currently logged into your account.',
     details: [
       '👥 Invite staff with role restrictions',
-      '🔒 Change password regularly',
-      '📱 View/revoke logged-in devices',
-      '🚪 Sign out of all devices at once'
+      '📱 View active sessions',
+      '🚪 Sign out of all devices at once if needed'
     ],
     action: 'You\'re all set!',
   },
-
   {
     tourId: 'finish',
     pageTitle: 'Finish',
-    stepNumber: 30,
+    stepNumber: 31,
     targetSelector: 'body',
     title: '🎉 You\'re Ready!',
     description: 'You now know Aflows inside and out. Start recording sales, track inventory, analyze trends, and grow your business.',
