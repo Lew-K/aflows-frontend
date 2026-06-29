@@ -930,8 +930,8 @@ export const SalesPage = () => {
               )}
               
             </CardHeader>
-            <CardContent className="flex-grow overflow-auto">
-              <div className="">
+            <CardContent className="flex-grow overflow-hidden p-0 pt-0">
+              <div className="max-h-[600px] overflow-y-auto px-6 py-4 space-y-3">
                 {isLoadingSales ? (
                   <div className="py-10 text-center text-muted-foreground">
                     Loading sales...
