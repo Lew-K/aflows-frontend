@@ -54,7 +54,7 @@ export const ContactSection = () => {
           className="text-center mb-20"
         >
           <span className="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-4 block">Get in Touch</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Let's Scale Your Business
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -76,21 +76,21 @@ export const ContactSection = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/30 transition-all group"
+                className="flex items-center gap-6 p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all group"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-all duration-300">
-                  <item.icon className="w-6 h-6 text-primary group-hover:text-black transition-colors" />
+                  <item.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-primary/60 uppercase tracking-widest mb-1">{item.label}</h3>
-                  <p className="text-xl font-semibold text-white">{item.value}</p>
+                  <p className="text-xl font-semibold text-foreground">{item.value}</p>
                 </div>
               </motion.div>
             ))}
 
             <div className="p-8 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/10">
               <MessageSquare className="w-8 h-8 text-primary mb-4" />
-              <h4 className="text-white font-bold text-lg mb-1">Live Support</h4>
+              <h4 className="text-foreground font-bold text-lg mb-1">Live Support</h4>
               <p className="text-muted-foreground text-sm">Our typical response time is under 2 hours during business hours.</p>
             </div>
           </div>
@@ -100,23 +100,23 @@ export const ContactSection = () => {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="bg-card/50 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl"
+            className="bg-card/50 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-10 border border-border shadow-2xl"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="contact-name" className="text-white/70 ml-1">Your Name</Label>
+                  <Label htmlFor="contact-name" className="text-foreground ml-1">Your Name</Label>
                   <Input
                     id="contact-name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="John Doe"
                     required
-                    className="h-12 bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl"
+                    className="h-12 bg-background border-border focus:border-primary transition-all rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact-email" className="text-white/70 ml-1">Email Address</Label>
+                  <Label htmlFor="contact-email" className="text-foreground ml-1">Email Address</Label>
                   <Input
                     id="contact-email"
                     type="email"
@@ -124,25 +124,25 @@ export const ContactSection = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="john@example.com"
                     required
-                    className="h-12 bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl"
+                    className="h-12 bg-background border-border focus:border-primary transition-all rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contact-subject" className="text-white/70 ml-1">Subject</Label>
+                <Label htmlFor="contact-subject" className="text-foreground ml-1">Subject</Label>
                 <Input
                   id="contact-subject"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   placeholder="What's this about?"
                   required
-                  className="h-12 bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl"
+                  className="h-12 bg-background border-border focus:border-primary transition-all rounded-xl"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="contact-message" className="text-white/70 ml-1">Message</Label>
+                <Label htmlFor="contact-message" className="text-foreground ml-1">Message</Label>
                 <Textarea
                   id="contact-message"
                   value={formData.message}
@@ -150,11 +150,11 @@ export const ContactSection = () => {
                   placeholder="How can we help you?"
                   rows={5}
                   required
-                  className="bg-white/5 border-white/10 focus:border-primary transition-all rounded-xl resize-none"
+                  className="bg-background border-border focus:border-primary transition-all rounded-xl resize-none"
                 />
               </div>
 
-              <Button type="submit" variant="hero" className="w-full h-14 rounded-xl text-black font-bold text-lg" disabled={isLoading}>
+              <Button type="submit" variant="hero" className="w-full h-14 rounded-xl text-primary-foreground font-bold text-lg" disabled={isLoading}>
                 {isLoading ? (
                   <LoadingSpinner size="sm" />
                 ) : (
