@@ -1513,7 +1513,7 @@ export const AnalyticsPage = () => {
 
       {/* Smart Recommendation, Today Snapshot & Monthly Projection — Growth+ only */}
       {tier === 'pro' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" data-tour="analytics-insights-row">
           <SmartRecommendationCard
             topItems={topSellingItems}
             salesPace={salesPace}
