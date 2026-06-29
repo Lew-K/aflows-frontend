@@ -656,10 +656,7 @@ export const OnboardingTour = ({
 
   const goNext = () => {
     if (isLast) {
-      apiFetch(`https://api.aflows.uk/api/v1/tours/${tourId}/complete`, {
-        method: 'POST',
-      }).catch(() => {});
-      onClose();
+      handleClose();
       return;
     }
     setStep(s => s + 1);
@@ -669,10 +666,17 @@ export const OnboardingTour = ({
     if (!isFirst) setStep(s => s - 1);
   };
 
+  const handleClose = () => {
+    apiFetch(`https://api.aflows.uk/api/v1/tours/${tourId}/complete`, {
+      method: 'POST',
+    }).catch(() => {});
+    onClose();
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
       if (e.key === 'ArrowRight' && !isLast) goNext();
       if (e.key === 'ArrowLeft' && !isFirst) goPrev();
     };
@@ -799,7 +803,7 @@ export const OnboardingTour = ({
               </button>
           
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-4 h-4" />
