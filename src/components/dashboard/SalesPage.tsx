@@ -909,7 +909,7 @@ export const SalesPage = () => {
                       type="date"
                       value={receiptDateStart}
                       onChange={(e) => setReceiptDateStart(e.target.value)}
-                      className="text-xs border rounded px-2 py-1 bg-background"
+                      className="text-xs border rounded px-2 py-1 bg-background [&::-webkit-calendar-picker-indicator]:dark:invert"
                     />
                   </div>
               
@@ -922,7 +922,7 @@ export const SalesPage = () => {
                       type="date"
                       value={receiptDateEnd}
                       onChange={(e) => setReceiptDateEnd(e.target.value)}
-                      className="text-xs border rounded px-2 py-1 bg-background"
+                      className="text-xs border rounded px-2 py-1 bg-background [&::-webkit-calendar-picker-indicator]:dark:invert"
                     />
                   </div>
               
