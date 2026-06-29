@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from '@/contexts/AuthContext';
 import { AddProductModal } from "./modals/AddProductModal"; 
-import { AddStockModal } from "./modals/AddStockModal";
 import { BulkStockModal } from "./modals/BulkStockModal";
 import { ImportStockModal } from "./modals/ImportStockModal";
 
@@ -32,7 +31,6 @@ export const InventoryPage = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [openAddProduct, setOpenAddProduct] = useState(false);
-  const [selectedItemForStock, setSelectedItemForStock] = useState(null);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -115,7 +113,7 @@ export const InventoryPage = () => {
             className="shadow-sm"
             onClick={() => setBulkRestockOpen(true)}
           >
-            <Boxes className="w-4 h-4 mr-2" /> Bulk Restock
+            <Boxes className="w-4 h-4 mr-2" /> Restock Inventory
           </Button>
           <Button
             variant="outline"
@@ -245,11 +243,7 @@ export const InventoryPage = () => {
                             {status.label}
                           </span>
                         </td>
-                        <td className="p-4 text-right">
-                          <Button variant="outline" size="sm" onClick={() => setSelectedItemForStock(item)}>
-                            <ArrowRightLeft className="w-3 h-3 mr-1" /> Restock
-                          </Button>
-                        </td>
+                        <td className="p-4 text-right" />
                       </tr>
                     );
                   })}
@@ -274,9 +268,6 @@ export const InventoryPage = () => {
                       <span>Stock: <span className="font-mono text-foreground">{item.stock}</span></span>
                       <span>Value: <span className="text-foreground">KES {(item.stock * (item.cost_price || 0)).toLocaleString()}</span></span>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => setSelectedItemForStock(item)}>
-                      <ArrowRightLeft className="w-3 h-3 mr-1" /> Restock
-                    </Button>
                   </div>
                 );
               })}
@@ -294,18 +285,6 @@ export const InventoryPage = () => {
           refresh();
         }}
       />
-
-      {selectedItemForStock && (
-        <AddStockModal
-          item={selectedItemForStock}
-          items={items}
-          onClose={() => setSelectedItemForStock(null)}
-          onSuccess={() => {
-            setSelectedItemForStock(null);
-            refresh();
-          }}
-        />
-      )}
 
       {bulkRestockOpen && (
         <BulkStockModal
