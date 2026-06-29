@@ -237,7 +237,7 @@ const ChangePassword = () => {
                   className="h-11 bg-background border-border focus:border-primary rounded-xl"
                   {...registerChange('confirmPassword')}
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="absolute right-10 top-1/2 -translate-y-1/2">
                   {passwordsMatch && <Check className="w-4 h-4 text-green-500" />}
                 </div>
               </div>
@@ -281,8 +281,8 @@ const ChangePassword = () => {
                   className="h-11 bg-background border-border focus:border-primary rounded-xl"
                   {...registerReset('confirmPassword')}
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {resetPasswordsMatch && <Check className="w-4 h-4 text-green-500" />}
+                <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                  {resetPasswordsMatch && <Check className="w-4 h-4 text-primary" />}
                 </div>
               </div>
               {errorsReset.confirmPassword && (
