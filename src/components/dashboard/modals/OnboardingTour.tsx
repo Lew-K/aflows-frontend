@@ -197,16 +197,30 @@ const TOUR_STEPS: TourStep[] = [
       '🎨 Bar chart: easy to compare',
       '🥧 Pie chart: see proportions at a glance'
     ],
-    action: 'Now let\'s manage your inventory',
+    action: 'One more thing before inventory',
     // path: '/dashboard/inventory',
   },
 
+  {
+    tourId: 'analytics',
+    pageTitle: 'Analytics',
+    stepNumber: 12,
+    targetSelector: '[data-tour="analytics-insights-row"]',
+    title: '💡 Smart Insights (Pro)',
+    description: 'Three extra cards give you a daily pulse on the business: a smart recommendation based on your sales patterns, today\'s performance at a glance, and a projection of where this month is headed.',
+    details: [
+      '⚡ Smart Insight: a tip based on your recent sales and stock movement',
+      '📅 Today Snapshot: revenue, transactions, and pace vs. your daily average',
+      '📈 Monthly Projection: where you\'re likely to land by month-end, based on progress so far'
+    ],
+    action: 'Now let\'s manage your inventory',
+  },
 
   // ===== INVENTORY PAGE =====
   {
     tourId: 'inventory',
     pageTitle: 'Inventory',
-    stepNumber: 12,
+    stepNumber: 13,
     targetSelector: '[data-tour="low-stock-alert"]',
     title: '⚠️ Low Stock Alert',
     description: 'Items running out appear here in red. Never surprise a customer by being out of stock—this keeps you ahead.',
@@ -223,7 +237,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'inventory',
     pageTitle: 'Inventory',
-    stepNumber: 13,
+    stepNumber: 14,
     targetSelector: '[data-tour="inventory-actions"]',
     title: '📦 Manage Your Inventory',
     description: 'Three ways to update stock: add a single product, bulk restock multiple items, or import hundreds via Excel.',
@@ -239,7 +253,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'inventory',
     pageTitle: 'Inventory',
-    stepNumber: 14,
+    stepNumber: 15,
     targetSelector: '[data-tour="inventory-table"]',
     title: '📋 Your Inventory List',
     description: 'All products with current stock, cost, selling price, and status. Restock any item with one click.',
@@ -258,7 +272,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'customers',
     pageTitle: 'Customers',
-    stepNumber: 15,
+    stepNumber: 16,
     targetSelector: '[data-tour="customers-import"]',
     title: '📥 Import Existing Customers',
     description: 'Already have a customer list? Import it in one go from an Excel or CSV file instead of typing them in one by one.',
@@ -274,7 +288,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'customers',
     pageTitle: 'Customers',
-    stepNumber: 16,
+    stepNumber: 17,
     targetSelector: '[data-tour="customer-kpis"]',
     title: '👥 Customer Insights (Growth/Pro)',
     description: 'See your total customers, active this month, average spend per customer, and repeat rate.',
@@ -291,7 +305,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'customers',
     pageTitle: 'Customers',
-    stepNumber: 17,
+    stepNumber: 18,
     targetSelector: '[data-tour="customer-filters"]',
     title: '🔍 Search & Filter Customers',
     description: 'Find customers by name or filter by segment: VIP (high spenders), Regular, or At Risk (inactive).',
@@ -307,7 +321,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'customers',
     pageTitle: 'Customers',
-    stepNumber: 18,
+    stepNumber: 19,
     targetSelector: '[data-tour="customer-list"]',
     title: '📱 Customer Profiles',
     description: 'Click any customer to see their full purchase history, total spent, phone number, and contact info.',
@@ -325,7 +339,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'tasks',
     pageTitle: 'Tasks',
-    stepNumber: 19,
+    stepNumber: 20,
     targetSelector: '[data-tour="tasks-search"]',
     title: '🔍 Task Search',
     description: 'Quickly find any task by typing keywords. Supports tag filtering too.',
@@ -342,7 +356,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'tasks',
     pageTitle: 'Tasks',
-    stepNumber: 20,
+    stepNumber: 21,
     targetSelector: '[data-tour="operations-filters"]',
     title: '🏷️ Task Categories',
     description: 'Organize tasks into Sales, Admin, Inventory, Operations, or Marketing. Helps you stay focused.',
@@ -358,7 +372,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'tasks',
     pageTitle: 'Tasks',
-    stepNumber: 21,
+    stepNumber: 22,
     targetSelector: '[data-tour="operations-focus"]',
     title: '🎯 Focus Mode',
     description: 'Three views: All Tasks, High Priority (urgent/overdue), or Due Today (what\'s due now?).',
@@ -374,7 +388,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'tasks',
     pageTitle: 'Tasks',
-    stepNumber: 22,
+    stepNumber: 23,
     targetSelector: '[data-tour="operations-tasks"]',
     title: '✅ Complete Your Tasks',
     description: 'Check off tasks as done. Create recurring automations so routine work repeats automatically.',
@@ -392,7 +406,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 23,
+    stepNumber: 24,
     targetSelector: '[data-tour="settings-logo"]',
     title: '🎨 Your Business Logo',
     description: 'Upload your logo. It appears on all receipts, reports, and documents automatically.',
@@ -409,7 +423,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 24,
+    stepNumber: 25,
     targetSelector: '[data-tour="settings-profile"]',
     title: '🏢 Business Profile',
     description: 'Your business name, phone, location. These appear on receipts so customers know who to contact.',
@@ -425,7 +439,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 25,
+    stepNumber: 26,
     targetSelector: '[data-tour="settings-receipt"]',
     title: '🧾 Receipt Customization',
     description: 'Configure receipt prefix, numbering, tax rate, discounts, and footer message. Already issuing receipts? Set the prefix and next number to match your current system so numbering continues seamlessly — no gaps, no restarting from zero.',
@@ -442,7 +456,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 26,
+    stepNumber: 27,
     targetSelector: '[data-tour="settings-receipt-preview"]',
     title: '👀 Live Receipt Preview',
     description: 'This shows exactly how your receipts will print. Updates in real-time as you customize.',
@@ -458,7 +472,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 27,
+    stepNumber: 28,
     targetSelector: '[data-tour="settings-subscription"]',
     title: '👑 Your Subscription Plan',
     description: 'See your current plan (Starter, Growth, Pro), trial status, and renewal date. Upgrade anytime.',
@@ -474,7 +488,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 28,
+    stepNumber: 29,
     targetSelector: '[data-tour="settings-password"]',
     title: '🔒 Security & Password',
     description: 'Update your password here anytime. We recommend changing it regularly to keep your account secure.',
@@ -489,7 +503,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'settings',
     pageTitle: 'Settings',
-    stepNumber: 29,
+    stepNumber: 30,
     targetSelector: '[data-tour="settings-team"]',
     title: '🔐 Team & Sessions',
     description: 'Invite staff (Growth/Pro), and see which devices are currently logged into your account.',
@@ -503,7 +517,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     tourId: 'finish',
     pageTitle: 'Finish',
-    stepNumber: 30,
+    stepNumber: 31,
     targetSelector: 'body',
     title: '🎉 You\'re Ready!',
     description: 'You now know Aflows inside and out. Start recording sales, track inventory, analyze trends, and grow your business.',
