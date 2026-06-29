@@ -219,13 +219,13 @@ export const InventoryPage = () => {
           <Card className="border-none shadow-sm overflow-hidden" data-tour="inventory-table">
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead className="bg-muted/50 border-b">
                   <tr className="text-left font-semibold text-muted-foreground">
-                    <th className="p-4">Product Name</th>
-                    <th className="p-4">Stock</th>
-                    <th className="p-4">Value (KES)</th>
-                    <th className="p-4 text-right">Status</th>
+                    <th className="p-4 w-[40%]">Product Name</th>
+                    <th className="p-4 w-[20%]">Stock</th>
+                    <th className="p-4 w-[20%]">Value (KES)</th>
+                    <th className="p-4 w-[20%] text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-muted/50">
@@ -233,7 +233,7 @@ export const InventoryPage = () => {
                     const status = getStatus(item);
                     return (
                       <tr key={item.id} className="hover:bg-muted/20 transition-colors group">
-                        <td className="p-4 font-medium">{item.name}</td>
+                        <td className="p-4 font-medium truncate">{item.name}</td>
                         <td className="p-4 font-mono">{item.stock}</td>
                         <td className="p-4">{(item.stock * (item.cost_price || 0)).toLocaleString()}</td>
                         <td className="p-4 text-right">
