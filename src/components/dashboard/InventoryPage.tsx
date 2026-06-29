@@ -1,5 +1,5 @@
 import { FileSpreadsheet } from 'lucide-react';
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useInventory } from "@/hooks/useInventory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ export const InventoryPage = () => {
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(20);
   const [openAddProduct, setOpenAddProduct] = useState(false);
 
   const stats = useMemo(() => {
@@ -44,12 +45,18 @@ export const InventoryPage = () => {
       const matchesSearch = (item.name || "").toLowerCase().includes(search.toLowerCase());
       const isLow = item.stock <= (item.low_stock_threshold || 5);
       const isOut = item.stock <= 0;
-
       if (filter === "low") return matchesSearch && isLow;
       if (filter === "out") return matchesSearch && isOut;
       return matchesSearch;
     });
   }, [items, search, filter]);
+  
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [search, filter]);
+  
+  const visibleItems = filteredItems.slice(0, visibleCount);
+  const hasMore = filteredItems.length > visibleCount;
 
   const getStatus = (item) => {
     if (item.stock <= 0) return { label: "Out of Stock", class: "bg-red-100 text-red-700 border-red-200", dot: "bg-red-500" };
@@ -215,8 +222,8 @@ export const InventoryPage = () => {
 
           {/* TABLE */}
           <Card className="border-none shadow-sm overflow-hidden" data-tour="inventory-table">
-            {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto">
+            {/* Desktop table — capped height, scrolls independently of the page */}
+            <div className="hidden md:block max-h-[600px] overflow-y-auto">
               <table className="w-full text-sm table-fixed">
                 <thead className="bg-muted/50 border-b">
                   <tr className="text-left font-semibold text-muted-foreground">
@@ -227,7 +234,7 @@ export const InventoryPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-muted/50">
-                  {filteredItems.map((item) => {
+                  {visibleItems.map((item) => {
                     const status = getStatus(item);
                     return (
                       <tr key={item.id} className="hover:bg-muted/20 transition-colors group">
@@ -245,11 +252,23 @@ export const InventoryPage = () => {
                   })}
                 </tbody>
               </table>
+              {hasMore && (
+                <div className="p-4 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setVisibleCount((prev) => prev + 20)}
+                  >
+                    Load More
+                  </Button>
+                </div>
+              )}
             </div>
           
-            {/* Mobile card list */}
+            {/* Mobile card list — page scrolls naturally, no height cap */}
             <div className="md:hidden divide-y">
-              {filteredItems.map((item) => {
+              {visibleItems.map((item) => {
                 const status = getStatus(item);
                 return (
                   <div key={item.id} className="p-4 space-y-2.5">
@@ -265,13 +284,25 @@ export const InventoryPage = () => {
                       <span>Value: <span className="text-foreground">KES {(item.stock * (item.cost_price || 0)).toLocaleString()}</span></span>
                     </div>
                   </div>
-                );
+               );
               })}
             </div>
+            {hasMore && (
+              <div className="md:hidden p-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setVisibleCount((prev) => prev + 20)}
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
           </Card>
         </div>
       )}
-
+      
       {/* MODALS */}
       <AddProductModal
         isOpen={openAddProduct}
