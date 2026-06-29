@@ -318,7 +318,7 @@ const TOUR_STEPS: TourStep[] = [
 
   // ===== OPERATIONS PAGE =====
   {
-    tourId: 'Tasks',
+    tourId: 'tasks',
     pageTitle: 'Tasks',
     stepNumber: 19,
     targetSelector: '[data-tour="tasks-search"]',
@@ -335,7 +335,7 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'Tasks',
+    tourId: 'tasks',
     pageTitle: 'Tasks',
     stepNumber: 20,
     targetSelector: '[data-tour="operations-filters"]',
@@ -351,7 +351,7 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'Tasks',
+    tourId: 'tasks',
     pageTitle: 'Tasks',
     stepNumber: 21,
     targetSelector: '[data-tour="operations-focus"]',
@@ -367,7 +367,7 @@ const TOUR_STEPS: TourStep[] = [
   },
 
   {
-    tourId: 'Tasks',
+    tourId: 'tasks',
     pageTitle: 'Tasks',
     stepNumber: 22,
     targetSelector: '[data-tour="operations-tasks"]',
@@ -532,6 +532,12 @@ export const OnboardingTour = ({
   const [mobileExpanded, setMobileExpanded] = useState(false);
   // const navigate = useNavigate();
   const current = steps[step] ?? steps[0];
+
+  if (!current) {
+    // No matching steps for this tourId — fail safe instead of crashing the page
+    return null;
+  }
+  
   const isLast = step === steps.length - 1;
   const isFirst = step === 0;
   const panelRef = useRef<HTMLDivElement>(null);
