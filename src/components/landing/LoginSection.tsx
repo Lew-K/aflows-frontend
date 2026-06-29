@@ -86,15 +86,15 @@ export const LoginSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-5xl mx-auto bg-card/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl flex flex-col md:flex-row"
+          className="max-w-5xl mx-auto bg-card/50 backdrop-blur-xl rounded-[2.5rem] border border-border overflow-hidden shadow-2xl flex flex-col md:flex-row"
         >
           {/* Left Side: Brand/Info Pane */}
-          <div className="md:w-5/12 bg-primary/10 p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
+          <div className="md:w-5/12 bg-primary/10 p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-border">
             <div>
               <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-8 shadow-lg shadow-primary/20">
-                <ShieldCheck className="w-6 h-6 text-black" />
+                <ShieldCheck className="w-6 h-6 text-primary-foreground" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-4">Secure Access</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-4">Secure Access</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Log in to manage your sales, generate receipts, and monitor your business growth in real-time.
               </p>
@@ -103,7 +103,7 @@ export const LoginSection = () => {
             <div className="mt-12">
               <div className="flex -space-x-2 mb-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] text-primary">
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-border bg-muted flex items-center justify-center text-[10px] text-primary">
                     AF
                   </div>
                 ))}
@@ -117,7 +117,7 @@ export const LoginSection = () => {
           {/* Right Side: Form Pane */}
           <div className="md:w-7/12 p-8 md:p-12">
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-white mb-2">Welcome Back</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h3>
               <p className="text-muted-foreground">Please enter your details to continue.</p>
             </div>
 
@@ -135,12 +135,12 @@ export const LoginSection = () => {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-sm font-semibold text-white/70">Email Address</Label>
+                <Label htmlFor="login-email" className="text-sm font-semibold text-foreground">Email Address</Label>
                 <Input
                   id="login-email"
                   type="email"
                   placeholder="you@business.com"
-                  className="h-12 bg-white/5 border-white/10 focus:border-primary focus:ring-primary/20 transition-all rounded-xl"
+                  className="h-12 bg-background border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl"
                   {...register('email')}
                 />
                 {errors.email && (
@@ -150,7 +150,7 @@ export const LoginSection = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="login-password" className="text-sm font-semibold text-white/70">Password</Label>
+                  <Label htmlFor="login-password" className="text-sm font-semibold text-foreground">Password</Label>
                   <button type="button" onClick={() => navigate('/request-password-reset')} className="text-xs text-primary hover:underline transition-all">
                     Forgot Password?
                   </button>
@@ -158,7 +158,7 @@ export const LoginSection = () => {
                 <PasswordInput
                   id="login-password"
                   placeholder="••••••••"
-                  className="h-12 bg-white/5 border-white/10 focus:border-primary focus:ring-primary/20 transition-all rounded-xl"
+                  className="h-12 bg-background border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl"
                   {...register('password')}
                 />
                 {errors.password && (
