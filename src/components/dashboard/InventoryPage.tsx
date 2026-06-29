@@ -225,8 +225,7 @@ export const InventoryPage = () => {
                     <th className="p-4">Product Name</th>
                     <th className="p-4">Stock</th>
                     <th className="p-4">Value (KES)</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right">Action</th>
+                    <th className="p-4 text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-muted/50">
@@ -237,13 +236,12 @@ export const InventoryPage = () => {
                         <td className="p-4 font-medium">{item.name}</td>
                         <td className="p-4 font-mono">{item.stock}</td>
                         <td className="p-4">{(item.stock * (item.cost_price || 0)).toLocaleString()}</td>
-                        <td className="p-4">
+                        <td className="p-4 text-right">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${status.class}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                             {status.label}
                           </span>
                         </td>
-                        <td className="p-4 text-right" />
                       </tr>
                     );
                   })}
@@ -256,10 +254,10 @@ export const InventoryPage = () => {
               {filteredItems.map((item) => {
                 const status = getStatus(item);
                 return (
-                  <div key={item.id} className="p-4 space-y-2">
-                    <div className="flex justify-between items-start">
-                      <p className="font-semibold text-sm">{item.name}</p>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${status.class}`}>
+                  <div key={item.id} className="p-4 space-y-2.5">
+                    <div className="flex justify-between items-start gap-3">
+                      <p className="font-semibold text-sm leading-tight">{item.name}</p>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap ${status.class}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                         {status.label}
                       </span>
