@@ -37,7 +37,7 @@ const allNavItems = [
   { icon: Users, label: 'Customers', path: '/dashboard/customers', feature: 'customers' as const },
   { icon: FileBarChart, label: 'Reports', path: '/dashboard/reports', feature: 'reports' as const },
   { icon: ClipboardCheck, label: 'Tasks', path: '/dashboard/tasks', feature: 'tasks' as const },
-  { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads', feature: 'uploads' as const },
+  // { icon: FileUp, label: 'File Uploads', path: '/dashboard/uploads', feature: 'uploads' as const },
   { icon: Mail, label: 'Contact Us', path: '/dashboard/contact', feature: 'contact' as const },
   // { icon: Settings, label: 'Settings', path: '/dashboard/settings', feature: 'settings_basic' as const },
 ];
