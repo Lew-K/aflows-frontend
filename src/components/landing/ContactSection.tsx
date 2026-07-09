@@ -67,7 +67,7 @@ export const ContactSection = () => {
           <div className="space-y-6">
             {[
               { icon: Mail, label: 'Email Us', value: 'support@aflows.uk' },
-              { icon: Phone, label: 'Call Us', value: '+254 700 000 000' },
+              { icon: Phone, label: 'Call Us', value: '+254 792 174 097' },
               { icon: MapPin, label: 'Visit Us', value: 'Nairobi, Kenya' },
             ].map((item, i) => (
               <motion.div
