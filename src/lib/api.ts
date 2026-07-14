@@ -1,5 +1,5 @@
 // const BASE_URL = 'https://n8n.aflows.uk/webhook';
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://api.aflows.uk/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://api.aflows.co.ke/api/v1';
 
 interface RegisterData {
   businessName: string;
