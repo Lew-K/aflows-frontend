@@ -1,4 +1,5 @@
-const API_URL = 'https://api.aflows.co.ke/api/v1';
+// const BASE_URL = 'https://n8n.aflows.uk/webhook';
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://api.aflows.uk/api/v1';
 
 interface RegisterData {
   businessName: string;
@@ -33,7 +34,7 @@ interface AuthResponse {
 }
 
 export const registerBusiness = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_URL}/auth/register`, {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ export const registerBusiness = async (data: RegisterData): Promise<AuthResponse
 
 
 export const loginBusiness = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ export const uploadBusinessFile = async ({ file, fileType }: FileUploadData): Pr
   formData.append('file', file);
   formData.append('fileType', fileType);
 
-  const response = await fetch(`${API_URL}/business/upload-file`, {
+  const response = await fetch(`${API_BASE_URL}/business/upload-file`, {
     method: 'POST',
     credentials: 'include',
     body: formData,
@@ -110,7 +111,7 @@ interface SaleData {
 }
 
 export const recordSale = async (data: SaleData): Promise<{ success: boolean; message: string; receiptUrl?: string }> => {
-  const response = await fetch(`${BASE_URL}/record-sale`, {
+  const response = await fetch(`${API_BASE_URL}/record-sale`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -130,7 +131,7 @@ export const changePassword = async (
   currentPassword: string,
   newPassword: string,
 ): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${API_URL}/auth/change-password`, {
+  const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -158,7 +159,7 @@ export const changePassword = async (
 };
 
 export const refreshToken = async (): Promise<AuthResponse> => {
-  const response = await fetch(`${API_URL}/auth/refresh`, {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -170,7 +171,7 @@ export const refreshToken = async (): Promise<AuthResponse> => {
 };
 
 export const verifyEmailToken = async (token: string): Promise<{ success: boolean; message: string; email?: string }> => {
-  const response = await fetch(`${API_URL}/auth/verify-email?token=${token}`, {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email?token=${token}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ export const verifyEmailToken = async (token: string): Promise<{ success: boolea
 };
 
 export const requestPasswordReset = async (email: string): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${API_URL}/auth/request-password-reset`, {
+  const response = await fetch(`${API_BASE_URL}/auth/request-password-reset`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -205,7 +206,7 @@ export const requestPasswordReset = async (email: string): Promise<{ success: bo
 };
 
 export const resetPassword = async (token: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${API_URL}/auth/reset-password?token=${token}`, {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password?token=${token}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -226,7 +227,7 @@ export const changePasswordStaff = async (
   currentPassword: string,
   newPassword: string,
 ): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${API_URL}/staff/change-password`, {
+  const response = await fetch(`${API_BASE_URL}/staff/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
