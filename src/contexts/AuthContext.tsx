@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../lib/api';
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 
 interface User {
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await fetch('https://api.aflows.uk/api/v1/auth/logout', {
+      await fetch('{API_BASE_URL}/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
