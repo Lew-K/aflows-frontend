@@ -1,5 +1,4 @@
-const BASE_URL = 'https://n8n.aflows.uk/webhook';
-const API_URL = 'https://api.aflows.uk/api/v1';
+const API_URL = 'https://api.aflows.co.ke/api/v1';
 
 interface RegisterData {
   businessName: string;
